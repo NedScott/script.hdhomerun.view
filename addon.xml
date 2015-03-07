@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="script.hdhomerun.view"
+       name="HD HomeRun"
+       version="0.0.1b"
+       provider-name="Silicon Dust">
+    <requires>
+        <import addon="xbmc.python" version="2.1.0"/>
+        <import addon="script.module.requests" version="2.3.0"/>
+    </requires>
+    <extension point="xbmc.python.script" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">Browse lineup and watch streams from your HD HomeRun devices</summary>
+        <description lang="en">Browse lineup and watch streams from your HD HomeRun devices</description>
+        <disclaimer lang="en"></disclaimer>
+        <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+        <forum></forum>
+        <website></website>
+        <source></source>
+        <platform>all</platform>
+    </extension>
+</addon>
