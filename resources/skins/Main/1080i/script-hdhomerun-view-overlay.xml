@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<window>
+    <onload></onload>
+    <defaultcontrol>200</defaultcontrol>
+    <coordinates>
+        <system>1</system>
+        <posx>0</posx>
+        <posy>0</posy>
+    </coordinates>
+    <controls>
+
+
+
+        <control type="group" id="200">
+            <visible>!IsEmpty(Window.Property(show.overlay))</visible>
+            <defaultcontrol>201</defaultcontrol>
+            <control type="list" id="201">
+                <posx>1500</posx>
+                <posy>0</posy>
+                <width>420</width>
+                <height>1080</height>
+                <scrolltime>100</scrolltime>
+                <orientation>vertical</orientation>
+                <!-- ITEM LAYOUT ########################################## -->
+                <itemlayout height="270">
+                    <control type="image">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>420</width>
+                        <height>269</height>
+                        <texture>script-hdhomerun-view-white_square.png</texture>
+                        <colordiffuse>DD333333</colordiffuse>
+                        <aspectratio>stretch</aspectratio>
+                    </control>
+                    <control type="image">
+                        <posx>180</posx>
+                        <posy>190</posy>
+                        <width>240</width>
+                        <height>80</height>
+                        <texture>script-hdhomerun-view-white_square.png</texture>
+                        <colordiffuse>22FFFFFF</colordiffuse>
+                        <aspectratio>stretch</aspectratio>
+                    </control>
+                    <control type="image">
+                        <posx>180</posx>
+                        <posy>260</posy>
+                        <width>240</width>
+                        <height>10</height>
+                        <texture>$INFO[ListItem.Property('show.progress')]</texture>
+                        <colordiffuse>FF00FF00</colordiffuse>
+                        <aspectratio>stretch</aspectratio>
+                    </control>
+                    <control type="label">
+                        <visible>IsEmpty(ListItem.Property(channel.icon))</visible>
+                        <posx>10</posx>
+                        <posy>10</posy>
+                        <width>160</width>
+                        <height>160</height>
+                        <font>font30</font>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <label>[B]$INFO[ListItem.Property(channel.number)][/B]</label>
+                    </control>
+                    <control type="image">
+                        <posx>10</posx>
+                        <posy>10</posy>
+                        <width>160</width>
+                        <height>160</height>
+                        <texture>$INFO[ListItem.Property(channel.icon)]</texture>
+                        <aspectratio aligny="top">scale</aspectratio>
+                    </control>
+                    <control type="image">
+                        <posx>180</posx>
+                        <posy>10</posy>
+                        <width>240</width>
+                        <height>180</height>
+                        <texture>$INFO[ListItem.Thumb]</texture>
+                        <aspectratio aligny="top">scale</aspectratio>
+                    </control>
+                    <control type="textbox">
+                        <posx>10</posx>
+                        <posy>180</posy>
+                        <width>160</width>
+                        <height>80</height>
+                        <font>font13</font>
+                        <align>left</align>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <label>[B]$INFO[ListItem.Label][/B]</label>
+                    </control>
+                    <control type="textbox">
+                        <posx>190</posx>
+                        <posy>200</posy>
+                        <width>220</width>
+                        <height>60</height>
+                        <font>font10</font>
+                        <align>left</align>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <label>$INFO[ListItem.Property(show.next)]</label>
+                    </control>
+                </itemlayout>
+
+                <!-- FOCUSED LAYOUT ####################################### -->
+                <focusedlayout height="270">
+                    <control type="image">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>420</width>
+                        <height>269</height>
+                        <texture>script-hdhomerun-view-white_square.png</texture>
+                        <colordiffuse>EE555555</colordiffuse>
+                        <aspectratio>stretch</aspectratio>
+                    </control>
+                    <control type="image">
+                        <posx>180</posx>
+                        <posy>190</posy>
+                        <width>240</width>
+                        <height>80</height>
+                        <texture>script-hdhomerun-view-white_square.png</texture>
+                        <colordiffuse>22FFFFFF</colordiffuse>
+                        <aspectratio>stretch</aspectratio>
+                    </control>
+                    <control type="label">
+                        <visible>IsEmpty(ListItem.Property(channel.icon))</visible>
+                        <posx>10</posx>
+                        <posy>10</posy>
+                        <width>160</width>
+                        <height>160</height>
+                        <font>font30</font>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <label>[B]$INFO[ListItem.Property(channel.number)][/B]</label>
+                    </control>
+                    <control type="image">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>420</width>
+                        <height>269</height>
+                        <texture border="5">script-hdhomerun-view-white_outline.png</texture>
+                        <aspectratio>stretch</aspectratio>
+                    </control>
+                    <control type="image">
+                        <posx>10</posx>
+                        <posy>10</posy>
+                        <width>160</width>
+                        <height>160</height>
+                        <texture>$INFO[ListItem.Property(channel.icon)]</texture>
+                        <aspectratio aligny="top">scale</aspectratio>
+                    </control>
+                    <control type="image">
+                        <posx>180</posx>
+                        <posy>10</posy>
+                        <width>240</width>
+                        <height>180</height>
+                        <texture>$INFO[ListItem.Thumb]</texture>
+                        <aspectratio aligny="top">scale</aspectratio>
+                    </control>
+                    <control type="textbox">
+                        <posx>10</posx>
+                        <posy>180</posy>
+                        <width>160</width>
+                        <height>80</height>
+                        <font>font13</font>
+                        <align>left</align>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <label>[B]$INFO[ListItem.Label][/B]</label>
+                    </control>
+                    <control type="textbox">
+                        <posx>190</posx>
+                        <posy>200</posy>
+                        <width>220</width>
+                        <height>60</height>
+                        <font>font10</font>
+                        <align>left</align>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <label>$INFO[ListItem.Property(show.next)]</label>
+                    </control>
+                </focusedlayout>
+            </control>
+        </control>
+
+    </controls>
+</window>

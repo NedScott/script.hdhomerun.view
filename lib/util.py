@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
+import sys
+import xbmc, xbmcaddon
 
 DEBUG = True
+
+ADDON = xbmcaddon.Addon()
 
 def LOG(msg):
     print 'script.hdhomerun.view: {0}'.format(msg)
@@ -8,3 +12,29 @@ def LOG(msg):
 def DEBUG_LOG(msg):
     if not DEBUG: return
     LOG(msg)
+
+def ERROR(txt='',hide_tb=False,notify=False):
+    if isinstance (txt,str): txt = txt.decode("utf-8")
+    short = str(sys.exc_info()[1])
+    if hide_tb:
+        LOG('ERROR: {0} - {1}'.format(txt,short))
+        return short
+    print "_________________________________________________________________________________"
+    LOG('ERROR: ' + txt)
+    import traceback
+    tb = traceback.format_exc()
+    for l in tb.splitlines(): print '    ' + l
+    print "_________________________________________________________________________________"
+    print "`"
+    if notify: showNotification('ERROR: {0}'.format(short))
+    return short
+
+def showNotification(message,time_ms=3000,icon_path=None,header='XBMC TTS'):
+    try:
+        icon_path = icon_path or xbmc.translatePath(ADDON.getAddonInfo('icon')).decode('utf-8')
+        xbmc.executebuiltin('Notification({0},{1},{2},{3})'.format(header,message,time_ms,icon_path))
+    except RuntimeError: #Happens when disabling the addon
+        LOG(message)
+
+def videoIsPlaying():
+    return xbmc.getCondVisibility('Player.HasVideo')
