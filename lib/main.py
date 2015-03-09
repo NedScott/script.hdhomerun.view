@@ -22,7 +22,7 @@ class OverlayPlayer(xbmc.Player):
                 #'Studio':'{0} ({1})'.format(program.network,program.channelName)
         }
         item.setInfo('video', info)
-
+        util.setSetting('last.channel',channel.number)
         self.play(url,item,False,0)
 
 class BaseDialog(xbmcgui.WindowXMLDialog):
@@ -68,6 +68,8 @@ class GuideOverlay(BaseDialog):
             elif action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
                 if self.closeHandler(): return
                 xbmc.executebuiltin('Action(back)')
+            elif action == xbmcgui.ACTION_BUILT_IN_FUNCTION:
+                xbmc.executebuiltin('ActivateWindow(12901)')
         except:
             util.ERROR()
             BaseDialog.onAction(self,action)
@@ -95,36 +97,50 @@ class GuideOverlay(BaseDialog):
 
     def getLineup(self):
         self.lineUp = hdhr.LineUp()
+        last = util.getSetting('last.channel')
         items = []
         for channel in self.lineUp.channels.values():
             guideChan = self.guide.getChannel(channel.number)
+            currentShow = guideChan.currentShow()
             title = channel.name
-            thumb = guideChan.currentShow().icon
+            thumb = currentShow.icon
             icon = guideChan.icon
             if icon: title = u'{0}: {1}'.format(channel.number,title)
             item = xbmcgui.ListItem(title,thumbnailImage=thumb)
             item.setProperty('channel.icon',icon)
             item.setProperty('channel.number',channel.number)
             item.setProperty('show.next',u'Next: {0}'.format(guideChan.nextShow().title or '(No Data)'))
-            prog = 50
-            item.setProperty('show.progress','progress/script-hdhomerun-view-progress_{0}.png'.format(prog))
-            print 'progress/script-hdhomerun-view-progress_{0}.png'.format(prog)
+            if last == channel.number:
+                item.setProperty('is.current','true')
+            prog = currentShow.progress()
+            if prog != None:
+                prog = int(prog - (prog % 5))
+                item.setProperty('show.progress','progress/script-hdhomerun-view-progress_{0}.png'.format(prog))
             items.append(item)
         self.channelList.addItems(items)
 
     def getGuide(self):
         self.guide = hdhr.Guide()
 
+    def getStartChannel(self):
+        last = util.getSetting('last.channel')
+        if last and last in self.lineUp:
+            return self.lineUp[last]
+        else:
+            return self.lineUp.indexed(0)
+
     def start(self):
         self.getGuide()
         self.getLineup()
 
-        channel = self.lineUp.indexed(0)
+        channel = self.getStartChannel()
 
         if util.videoIsPlaying():
             self.fullscreenVideo()
         else:
             self.playChannel(channel)
+        pos = self.lineUp.index(channel.number)
+        if pos > -1: self.channelList.selectItem(pos)
 
     def showOverlay(self,show=True):
         self.setProperty('show.overlay',show and 'SHOW' or '')

@@ -27,27 +27,28 @@
                         <posx>0</posx>
                         <posy>0</posy>
                         <width>420</width>
-                        <height>269</height>
+                        <height>268</height>
                         <texture>script-hdhomerun-view-white_square.png</texture>
                         <colordiffuse>DD333333</colordiffuse>
                         <aspectratio>stretch</aspectratio>
                     </control>
                     <control type="image">
-                        <posx>180</posx>
-                        <posy>190</posy>
-                        <width>240</width>
-                        <height>80</height>
+                        <visible>!IsEmpty(ListItem.Property(is.current))</visible>
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>420</width>
+                        <height>268</height>
                         <texture>script-hdhomerun-view-white_square.png</texture>
-                        <colordiffuse>22FFFFFF</colordiffuse>
+                        <colordiffuse>2000FF00</colordiffuse>
                         <aspectratio>stretch</aspectratio>
                     </control>
                     <control type="image">
                         <posx>180</posx>
-                        <posy>260</posy>
+                        <posy>180</posy>
                         <width>240</width>
-                        <height>10</height>
-                        <texture>$INFO[ListItem.Property('show.progress')]</texture>
-                        <colordiffuse>FF00FF00</colordiffuse>
+                        <height>89</height>
+                        <texture>script-hdhomerun-view-white_square.png</texture>
+                        <colordiffuse>22FFFFFF</colordiffuse>
                         <aspectratio>stretch</aspectratio>
                     </control>
                     <control type="label">
@@ -72,7 +73,7 @@
                     </control>
                     <control type="image">
                         <posx>180</posx>
-                        <posy>10</posy>
+                        <posy>0</posy>
                         <width>240</width>
                         <height>180</height>
                         <texture>$INFO[ListItem.Thumb]</texture>
@@ -84,19 +85,28 @@
                         <width>160</width>
                         <height>80</height>
                         <font>font13</font>
-                        <align>left</align>
+                        <align>center</align>
                         <textcolor>FFFFFFFF</textcolor>
                         <label>[B]$INFO[ListItem.Label][/B]</label>
                     </control>
                     <control type="textbox">
                         <posx>190</posx>
-                        <posy>200</posy>
+                        <posy>190</posy>
                         <width>220</width>
                         <height>60</height>
                         <font>font10</font>
                         <align>left</align>
                         <textcolor>FFFFFFFF</textcolor>
                         <label>$INFO[ListItem.Property(show.next)]</label>
+                    </control>
+                    <control type="image">
+                        <posx>180</posx>
+                        <posy>260</posy>
+                        <width>240</width>
+                        <height>8</height>
+                        <texture>$INFO[ListItem.Property(show.progress)]</texture>
+                        <colordiffuse>FF00FF00</colordiffuse>
+                        <aspectratio>stretch</aspectratio>
                     </control>
                 </itemlayout>
 
@@ -106,16 +116,26 @@
                         <posx>0</posx>
                         <posy>0</posy>
                         <width>420</width>
-                        <height>269</height>
+                        <height>268</height>
                         <texture>script-hdhomerun-view-white_square.png</texture>
                         <colordiffuse>EE555555</colordiffuse>
                         <aspectratio>stretch</aspectratio>
                     </control>
                     <control type="image">
+                        <visible>!IsEmpty(ListItem.Property(is.current))</visible>
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>420</width>
+                        <height>268</height>
+                        <texture>script-hdhomerun-view-white_square.png</texture>
+                        <colordiffuse>2000FF00</colordiffuse>
+                        <aspectratio>stretch</aspectratio>
+                    </control>
+                    <control type="image">
                         <posx>180</posx>
-                        <posy>190</posy>
+                        <posy>180</posy>
                         <width>240</width>
-                        <height>80</height>
+                        <height>89</height>
                         <texture>script-hdhomerun-view-white_square.png</texture>
                         <colordiffuse>22FFFFFF</colordiffuse>
                         <aspectratio>stretch</aspectratio>
@@ -133,14 +153,6 @@
                         <label>[B]$INFO[ListItem.Property(channel.number)][/B]</label>
                     </control>
                     <control type="image">
-                        <posx>0</posx>
-                        <posy>0</posy>
-                        <width>420</width>
-                        <height>269</height>
-                        <texture border="5">script-hdhomerun-view-white_outline.png</texture>
-                        <aspectratio>stretch</aspectratio>
-                    </control>
-                    <control type="image">
                         <posx>10</posx>
                         <posy>10</posy>
                         <width>160</width>
@@ -150,7 +162,7 @@
                     </control>
                     <control type="image">
                         <posx>180</posx>
-                        <posy>10</posy>
+                        <posy>0</posy>
                         <width>240</width>
                         <height>180</height>
                         <texture>$INFO[ListItem.Thumb]</texture>
@@ -162,19 +174,36 @@
                         <width>160</width>
                         <height>80</height>
                         <font>font13</font>
-                        <align>left</align>
+                        <align>center</align>
                         <textcolor>FFFFFFFF</textcolor>
                         <label>[B]$INFO[ListItem.Label][/B]</label>
                     </control>
                     <control type="textbox">
                         <posx>190</posx>
-                        <posy>200</posy>
+                        <posy>190</posy>
                         <width>220</width>
                         <height>60</height>
                         <font>font10</font>
                         <align>left</align>
                         <textcolor>FFFFFFFF</textcolor>
                         <label>$INFO[ListItem.Property(show.next)]</label>
+                    </control>
+                    <control type="image">
+                        <posx>180</posx>
+                        <posy>260</posy>
+                        <width>240</width>
+                        <height>8</height>
+                        <texture>$INFO[ListItem.Property(show.progress)]</texture>
+                        <colordiffuse>FF00FF00</colordiffuse>
+                        <aspectratio>stretch</aspectratio>
+                    </control>
+                    <control type="image">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>422</width>
+                        <height>268</height>
+                        <texture border="5">script-hdhomerun-view-white_outline.png</texture>
+                        <aspectratio>stretch</aspectratio>
                     </control>
                 </focusedlayout>
             </control>

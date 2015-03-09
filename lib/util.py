@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys
+import sys, binascii, json
 import xbmc, xbmcaddon
 
 DEBUG = True
@@ -28,6 +28,35 @@ def ERROR(txt='',hide_tb=False,notify=False):
     print "`"
     if notify: showNotification('ERROR: {0}'.format(short))
     return short
+
+def getSetting(key,default=None):
+    setting = ADDON.getSetting(key)
+    return _processSetting(setting,default)
+
+def _processSetting(setting,default):
+    if not setting: return default
+    if isinstance(default,bool):
+        return setting.lower() == 'true'
+    elif isinstance(default,float):
+        return float(setting)
+    elif isinstance(default,int):
+        return int(float(setting or 0))
+    elif isinstance(default,list):
+        if setting: return json.loads(binascii.unhexlify(setting))
+        else: return default
+
+    return setting
+
+def setSetting(key,value):
+    value = _processSettingForWrite(value)
+    ADDON.setSetting(key,value)
+
+def _processSettingForWrite(value):
+    if isinstance(value,list):
+        value = binascii.hexlify(json.dumps(value))
+    elif isinstance(value,bool):
+        value = value and 'true' or 'false'
+    return str(value)
 
 def showNotification(message,time_ms=3000,icon_path=None,header='XBMC TTS'):
     try:

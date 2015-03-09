@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import time
 import requests
 import discovery
 import ordereddict
@@ -36,6 +37,13 @@ class LineUp(object):
     def __getitem__(self,key):
         return self.channels[key]
 
+    def __contains__(self, key):
+        return key in self.channels
+
+    def index(self,key):
+        if not key in self.channels: return -1
+        return self.channels.keys().index(key)
+
     def indexed(self,index):
         return self.channels[[k for k in self.channels.keys()][index]]
 
@@ -72,6 +80,14 @@ class Show(dict):
     def synopsis(self):
         return self.get('Synopsis','')
 
+    def progress(self):
+        start = self.get('StartTime')
+        if not start: return None
+        end = self.get('EndTime')
+        duration = end - start
+        sofar = time.time() - start
+        return int((sofar/duration)*100)
+
 class GuideChannel(dict):
     @property
     def number(self):
@@ -88,13 +104,24 @@ class GuideChannel(dict):
     def currentShow(self):
         shows = self.get('Guide')
         if not shows: return Show()
-        return Show(shows[0])
+        now = time.time()
+        for s in shows:
+            if now > s.get('StartTime'):
+                return Show(s)
+        Show()
 
     def nextShow(self):
         shows = self.get('Guide')
         if not shows: return Show()
         if len(shows) < 2: return Show()
-        return Show(shows[1])
+        now = time.time()
+        for i,s in enumerate(shows):
+            if now > s.get('StartTime'):
+                i+=1
+                if i >= len(shows): break
+                return Show(shows[i])
+
+        Show()
 
 class Guide(object):
     def __init__(self):
