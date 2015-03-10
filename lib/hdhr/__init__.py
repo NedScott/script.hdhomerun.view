@@ -6,15 +6,16 @@ import ordereddict
 
 GUIDE_URL = 'http://mytest.hdhomerun.com/api/guide.php?DeviceID=10504038'
 
-def chanTuple(guide_number):
-    major, minor = guide_number.split('.')
-    return (int(major),int(minor))
+def chanTuple(guide_number,chanCount):
+    major, minor = guide_number.split('.',1)
+    return (int(major),int(minor),chanCount*-1)
 
 class ChannelSource(dict):
     @property
     def url(self):
         return self['url']
 
+    @property
     def ID(self):
         return self['ID']
 
@@ -24,14 +25,18 @@ class Channel(object):
         self.name = data['GuideName']
         self.sources = [ChannelSource({'url':data['URL'],'ID':device_response.ID})]
         self.favorite = bool(data.get('Favorite',False))
-
+        self.guide = None
 
     def add(self,data,device_response):
-        self.urls.append(ChannelSource({'url':data['URL'],'ID':device_response.ID}))
+        self.sources.append(ChannelSource({'url':data['URL'],'ID':device_response.ID}))
+
+    def setGuide(self,guide):
+        self.guide = guide
 
 class LineUp(object):
     def __init__(self):
         self.channels = ordereddict.OrderedDict()
+        self.devices = {}
         self.collectLineUp()
 
     def __getitem__(self,key):
@@ -52,10 +57,13 @@ class LineUp(object):
         lineUps = []
 
         for r in responses:
-            lineUps.append((r,requests.get(r.url).json()))
+            self.devices[r.ID] = r
+            lineup = requests.get(r.url).json()
+            r.channelCount = len(lineup)
+            lineUps.append((r,lineup))
 
         while True:
-            lowest = min(lineUps,key=lambda l: l[1] and chanTuple(l[1][0]['GuideNumber']) or (0,0))
+            lowest = min(lineUps,key=lambda l: l[1] and chanTuple(l[1][0]['GuideNumber'],l[0].channelCount) or (0,0,0)) #Prefer devices with the most channels assuming (possibly wrongly) that they are getting a better signal
             if not lowest[1]: return
             chanData = lowest[1].pop(0)
             if chanData['GuideNumber'] in self.channels:
@@ -79,6 +87,14 @@ class Show(dict):
     @property
     def synopsis(self):
         return self.get('Synopsis','')
+
+    @property
+    def start(self):
+        return self.get('StartTime')
+
+    @property
+    def end(self):
+        return self.get('EndTime')
 
     def progress(self):
         start = self.get('StartTime')
@@ -106,9 +122,9 @@ class GuideChannel(dict):
         if not shows: return Show()
         now = time.time()
         for s in shows:
-            if now > s.get('StartTime'):
+            if now >= s.get('StartTime') and now < s.get('EndTime'):
                 return Show(s)
-        Show()
+        return Show()
 
     def nextShow(self):
         shows = self.get('Guide')
@@ -116,12 +132,12 @@ class GuideChannel(dict):
         if len(shows) < 2: return Show()
         now = time.time()
         for i,s in enumerate(shows):
-            if now > s.get('StartTime'):
+            if now >= s.get('StartTime') and now < s.get('EndTime'):
                 i+=1
                 if i >= len(shows): break
                 return Show(shows[i])
 
-        Show()
+        return Show()
 
 class Guide(object):
     def __init__(self):

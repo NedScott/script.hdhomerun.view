@@ -5,6 +5,7 @@ import socket
 import traceback
 import struct
 import StringIO
+import time
 
 from lib import util
 
@@ -32,6 +33,7 @@ class DiscoveryResponse(object):
         self.ip, self.port = address
         self.tags = {}
         self.valid = self.processPacket(packet)
+        self.channelCount = 0
 
     def __eq__(self,other):
         if self.responseType != other.responseType: return False
@@ -108,7 +110,7 @@ class DiscoveryResponse(object):
 
 def discover(device=None):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.settimeout(0.25) #250ms
+    s.settimeout(0.01) #10ms
     s.bind(('', 0))
     s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     payload = struct.pack('>BBI',0x01,0x04,0x00000001) #Device Type Filter (tuner)
@@ -122,16 +124,21 @@ def discover(device=None):
     for attempt in (0,1):
         s.sendto(packet, ('<broadcast>', DEVICE_DISCOVERY_PORT))
 
-        try:
-            message, address = s.recvfrom(8096)
-            response = DiscoveryResponse(message,address)
-            if (not device or device == response.device) and response.valid and not response in responses:
-                responses.append(response)
-            util.DEBUG_LOG('<-o   Response Packet({0})'.format(binascii.hexlify(message)))
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            traceback.print_exc()
+        end = time.time() + 0.25 #250ms
+
+        while time.time() < end:
+            try:
+                message, address = s.recvfrom(8096)
+                response = DiscoveryResponse(message,address)
+                if (not device or device == response.device) and response.valid and not response in responses:
+                    responses.append(response)
+                    util.DEBUG_LOG('<-o   Response Packet({0})'.format(binascii.hexlify(message)))
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except socket.timeout:
+                pass
+            except:
+                traceback.print_exc()
 
     return responses
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys, binascii, json
+import sys, binascii, json, threading, time, datetime
 import xbmc, xbmcaddon
 
 DEBUG = True
@@ -67,3 +67,94 @@ def showNotification(message,time_ms=3000,icon_path=None,header='XBMC TTS'):
 
 def videoIsPlaying():
     return xbmc.getCondVisibility('Player.HasVideo')
+
+def timeInDayLocalSeconds():
+    now = datetime.datetime.now()
+    sod = datetime.datetime(year=now.year,month=now.month,day=now.day)
+    sod = int(time.mktime(sod.timetuple()))
+    return int(time.time() - sod)
+
+class CronReceiver(object):
+    def tick(self): pass
+    def halfHour(self): pass
+    def day(self): pass
+
+class Cron(threading.Thread):
+    def __init__(self,interval):
+        threading.Thread.__init__(self)
+        self.stopped = threading.Event()
+        self.interval = interval
+        self._lastHalfHour = self._getHalfHour()
+        self._receivers = []
+
+    def __enter__(self):
+        self.start()
+        DEBUG_LOG('Cron started')
+        return self
+
+    def __exit__(self,exc_type,exc_value,traceback):
+        self.stop()
+        self.join()
+
+    def _wait(self):
+        ct=0
+        while ct < self.interval:
+            xbmc.sleep(100)
+            ct+=0.1
+            if xbmc.abortRequested or self.stopped.isSet(): return False
+        return True
+
+    def stop(self):
+        self.stopped.set()
+
+    def run(self):
+        while self._wait():
+            self._tick()
+        DEBUG_LOG('Cron stopped')
+
+    def _getHalfHour(self):
+        tid = timeInDayLocalSeconds()/60
+        return tid - (tid % 30)
+
+    def _tick(self):
+        receivers = list(self._receivers)
+        receivers = self._halfHour(receivers)
+        for r in receivers:
+            try:
+                r.tick()
+            except:
+                ERROR()
+
+    def _halfHour(self,receivers):
+        hh = self._getHalfHour()
+        if hh == self._lastHalfHour: return receivers
+        try:
+            receivers = self._day(receivers,hh)
+            ret = []
+            for r in receivers:
+                try:
+                    if not r.halfHour(): ret.append(r)
+                except:
+                    ret.append(r)
+                    ERROR()
+            return ret
+        finally:
+            self._lastHalfHour = hh
+
+    def _day(self,receivers,hh):
+        if hh >= self._lastHalfHour: return receivers
+        ret = []
+        for r in receivers:
+            try:
+                if not r.day(): ret.append(r)
+            except:
+                ret.append(r)
+                ERROR()
+        return ret
+
+    def registerReceiver(self,receiver):
+        self._receivers.append(receiver)
+
+    def cancelReceiver(self,receiver):
+        if receiver in self._receivers:
+            self._receivers.pop(self._receivers.index(receiver))
