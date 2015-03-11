@@ -9,6 +9,8 @@ import player
 
 MAX_TIME_INT = 31536000000 #1000 years from Epoch
 
+CHANNEL_DISPLAY = u'[COLOR FF99CCFF]{0}[/COLOR] {1}'
+
 class BaseDialog(xbmcgui.WindowXMLDialog):
     def __init__(self,*args,**kwargs):
         self._closing = False
@@ -100,7 +102,7 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
             title = mli.dataSource.name
             thumb = currentShow.icon
             icon = guideChan.icon
-            if icon: title = u'[COLOR FF99CCFF]{0}[/COLOR] {1}'.format(mli.dataSource.number,title)
+            if icon: title = CHANNEL_DISPLAY.format(mli.dataSource.number,title)
             mli.setLabel(title)
             mli.setThumbnailImage(thumb)
             mli.setProperty('show.title',currentShow.title)
@@ -169,17 +171,27 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         icon = ''
         nextTitle = ''
         progress = None
+        channel = ''
         if self.current:
-            currentShow = self.current.dataSource.guide.currentShow()
-            title = currentShow.title
-            icon = currentShow.icon
-            progress = currentShow.progress()
-            nextTitle = '{0}: {1}'.format(util.T(32004),self.current.dataSource.guide.nextShow().title or util.T(32005))
+            channel = CHANNEL_DISPLAY.format(self.current.dataSource.number,self.current.dataSource.name)
+            if self.current.dataSource.guide:
+                currentShow = self.current.dataSource.guide.currentShow()
+                title = currentShow.title
+                icon = currentShow.icon
+                progress = currentShow.progress()
+                nextTitle = '{0}: {1}'.format(util.T(32004),self.current.dataSource.guide.nextShow().title or util.T(32005))
 
         self.setProperty('show.title',title)
         self.setProperty('show.icon',icon)
         self.setProperty('next.title',nextTitle)
-        self.currentProgress.setPercent(progress or 0)
+        self.setProperty('channel.name',channel)
+
+        if progress != None:
+            self.currentProgress.setPercent(progress)
+            self.currentProgress.setVisible(True)
+        else:
+            self.currentProgress.setPercent(0)
+            self.currentProgress.setVisible(False)
 
     def fillChannelList(self):
         last = util.getSetting('last.channel')
@@ -191,7 +203,7 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
             title = channel.name
             thumb = currentShow.icon
             icon = guideChan.icon
-            if icon: title = u'[COLOR FF99CCFF]{0}[/COLOR] {1}'.format(channel.number,title)
+            if icon: title = CHANNEL_DISPLAY.format(channel.number,title)
             item = kodigui.ManagedListItem(title,thumbnailImage=thumb,data_source=channel)
             item.setProperty('channel.icon',icon)
             item.setProperty('channel.number',channel.number)
@@ -233,8 +245,12 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         else:
             util.DEBUG_LOG('HDHR video not currently playing. Starting channel...')
             self.playChannel(channel)
+
         pos = self.lineUp.index(channel.number)
-        if pos > -1: self.channelList.selectItem(pos)
+        if pos > -1:
+            self.channelList.selectItem(pos)
+            mli = self.channelList.getListItem(pos)
+            self.setCurrent(mli)
 
         self.cron.registerReceiver(self)
 
