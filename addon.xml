@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="script.hdhomerun.view"
-       name="HD HomeRun"
+       name="HDHomeRun View"
        version="0.0.1b"
-       provider-name="Silicon Dust">
+       provider-name="SiliconDust">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.requests" version="2.3.0"/>
@@ -11,12 +11,12 @@
         <provides>video</provides>
     </extension>
     <extension point="xbmc.addon.metadata">
-        <summary lang="en">Browse lineup and watch streams from your HD HomeRun devices</summary>
-        <description lang="en">Browse lineup and watch streams from your HD HomeRun devices</description>
+        <summary lang="en">Browse lineup and watch streams from your HDHomeRun devices</summary>
+        <description lang="en">HDHomeRun on Kodi the easy way. Automatically finds all the compatible HDHomeRun devices on your network, collects available channels, and starts showing TV. Pressing right brings up the episode guide, where you can see what's on, and what's coming next.</description>
         <disclaimer lang="en"></disclaimer>
         <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
         <forum></forum>
-        <website></website>
+        <website>https://www.hdhomerun.com</website>
         <source></source>
         <platform>all</platform>
     </extension>

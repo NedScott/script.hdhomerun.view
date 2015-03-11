@@ -4,7 +4,9 @@ import requests
 import discovery
 import ordereddict
 
-GUIDE_URL = 'http://mytest.hdhomerun.com/api/guide.php?DeviceID=10504038'
+from lib import util
+
+GUIDE_URL = 'http://mytest.hdhomerun.com/api/guide.php?DeviceID={0}'
 
 def chanTuple(guide_number,chanCount):
     major, minor = guide_number.split('.',1)
@@ -51,6 +53,20 @@ class LineUp(object):
 
     def indexed(self,index):
         return self.channels[[k for k in self.channels.keys()][index]]
+
+    def getDeviceByIP(self,ip):
+        for d in self.devices.values():
+            if d.ip == ip:
+                return d
+        return None
+
+    def defaultDevice(self):
+        #Return device with the most number of channels as default
+        highest = None
+        for d in self.devices.values():
+            if not highest or highest.channelCount < d.channelCount:
+                highest = d
+        return highest
 
     def collectLineUp(self):
         responses = discovery.discover(discovery.TUNER_DEVICE)
@@ -117,6 +133,10 @@ class GuideChannel(dict):
     def icon(self):
         return self.get('ImageURL','')
 
+    @property
+    def affiliate(self):
+        return self.get('Affiliate','')
+
     def currentShow(self):
         shows = self.get('Guide')
         if not shows: return Show()
@@ -140,12 +160,14 @@ class GuideChannel(dict):
         return Show()
 
 class Guide(object):
-    def __init__(self):
-        self.init()
+    def __init__(self,lineup):
+        self.init(lineup)
 
-    def init(self):
+    def init(self,lineup):
         self.guide = ordereddict.OrderedDict()
-        data = requests.get(GUIDE_URL).json()
+        url = GUIDE_URL.format(lineup.defaultDevice().ID)
+        util.DEBUG_LOG('Fetching guide from: {0}'.format(url))
+        data = requests.get(url).json()
         for chan in data:
             self.guide[chan['GuideNumber']] = chan
 

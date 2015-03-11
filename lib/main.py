@@ -5,88 +5,9 @@ import xbmc, xbmcgui
 import hdhr
 import kodigui
 import util
+import player
 
 MAX_TIME_INT = 31536000000 #1000 years from Epoch
-
-class PlayerStatus(object):
-    def __init__(self):
-        self.reset()
-
-    def __eq__(self,val):
-        return self.status == val
-
-    def __ne__(self,val):
-        return self.status != val
-
-    def __call__(self,status,channel=None,item=None):
-        if channel:
-            self.channel = channel
-            self.item = item
-        else:
-            if not self.channel:
-                return
-        self.status = status
-
-    def reset(self):
-        self.status = None
-        self.index = 0
-        self.channel = None
-        self.item = None
-
-    def nextSource(self):
-        if not self.channel: return None
-        self.index += 1
-        if len(self.channel.sources) <= self.index: return None
-        return self.channel.sources[self.index]
-
-class ChannelPlayer(xbmc.Player):
-    def init(self,overlay_dialog):
-        self.status = PlayerStatus()
-
-        self.overlayDialog = overlay_dialog
-        return self
-
-    def onPlayBackStarted(self):
-        self.status('STARTED')
-        self.overlayDialog.onPlayBackStarted()
-
-    def onPlayBackStopped(self):
-        if self.status == 'NOT_STARTED':
-            if self.onPlayBackFailed(): return
-        self.overlayDialog.onPlayBackStopped()
-        self.status.reset()
-
-    def onPlayBackEnded(self):
-        if self.status == 'NOT_STARTED':
-            if self.onPlayBackFailed(): return
-        self.overlayDialog.onPlayBackEnded()
-        self.status.reset()
-
-    def onPlayBackFailed(self):
-        source = self.status.nextSource()
-        if source:
-            util.DEBUG_LOG('Playing from NEXT source: {0}'.format(source.ID))
-            self.play(source.url,self.item,False,0)
-            return True
-        else:
-            self.status.reset()
-            self.overlayDialog.onPlayBackFailed()
-            return False
-
-    def playChannel(self,channel):
-        url = channel.sources[0].url
-        util.DEBUG_LOG('Playing from source: {0}'.format(channel.sources[0].ID))
-        currentShow = channel.guide.currentShow()
-        title = currentShow.title or channel.name
-        item = xbmcgui.ListItem(title,thumbnailImage=currentShow.icon)
-        info = {'Title': title,
-                'Plot':currentShow.synopsis,
-                #'Studio':'{0} ({1})'.format(program.network,program.channelName)
-        }
-        item.setInfo('video', info)
-        util.setSetting('last.channel',channel.number)
-        self.status('NOT_STARTED',channel,item)
-        self.play(url,item,False,0)
 
 class BaseDialog(xbmcgui.WindowXMLDialog):
     def __init__(self,*args,**kwargs):
@@ -115,13 +36,13 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         self.guide = None
         self.current = None
         self.nextGuideUpdate = MAX_TIME_INT
-        self.player = ChannelPlayer().init(self)
 
     def onInit(self):
         BaseDialog.onInit(self)
         if self.started: return
         self.started = True
         self.channelList = kodigui.ManagedControlList(self,201,3)
+        self.currentProgress = self.getControl(250)
         self.start()
 
     def onAction(self,action):
@@ -132,9 +53,10 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
                 self.showOverlay(False)
             elif action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
                 if self.closeHandler(): return
-                if xbmc.getCondVisibility('Window.IsActive(fullscreenvideo)'): xbmc.executebuiltin('Action(back)')
             elif action == xbmcgui.ACTION_BUILT_IN_FUNCTION:
                 self.showOverlay(False)
+                xbmc.executebuiltin('ActivateWindow(12901)')
+            elif action == xbmcgui.ACTION_SELECT_ITEM and not self.overlayVisible():
                 xbmc.executebuiltin('ActivateWindow(12901)')
         except:
             util.ERROR()
@@ -154,7 +76,12 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         else:
             self.updateProgressBars()
 
-    def updateProgressBars(self):
+    def updateProgressBars(self,force=False):
+        if not force and not self.overlayVisible(): return
+
+        if self.current:
+            self.currentProgress.setPercent(self.current.dataSource.guide.currentShow().progress() or 0)
+
         for mli in self.channelList:
             prog = mli.dataSource.guide.currentShow().progress()
             if prog == None:
@@ -178,7 +105,7 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
             mli.setThumbnailImage(thumb)
             mli.setProperty('show.title',currentShow.title)
             mli.setProperty('show.synopsis',currentShow.synopsis)
-            mli.setProperty('next.title',u'Next: {0}'.format(nextShow.title or '(No Data)'))
+            mli.setProperty('next.title',u'{0}: {1}'.format(util.T(32004),nextShow.title or util.T(32005)))
             mli.setProperty('next.icon',nextShow.icon)
             start = nextShow.start
             if start:
@@ -191,18 +118,28 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
     def setCurrent(self,mli=None):
         if self.current:
             self.current.setProperty('is.current','')
-        if not mli: return
+            self.current = None
+        if not mli: return self.setWinProperties()
         self.current = mli
         self.current.setProperty('is.current','true')
+        self.setWinProperties()
 
     def closeHandler(self):
         if self.overlayVisible():
             if not self.player.isPlaying():
-                return False
+                return self.askExit()
             self.showOverlay(False)
             return True
         else:
-            return False
+            return self.askExit()
+
+    def askExit(self):
+        if not util.getSetting('confirm.exit'): return False
+        if xbmcgui.Dialog().yesno(util.T(32006),'',util.T(32007),''):
+            self.close()
+            if xbmc.getCondVisibility('Window.IsActive(fullscreenvideo)'): xbmc.executebuiltin('Action(back)')
+        return True
+
 
     def fullscreenVideo(self):
         if util.videoIsPlaying():
@@ -210,12 +147,12 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
 
     def getLineUpAndGuide(self):
         self.lineUp = hdhr.LineUp()
-        self.showProgress(50,'Fetching Guide')
+        self.showProgress(50,util.T(32008))
         self.updateGuide()
-        self.showProgress(75,'Finishing Up')
+        self.showProgress(75,util.T(32009))
 
     def updateGuide(self):
-        guide = hdhr.Guide()
+        guide = hdhr.Guide(self.lineUp)
         self.nextGuideUpdate = MAX_TIME_INT
         for channel in self.lineUp.channels.values():
             guideChan = guide.getChannel(channel.number)
@@ -224,7 +161,25 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
                 end = channel.guide.currentShow().end
                 if end and end < self.nextGuideUpdate:
                     self.nextGuideUpdate = end
+        self.setWinProperties()
         util.DEBUG_LOG('Next guide update: {0} minutes'.format(int((self.nextGuideUpdate - time.time())/60)))
+
+    def setWinProperties(self):
+        title = ''
+        icon = ''
+        nextTitle = ''
+        progress = None
+        if self.current:
+            currentShow = self.current.dataSource.guide.currentShow()
+            title = currentShow.title
+            icon = currentShow.icon
+            progress = currentShow.progress()
+            nextTitle = '{0}: {1}'.format(util.T(32004),self.current.dataSource.guide.nextShow().title or util.T(32005))
+
+        self.setProperty('show.title',title)
+        self.setProperty('show.icon',icon)
+        self.setProperty('next.title',nextTitle)
+        self.currentProgress.setPercent(progress or 0)
 
     def fillChannelList(self):
         last = util.getSetting('last.channel')
@@ -242,7 +197,7 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
             item.setProperty('channel.number',channel.number)
             item.setProperty('show.title',currentShow.title)
             item.setProperty('show.synopsis',currentShow.synopsis)
-            item.setProperty('next.title',u'Next: {0}'.format(nextShow.title or '(No Data)'))
+            item.setProperty('next.title',u'{0}: {1}'.format(util.T(32004),nextShow.title or util.T(32005)))
             item.setProperty('next.icon',nextShow.icon)
             start = nextShow.start
             if start:
@@ -267,12 +222,16 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         self.getLineUpAndGuide()
         self.fillChannelList()
 
+        self.player = player.ChannelPlayer().init(self,self.lineUp)
+
         channel = self.getStartChannel()
 
-        if self.player.isPlaying():
+        if self.player.isPlayingHDHR():
+            util.DEBUG_LOG('HDHR video already playing')
             self.fullscreenVideo()
             self.showProgress()
         else:
+            util.DEBUG_LOG('HDHR video not currently playing. Starting channel...')
             self.playChannel(channel)
         pos = self.lineUp.index(channel.number)
         if pos > -1: self.channelList.selectItem(pos)
@@ -287,7 +246,9 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         self.setProperty('loading.status',message)
 
     def showOverlay(self,show=True):
+        self.updateProgressBars()
         self.setProperty('show.overlay',show and 'SHOW' or '')
+        if self.getFocusId() == 201: return
         self.setFocusId(201)
 
     def overlayVisible(self):

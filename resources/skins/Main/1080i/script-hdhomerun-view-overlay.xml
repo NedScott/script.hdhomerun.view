@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <window>
     <onload>SetProperty(loading.progress,25)</onload>
-    <onload>SetProperty(loading.status,Finding Tuners)</onload>
+    <onload>SetProperty(loading.status,$ADDON[script.hdhomerun.view 32010])</onload>
     <defaultcontrol>200</defaultcontrol>
     <coordinates>
         <system>1</system>
@@ -280,6 +280,62 @@
                         </control>
                     </control>
                 </focusedlayout>
+            </control>
+        </control>
+
+        <control type="group" id="200">
+            <visible>!IsEmpty(Window.Property(show.overlay))</visible>
+            <animation effect="slide" start="0,1080" end="0,-150" time="500">VisibleChange</animation>
+            <posx>0</posx>
+            <posy>1080</posy>
+            <control type="image">
+                <posx>0</posx>
+                <posy>0</posy>
+                <width>960</width>
+                <height>150</height>
+                <texture>script-hdhomerun-view-white_square.png</texture>
+                <colordiffuse>A0000000</colordiffuse>
+            </control>
+            <control type="image">
+                <posx>0</posx>
+                <posy>0</posy>
+                <width>200</width>
+                <height>150</height>
+                <texture fallback="script-hdhomerun-view-default_image.png">$INFO[Window.Property(show.icon)]</texture>
+                <aspectratio aligny="top">scale</aspectratio>
+            </control>
+            <control type="label">
+                <posx>210</posx>
+                <posy>10</posy>
+                <width>740</width>
+                <height>30</height>
+                <font>font13</font>
+                <align>left</align>
+                <textcolor>FFFFFFFF</textcolor>
+                <label>[B]$INFO[Window.Property(show.title)][/B]</label>
+            </control>
+            <control type="label">
+                <posx>210</posx>
+                <posy>50</posy>
+                <width>740</width>
+                <height>15</height>
+                <font>font10</font>
+                <align>left</align>
+                <textcolor>FFFFFFFF</textcolor>
+                <label>[B]$INFO[Window.Property(next.title)][/B]</label>
+            </control>
+            <control type="progress" id="250">
+                <posx>200</posx>
+                <posy>135</posy>
+                <width>760</width>
+                <height>15</height>
+                <visible>true</visible>
+                <reveal>false</reveal>
+                <texturebg colordiffuse="DD000000">script-hdhomerun-view-white_square.png</texturebg>
+                <lefttexture>-</lefttexture>
+                <midtexture colordiffuse="9000FF00">script-hdhomerun-view-white_square.png</midtexture>
+                <righttexture>-</righttexture>
+                <overlaytexture>-</overlaytexture>
             </control>
         </control>
 
