@@ -1,3 +1,8 @@
+** 0.0.3b **
+
+Fix for startup failure if any devices did not respond correctly
+Added error handling for no devices, no compatible devices and other errors
+
 ** 0.0.2b **
 
 Internal release

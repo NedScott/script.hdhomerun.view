@@ -153,9 +153,15 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
     def getLineUpAndGuide(self):
         try:
             self.lineUp = hdhr.LineUp()
+        except hdhr.NoCompatibleDevicesException:
+            xbmcgui.Dialog().ok(util.T(32016),util.T(32011),'',util.T(32012))
+            return False
+        except hdhr.NoDevicesException:
+            xbmcgui.Dialog().ok(util.T(32016),util.T(32014),'',util.T(32012))
+            return False
         except:
             e = util.ERROR()
-            xbmcgui.Dialog().ok('Error','Unable to find tuners: ',e,'Click OK to exit.')
+            xbmcgui.Dialog().ok(util.T(32016),util.T(32015),e,util.T(32012))
             return False
 
         self.showProgress(50,util.T(32008))
@@ -169,7 +175,7 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         except:
             e = util.ERROR()
             if not self.guideFetchPreviouslyFailed: #Only show notification the first time. Don't need this every 5 mins if internet is down
-                util.showNotification(e,header='Unable to fetch guide data')
+                util.showNotification(e,header=util.T(32013))
             self.guideFetchPreviouslyFailed = True
             self.nextGuideUpdate = time.time() + 300 #Could not get guide data. Check again in 5 minutes
             self.setWinProperties()

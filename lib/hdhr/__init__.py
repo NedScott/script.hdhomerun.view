@@ -8,6 +8,10 @@ from lib import util
 
 GUIDE_URL = 'http://mytest.hdhomerun.com/api/guide.php?DeviceID={0}'
 
+class NoCompatibleDevicesException(Exception): pass
+
+class NoDevicesException(Exception): pass
+
 def chanTuple(guide_number,chanCount):
     major, minor = guide_number.split('.',1)
     return (int(major),int(minor),chanCount*-1)
@@ -39,8 +43,8 @@ class LineUp(object):
     def __init__(self):
         self.channels = ordereddict.OrderedDict()
         self.devices = {}
-        self.collectLineUp()
         self.hasGuideData = False
+        self.collectLineUp()
 
     def __getitem__(self,key):
         return self.channels[key]
@@ -71,13 +75,23 @@ class LineUp(object):
 
     def collectLineUp(self):
         responses = discovery.discover(discovery.TUNER_DEVICE)
+
+        if not responses: raise NoDevicesException()
+
         lineUps = []
 
         for r in responses:
             self.devices[r.ID] = r
-            lineup = requests.get(r.url).json()
+            try:
+                lineup = requests.get(r.url).json()
+            except:
+                util.ERROR()
+                continue
+
             r.channelCount = len(lineup)
             lineUps.append((r,lineup))
+
+        if not lineUps: raise NoCompatibleDevicesException()
 
         while True:
             lowest = min(lineUps,key=lambda l: l[1] and chanTuple(l[1][0]['GuideNumber'],l[0].channelCount) or (0,0,0)) #Prefer devices with the most channels assuming (possibly wrongly) that they are getting a better signal

@@ -50,5 +50,30 @@ msgid "Finishing Up"
 msgstr ""
 
 msgctxt "#32010"
-msgid "Finding Tuners"
+msgid "Finding Devices"
 msgstr ""
+
+msgctxt "#32011"
+msgid "Could not find any compatible devices."
+msgstr ""
+
+msgctxt "#32012"
+msgid "Click OK to exit."
+msgstr ""
+
+msgctxt "#32013"
+msgid "Unable to fetch guide data"
+msgstr ""
+
+msgctxt "#32014"
+msgid "Could not find any devices."
+msgstr ""
+
+msgctxt "#32015"
+msgid "Error while searching for devices:"
+msgstr ""
+
+msgctxt "#32016"
+msgid "Error"
+msgstr ""
+
