@@ -37,6 +37,7 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         self.lineUp = None
         self.guide = None
         self.current = None
+        self.guideFetchPreviouslyFailed = False
         self.nextGuideUpdate = MAX_TIME_INT
 
     def onInit(self):
@@ -51,14 +52,14 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         try:
             if action == xbmcgui.ACTION_CONTEXT_MENU or action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_DOWN:
                 self.showOverlay()
+            elif action == xbmcgui.ACTION_SELECT_ITEM:
+                if self.showPlayerControls(): return
             elif action == xbmcgui.ACTION_MOVE_LEFT:
                 self.showOverlay(False)
             elif action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
                 if self.closeHandler(): return
             elif action == xbmcgui.ACTION_BUILT_IN_FUNCTION:
                 self.showOverlay(False)
-                xbmc.executebuiltin('ActivateWindow(12901)')
-            elif action == xbmcgui.ACTION_SELECT_ITEM and not self.overlayVisible():
                 xbmc.executebuiltin('ActivateWindow(12901)')
         except:
             util.ERROR()
@@ -67,6 +68,8 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         BaseDialog.onAction(self,action)
 
     def onClick(self,controlID):
+        if self.showPlayerControls(): return
+
         mli = self.channelList.getSelectedItem()
         self.setCurrent(mli)
         channel = mli.dataSource
@@ -165,8 +168,15 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
             guide = hdhr.Guide(self.lineUp)
         except:
             e = util.ERROR()
-            util.showNotification(e,header='Unable to fetch guide data')
+            if not self.guideFetchPreviouslyFailed: #Only show notification the first time. Don't need this every 5 mins if internet is down
+                util.showNotification(e,header='Unable to fetch guide data')
+            self.guideFetchPreviouslyFailed = True
+            self.nextGuideUpdate = time.time() + 300 #Could not get guide data. Check again in 5 minutes
+            self.setWinProperties()
+            if self.lineUp.hasGuideData: return
             guide = hdhr.Guide()
+
+        self.guideFetchPreviouslyFailed = False
 
         self.nextGuideUpdate = MAX_TIME_INT
         for channel in self.lineUp.channels.values():
@@ -176,6 +186,9 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
                 end = channel.guide.currentShow().end
                 if end and end < self.nextGuideUpdate:
                     self.nextGuideUpdate = end
+
+        self.lineUp.hasGuideData = True
+
         self.setWinProperties()
         util.DEBUG_LOG('Next guide update: {0} minutes'.format(int((self.nextGuideUpdate - time.time())/60)))
 
@@ -275,6 +288,12 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
     def showProgress(self,progress='',message=''):
         self.setProperty('loading.progress',str(progress))
         self.setProperty('loading.status',message)
+
+    def showPlayerControls(self):
+        if not self.overlayVisible() and util.videoIsPlaying():
+            xbmc.executebuiltin('ActivateWindow(12901)')
+            return True
+        return False
 
     def showOverlay(self,show=True):
         self.updateProgressBars()

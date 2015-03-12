@@ -40,6 +40,7 @@ class LineUp(object):
         self.channels = ordereddict.OrderedDict()
         self.devices = {}
         self.collectLineUp()
+        self.hasGuideData = False
 
     def __getitem__(self,key):
         return self.channels[key]
