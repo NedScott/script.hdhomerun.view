@@ -160,11 +160,13 @@ class GuideChannel(dict):
         return Show()
 
 class Guide(object):
-    def __init__(self,lineup):
+    def __init__(self,lineup=None):
         self.init(lineup)
 
     def init(self,lineup):
         self.guide = ordereddict.OrderedDict()
+        if not lineup:
+            return
         url = GUIDE_URL.format(lineup.defaultDevice().ID)
         util.DEBUG_LOG('Fetching guide from: {0}'.format(url))
         data = requests.get(url).json()

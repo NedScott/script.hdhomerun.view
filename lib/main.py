@@ -148,13 +148,26 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
             xbmc.executebuiltin('ActivateWindow(fullscreenvideo)')
 
     def getLineUpAndGuide(self):
-        self.lineUp = hdhr.LineUp()
+        try:
+            self.lineUp = hdhr.LineUp()
+        except:
+            e = util.ERROR()
+            xbmcgui.Dialog().ok('Error','Unable to find tuners: ',e,'Click OK to exit.')
+            return False
+
         self.showProgress(50,util.T(32008))
         self.updateGuide()
         self.showProgress(75,util.T(32009))
+        return True
 
     def updateGuide(self):
-        guide = hdhr.Guide(self.lineUp)
+        try:
+            guide = hdhr.Guide(self.lineUp)
+        except:
+            e = util.ERROR()
+            util.showNotification(e,header='Unable to fetch guide data')
+            guide = hdhr.Guide()
+
         self.nextGuideUpdate = MAX_TIME_INT
         for channel in self.lineUp.channels.values():
             guideChan = guide.getChannel(channel.number)
@@ -179,7 +192,7 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
                 title = currentShow.title
                 icon = currentShow.icon
                 progress = currentShow.progress()
-                nextTitle = '{0}: {1}'.format(util.T(32004),self.current.dataSource.guide.nextShow().title or util.T(32005))
+                nextTitle = u'{0}: {1}'.format(util.T(32004),self.current.dataSource.guide.nextShow().title or util.T(32005))
 
         self.setProperty('show.title',title)
         self.setProperty('show.icon',icon)
@@ -231,7 +244,9 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
             return self.lineUp.indexed(0)
 
     def start(self):
-        self.getLineUpAndGuide()
+        if not self.getLineUpAndGuide(): #If we fail to get lineUp, just exit
+            self.close()
+            return
         self.fillChannelList()
 
         self.player = player.ChannelPlayer().init(self,self.lineUp)

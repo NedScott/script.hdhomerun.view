@@ -284,7 +284,7 @@
         </control>
 
         <control type="group" id="200">
-            <visible>!IsEmpty(Window.Property(show.overlay))</visible>
+            <visible>!IsEmpty(Window.Property(show.overlay)) + !IsEmpty(Window.Property(channel.name))</visible>
             <animation effect="slide" start="0,1080" end="0,-150" time="500">VisibleChange</animation>
             <posx>0</posx>
             <posy>1080</posy>

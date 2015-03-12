@@ -60,7 +60,7 @@ def _processSettingForWrite(value):
         value = value and 'true' or 'false'
     return str(value)
 
-def showNotification(message,time_ms=3000,icon_path=None,header='XBMC TTS'):
+def showNotification(message,time_ms=3000,icon_path=None,header=ADDON.getAddonInfo('name')):
     try:
         icon_path = icon_path or xbmc.translatePath(ADDON.getAddonInfo('icon')).decode('utf-8')
         xbmc.executebuiltin('Notification({0},{1},{2},{3})'.format(header,message,time_ms,icon_path))
