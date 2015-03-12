@@ -52,12 +52,15 @@ class LineUp(object):
     def __contains__(self, key):
         return key in self.channels
 
+    def __len__(self):
+        return len(self.channels.keys())
+
     def index(self,key):
         if not key in self.channels: return -1
         return self.channels.keys().index(key)
 
     def indexed(self,index):
-        return self.channels[[k for k in self.channels.keys()][index]]
+        return self.channels[ [k for k in self.channels.keys()][index] ]
 
     def getDeviceByIP(self,ip):
         for d in self.devices.values():
@@ -101,6 +104,8 @@ class LineUp(object):
                 self.channels[chanData['GuideNumber']].add(chanData,lowest[0])
             else:
                 self.channels[chanData['GuideNumber']] = Channel(chanData,lowest[0])
+
+        if not self.channels: util.DEBUG_LOG(lineUps)
 
 class Show(dict):
     @property

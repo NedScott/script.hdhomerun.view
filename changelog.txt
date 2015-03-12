@@ -1,3 +1,7 @@
+** 0.0.5b **
+
+Improved error handling for case where no channels are found
+
 ** 0.0.4b **
 
 Fix for errors on channel numbers without sub channel

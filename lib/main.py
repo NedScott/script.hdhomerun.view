@@ -256,21 +256,31 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         self.channelList.addItems(items)
 
     def getStartChannel(self):
+        util.DEBUG_LOG('Found {0} total channels'.format(len(self.lineUp)))
         last = util.getSetting('last.channel')
         if last and last in self.lineUp:
             return self.lineUp[last]
-        else:
+        elif len(self.lineUp):
             return self.lineUp.indexed(0)
+        return None
 
     def start(self):
         if not self.getLineUpAndGuide(): #If we fail to get lineUp, just exit
             self.close()
             return
+
+        for d in self.lineUp.devices.values():
+            util.DEBUG_LOG('Device: {0} at {1} with {2} channels'.format(d.ID,d.ip,d.channelCount))
+
         self.fillChannelList()
 
         self.player = player.ChannelPlayer().init(self,self.lineUp)
 
         channel = self.getStartChannel()
+        if not channel:
+            xbmcgui.Dialog().ok(util.T(32018),util.T(32017),'',util.T(32012))
+            self.close()
+            return
 
         if self.player.isPlayingHDHR():
             util.DEBUG_LOG('HDHR video already playing')
@@ -287,9 +297,6 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
             self.setCurrent(mli)
 
         self.cron.registerReceiver(self)
-
-        for d in self.lineUp.devices.values():
-            util.DEBUG_LOG('Device: {0} at {1} with {2} channels'.format(d.ID,d.ip,d.channelCount))
 
     def showProgress(self,progress='',message=''):
         self.setProperty('loading.progress',str(progress))

@@ -77,3 +77,11 @@ msgctxt "#32016"
 msgid "Error"
 msgstr ""
 
+msgctxt "#32017"
+msgid "No channels found!"
+msgstr ""
+
+msgctxt "#32018"
+msgid "No Channels"
+msgstr ""
+
