@@ -1,3 +1,7 @@
+** 0.0.4b **
+
+Fix for errors on channel numbers without sub channel
+
 ** 0.0.3b **
 
 Fix for startup failure if any devices did not respond correctly

@@ -13,7 +13,7 @@ class NoCompatibleDevicesException(Exception): pass
 class NoDevicesException(Exception): pass
 
 def chanTuple(guide_number,chanCount):
-    major, minor = guide_number.split('.',1)
+    major, minor = (guide_number + '.0').split('.',2)[:2]
     return (int(major),int(minor),chanCount*-1)
 
 class ChannelSource(dict):
