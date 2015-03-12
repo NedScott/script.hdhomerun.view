@@ -1,3 +1,7 @@
+** 0.0.6b **
+
+Fix for error when parsing empty lineups causing no channels to be added
+
 ** 0.0.5b **
 
 Improved error handling for case where no channels are found

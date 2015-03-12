@@ -2,7 +2,10 @@
 import time
 import requests
 import discovery
-import ordereddict
+try:
+    from collections import OrderedDict
+except:
+    from ordereddict_compat import OrderedDict
 
 from lib import util
 
@@ -41,7 +44,7 @@ class Channel(object):
 
 class LineUp(object):
     def __init__(self):
-        self.channels = ordereddict.OrderedDict()
+        self.channels = OrderedDict()
         self.devices = {}
         self.hasGuideData = False
         self.collectLineUp()
@@ -96,9 +99,12 @@ class LineUp(object):
 
         if not lineUps: raise NoCompatibleDevicesException()
 
-        while True:
+        while lineUps:
             lowest = min(lineUps,key=lambda l: l[1] and chanTuple(l[1][0]['GuideNumber'],l[0].channelCount) or (0,0,0)) #Prefer devices with the most channels assuming (possibly wrongly) that they are getting a better signal
-            if not lowest[1]: return
+            if not lowest[1]:
+                lineUps.pop(lineUps.index(lowest))
+                continue
+
             chanData = lowest[1].pop(0)
             if chanData['GuideNumber'] in self.channels:
                 self.channels[chanData['GuideNumber']].add(chanData,lowest[0])
@@ -184,7 +190,7 @@ class Guide(object):
         self.init(lineup)
 
     def init(self,lineup):
-        self.guide = ordereddict.OrderedDict()
+        self.guide = OrderedDict()
         if not lineup:
             return
         url = GUIDE_URL.format(lineup.defaultDevice().ID)
