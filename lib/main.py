@@ -28,7 +28,39 @@ class BaseDialog(xbmcgui.WindowXMLDialog):
         self._closing = True
         self.close()
 
-    def onClosed(self): pass
+class KodiChannelEntry(BaseDialog):
+    def __init__(self,*args,**kwargs):
+        self.digits = str(kwargs['digit'])
+        self.channel = ''
+        self.set = False
+        BaseDialog.__init__(self,*args,**kwargs)
+
+    def onInit(self):
+        BaseDialog.onInit(self)
+        self.showChannel()
+
+    def onAction(self,action):
+        try:
+            if  action.getId() >= xbmcgui.REMOTE_0 and action.getId() <= xbmcgui.REMOTE_9:
+                digit = str(action.getId() - 58)
+                self.digits += digit
+                self.showChannel()
+            elif action == xbmcgui.ACTION_SELECT_ITEM:
+                self.close()
+        finally:
+            BaseDialog.onAction(self,action)
+
+    def showChannel(self):
+        if len(self.digits) < 2:
+            self.channel = '.' + self.digits
+        else:
+            self.channel = self.digits[:-1] + '.' + self.digits[-1]
+        self.setProperty('channel',self.channel)
+
+    def getChannel(self):
+        if not self.channel or self.channel.startswith('.'): return None
+        return self.channel
+
 
 class GuideOverlay(BaseDialog,util.CronReceiver):
     def __init__(self,*args,**kwargs):
@@ -37,6 +69,7 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         self.lineUp = None
         self.guide = None
         self.current = None
+        self.cron = None
         self.guideFetchPreviouslyFailed = False
         self.nextGuideUpdate = MAX_TIME_INT
 
@@ -48,19 +81,25 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         self.currentProgress = self.getControl(250)
         self.start()
 
+    def onFocus(self,controlID):
+        print repr(controlID)
+        if controlID == 201:
+            self.cron.forceTick()
+
     def onAction(self,action):
         try:
             if action == xbmcgui.ACTION_CONTEXT_MENU or action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_DOWN:
-                self.showOverlay()
+                return self.showOverlay()
             elif action == xbmcgui.ACTION_SELECT_ITEM:
-                if self.showPlayerControls(): return
+                if self.clickShowOverlay(): return
             elif action == xbmcgui.ACTION_MOVE_LEFT:
-                self.showOverlay(False)
+                return self.showOverlay(False)
             elif action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
                 if self.closeHandler(): return
             elif action == xbmcgui.ACTION_BUILT_IN_FUNCTION:
-                self.showOverlay(False)
-                xbmc.executebuiltin('ActivateWindow(12901)')
+                if self.clickShowOverlay(): return
+            elif self.checkChannelEntry(action):
+                return
         except:
             util.ERROR()
             BaseDialog.onAction(self,action)
@@ -68,12 +107,15 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         BaseDialog.onAction(self,action)
 
     def onClick(self,controlID):
-        if self.showPlayerControls(): return
+        if self.clickShowOverlay(): return
 
         mli = self.channelList.getSelectedItem()
-        self.setCurrent(mli)
         channel = mli.dataSource
         self.playChannel(channel)
+
+    def doClose(self):
+        BaseDialog.doClose(self)
+        if xbmc.getCondVisibility('Window.IsActive(fullscreenvideo)'): xbmc.executebuiltin('Action(back)')
 
     def tick(self):
         if time.time() > self.nextGuideUpdate:
@@ -132,17 +174,16 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
     def closeHandler(self):
         if self.overlayVisible():
             if not self.player.isPlaying():
-                return self.askExit()
+                return self.handleExit()
             self.showOverlay(False)
             return True
         else:
-            return self.askExit()
+            return self.handleExit()
 
-    def askExit(self):
-        if not util.getSetting('confirm.exit'): return False
-        if xbmcgui.Dialog().yesno(util.T(32006),'',util.T(32007),''):
-            self.close()
-            if xbmc.getCondVisibility('Window.IsActive(fullscreenvideo)'): xbmc.executebuiltin('Action(back)')
+    def handleExit(self):
+        if util.getSetting('confirm.exit',True):
+            if not xbmcgui.Dialog().yesno(util.T(32006),'',util.T(32007),''): return True
+        self.doClose()
         return True
 
 
@@ -266,7 +307,7 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
 
     def start(self):
         if not self.getLineUpAndGuide(): #If we fail to get lineUp, just exit
-            self.close()
+            self.doClose()
             return
 
         for d in self.lineUp.devices.values():
@@ -279,7 +320,7 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         channel = self.getStartChannel()
         if not channel:
             xbmcgui.Dialog().ok(util.T(32018),util.T(32017),'',util.T(32012))
-            self.close()
+            self.doClose()
             return
 
         if self.player.isPlayingHDHR():
@@ -302,17 +343,17 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         self.setProperty('loading.progress',str(progress))
         self.setProperty('loading.status',message)
 
-    def showPlayerControls(self):
-        if not self.overlayVisible() and util.videoIsPlaying():
-            xbmc.executebuiltin('ActivateWindow(12901)')
+    def clickShowOverlay(self):
+        if not self.overlayVisible():
+            self.showOverlay()
+            return True
+        elif not self.getFocusId() == 201:
+            self.showOverlay(False)
             return True
         return False
 
     def showOverlay(self,show=True):
-        self.updateProgressBars()
         self.setProperty('show.overlay',show and 'SHOW' or '')
-        if self.getFocusId() == 201: return
-        self.setFocusId(201)
 
     def overlayVisible(self):
         return bool(self.getProperty('show.overlay'))
@@ -336,8 +377,24 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         util.DEBUG_LOG('ON PLAYBACK ENDED')
 
     def playChannel(self,channel):
+        self.setCurrent(self.channelList.getListItemByDataSource(channel))
         self.player.playChannel(channel)
         self.fullscreenVideo()
+
+    def checkChannelEntry(self,action):
+        if action.getId() >= xbmcgui.REMOTE_0 and action.getId() <= xbmcgui.REMOTE_9:
+            self.doChannelEntry(str(action.getId() - 58))
+            return True
+        return False
+
+    def doChannelEntry(self,digit):
+        window = KodiChannelEntry('script-hdhomerun-view-channel_entry.xml',util.ADDON.getAddonInfo('path'),'Main','1080p',digit=digit)
+        window.doModal()
+        channel = window.getChannel()
+        del window
+        if not channel: return
+        if not channel in self.lineUp: return
+        self.playChannel(self.lineUp[channel])
 
 def start():
     window = GuideOverlay('script-hdhomerun-view-overlay.xml',util.ADDON.getAddonInfo('path'),'Main','1080i')

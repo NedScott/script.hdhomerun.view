@@ -63,6 +63,10 @@ class DiscoveryResponse(object):
         elif self.device == STORAGE_SERVER:
             return getattr(self,'storageURL','')
 
+    @property
+    def authID(self):
+        authID = getattr(self,'_authID',None)
+        if not authID: return None
 
     def processPacket(self,packet):
         try:
@@ -104,7 +108,7 @@ class DiscoveryResponse(object):
             elif tag == STORAGE_URL:
                 self.storageURL = struct.unpack('>{0}s'.format(length),dataIO.read(length))[0]
             elif tag == DEVICE_AUTH_ID:
-                self.authID = struct.unpack('>{0}s'.format(length),dataIO.read(length))[0]
+                self._authID = struct.unpack('>{0}s'.format(length),dataIO.read(length))[0]
             else:
                 dataIO.read(length)
 

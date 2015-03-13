@@ -2,6 +2,8 @@
 import xbmc, xbmcgui
 import util
 
+TRANSCODE_PROFILES = (None,'heavy','mobile','internet540','internet480','internet360','internet240')
+
 class PlayerStatus(object):
     def __init__(self):
         self.reset()
@@ -68,6 +70,11 @@ class ChannelPlayer(xbmc.Player):
             self.owner.onPlayBackFailed()
             return False
 
+    def getArgs(self):
+        transcode = TRANSCODE_PROFILES[util.getSetting('transcode',0)]
+        if not transcode: return ''
+        return '?transcode=' + transcode
+
     def playChannel(self,channel):
         url = channel.sources[0].url
         util.DEBUG_LOG('Playing from source: {0}'.format(channel.sources[0].ID))
@@ -80,7 +87,8 @@ class ChannelPlayer(xbmc.Player):
         item.setInfo('video', info)
         util.setSetting('last.channel',channel.number)
         self.status('NOT_STARTED',channel,item)
-        self.play(url,item,False,0)
+        args = self.getArgs()
+        self.play(url + args,item,False,0)
 
     def isPlayingHDHR(self):
         if not self.isPlaying(): return False

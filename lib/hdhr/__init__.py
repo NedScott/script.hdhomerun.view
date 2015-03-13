@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import time
 import requests
+import binascii
+
 import discovery
+
 try:
     from collections import OrderedDict
 except:
@@ -113,6 +116,20 @@ class LineUp(object):
 
         if not self.channels: util.DEBUG_LOG(lineUps)
 
+    def apiAuthID(self):
+        combined = ''
+        ids = []
+        for d in self.devices.values():
+            ids.append(d.ID)
+            authID = d.authID
+            if not authID: continue
+            combined += authID
+
+        if combined and not GUIDE_URL.startswith('http://mytest.'):
+            return binascii.b2a_base64(combined)
+        else:
+            return ','.join(ids)
+
 class Show(dict):
     @property
     def title(self):
@@ -193,7 +210,7 @@ class Guide(object):
         self.guide = OrderedDict()
         if not lineup:
             return
-        url = GUIDE_URL.format(lineup.defaultDevice().ID)
+        url = GUIDE_URL.format(lineup.apiAuthID())
         util.DEBUG_LOG('Fetching guide from: {0}'.format(url))
         data = requests.get(url).json()
         for chan in data:

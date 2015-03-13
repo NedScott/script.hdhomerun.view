@@ -85,6 +85,7 @@ class Cron(threading.Thread):
     def __init__(self,interval):
         threading.Thread.__init__(self)
         self.stopped = threading.Event()
+        self.force = threading.Event()
         self.interval = interval
         self._lastHalfHour = self._getHalfHour()
         self._receivers = []
@@ -103,8 +104,14 @@ class Cron(threading.Thread):
         while ct < self.interval:
             xbmc.sleep(100)
             ct+=0.1
+            if self.force.isSet():
+                self.force.clear()
+                return True
             if xbmc.abortRequested or self.stopped.isSet(): return False
         return True
+
+    def forceTick(self):
+        self.force.set()
 
     def stop(self):
         self.stopped.set()

@@ -1,3 +1,14 @@
+** 0.0.7b **
+
+Disable showing Kodi OSD on click
+Clicking on video with mouse now shows/hides channel guide
+Hitting select will now show the channel guide
+Now uses more mouse/touch friendly scrolling on channel guide
+Now fetches guide data for all devices
+Added channel entry via remote numbers or keyboard numpad
+Added the ability to select transcode profiles in settings
+Added stream metadata to the currently playing OSD
+
 ** 0.0.6b **
 
 Fix for error when parsing empty lineups causing no channels to be added

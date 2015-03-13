@@ -85,3 +85,36 @@ msgctxt "#32018"
 msgid "No Channels"
 msgstr ""
 
+msgctxt "#32019"
+msgid "Transcoding profile"
+msgstr ""
+
+
+msgctxt "#32500"
+msgid "None"
+msgstr ""
+
+msgctxt "#32501"
+msgid "Heavy"
+msgstr ""
+
+msgctxt "#32502"
+msgid "Mobile"
+msgstr ""
+
+msgctxt "#32503"
+msgid "Internet 540"
+msgstr ""
+
+msgctxt "#32504"
+msgid "Internet 480"
+msgstr ""
+
+msgctxt "#32505"
+msgid "Internet 360"
+msgstr ""
+
+msgctxt "#32506"
+msgid "Internet 240"
+msgstr ""
+

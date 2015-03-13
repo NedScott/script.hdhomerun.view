@@ -179,6 +179,12 @@ class ManagedControlList(object):
         mli._listItem = li
         return mli
 
+    def getListItemByDataSource(self,data_source):
+        for mli in self:
+            if data_source == mli.dataSource:
+                return mli
+        return None
+
     def getSelectedItem(self):
         pos = self.control.getSelectedPosition()
         return self.getListItem(pos)
