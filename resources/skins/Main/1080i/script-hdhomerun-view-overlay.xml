@@ -43,9 +43,10 @@
                 <height>1080</height>
                 <scrolltime>200</scrolltime>
                 <orientation>vertical</orientation>
+                <viewtype label="$LOCALIZE[31033]">info</viewtype>
 
                 <!-- ITEM LAYOUT ########################################## -->
-                <itemlayout height="50">
+                <itemlayout height="270">
                     <control type="group">
                         <posx>400</posx>
                         <posy>0</posy>
@@ -150,8 +151,9 @@
                 </itemlayout>
 
                 <!-- FOCUSED LAYOUT ####################################### -->
-                <focusedlayout height="50">
+                <focusedlayout height="270">
                     <control type="group">
+                        <animation effect="slide" start="400,0" end="0,0" time="200" delay="500">Focus</animation>
                         <posx>0</posx>
                         <posy>0</posy>
                         <control type="image">
