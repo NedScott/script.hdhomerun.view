@@ -45,20 +45,31 @@ class KodiChannelEntry(BaseDialog):
                 digit = str(action.getId() - 58)
                 self.digits += digit
                 self.showChannel()
+                if '.' in self.channel:
+                    self.close()
             elif action == xbmcgui.ACTION_SELECT_ITEM:
-                self.close()
+                if not self.addDecimal():
+                    self.close()
         finally:
             BaseDialog.onAction(self,action)
 
+    def addDecimal(self):
+        if '.' in self.digits:
+            self.channel = self.channel[:-1]
+            self.showChannel()
+            return False
+        self.digits += '.'
+        self.showChannel()
+        return True
+
     def showChannel(self):
-        if len(self.digits) < 2:
-            self.channel = '.' + self.digits
-        else:
-            self.channel = self.digits[:-1] + '.' + self.digits[-1]
+        self.channel = self.digits
         self.setProperty('channel',self.channel)
 
     def getChannel(self):
-        if not self.channel or self.channel.startswith('.'): return None
+        if not self.channel: return None
+        if self.channel.endswith('.'):
+            return self.channel[:-1]
         return self.channel
 
 
@@ -69,27 +80,36 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
         self.lineUp = None
         self.guide = None
         self.current = None
+        self.fallbackChannel = None
         self.cron = None
         self.guideFetchPreviouslyFailed = False
         self.nextGuideUpdate = MAX_TIME_INT
 
+    #==========================================================================
+    # EVENT HANDLERS
+    #==========================================================================
     def onInit(self):
         BaseDialog.onInit(self)
         if self.started: return
         self.started = True
         self.channelList = kodigui.ManagedControlList(self,201,3)
         self.currentProgress = self.getControl(250)
+
+        #Add item to dummy list - this list allows right click on video to bring up the context menu
+        self.getControl(210).addItem(xbmcgui.ListItem(''))
+
         self.start()
 
     def onFocus(self,controlID):
-        print repr(controlID)
         if controlID == 201:
             self.cron.forceTick()
 
     def onAction(self,action):
         try:
-            if action == xbmcgui.ACTION_CONTEXT_MENU or action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_DOWN:
+            if action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_DOWN:
                 return self.showOverlay()
+            elif action == xbmcgui.ACTION_CONTEXT_MENU:
+                return self.search()
             elif action == xbmcgui.ACTION_SELECT_ITEM:
                 if self.clickShowOverlay(): return
             elif action == xbmcgui.ACTION_MOVE_LEFT:
@@ -109,19 +129,48 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
     def onClick(self,controlID):
         if self.clickShowOverlay(): return
 
-        mli = self.channelList.getSelectedItem()
-        channel = mli.dataSource
-        self.playChannel(channel)
+        if controlID == 201:
+            mli = self.channelList.getSelectedItem()
+            channel = mli.dataSource
+            self.playChannel(channel)
 
-    def doClose(self):
-        BaseDialog.doClose(self)
-        if xbmc.getCondVisibility('Window.IsActive(fullscreenvideo)'): xbmc.executebuiltin('Action(back)')
+    def onPlayBackStarted(self):
+        util.DEBUG_LOG('ON PLAYBACK STARTED')
+        self.fallbackChannel = self.current and self.current.dataSource or None
+        self.showProgress()
+
+    def onPlayBackStopped(self):
+        self.setCurrent()
+        util.DEBUG_LOG('ON PLAYBACK STOPPED')
+        self.showProgress() #In case we failed to play video
+        self.showOverlay()
+
+    def onPlayBackFailed(self):
+        self.setCurrent()
+        util.DEBUG_LOG('ON PLAYBACK FAILED')
+        if self.fallbackChannel:
+            channel = self.fallbackChannel
+            self.fallbackChannel = None
+            self.playChannel(channel)
+        util.showNotification(util.T(32023),time_ms=5000,header=util.T(32022))
+    # END - EVENT HANDLERS ####################################################
+
+    def onPlayBackEnded(self):
+        self.setCurrent()
+        util.DEBUG_LOG('ON PLAYBACK ENDED')
 
     def tick(self):
         if time.time() > self.nextGuideUpdate:
             self.updateChannels()
         else:
             self.updateProgressBars()
+
+    def doClose(self):
+        BaseDialog.doClose(self)
+        if util.getSetting('exit.stops.player',True):
+            self.player.stop()
+        else:
+            if xbmc.getCondVisibility('Window.IsActive(fullscreenvideo)'): xbmc.executebuiltin('Action(back)')
 
     def updateProgressBars(self,force=False):
         if not force and not self.overlayVisible(): return
@@ -327,17 +376,20 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
             util.DEBUG_LOG('HDHR video already playing')
             self.fullscreenVideo()
             self.showProgress()
+            mli = self.channelList.getListItemByDataSource(channel)
+            self.setCurrent(mli)
         else:
             util.DEBUG_LOG('HDHR video not currently playing. Starting channel...')
             self.playChannel(channel)
 
+        self.selectChannel(channel)
+
+        self.cron.registerReceiver(self)
+
+    def selectChannel(self,channel):
         pos = self.lineUp.index(channel.number)
         if pos > -1:
             self.channelList.selectItem(pos)
-            mli = self.channelList.getListItem(pos)
-            self.setCurrent(mli)
-
-        self.cron.registerReceiver(self)
 
     def showProgress(self,progress='',message=''):
         self.setProperty('loading.progress',str(progress))
@@ -346,6 +398,7 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
     def clickShowOverlay(self):
         if not self.overlayVisible():
             self.showOverlay()
+            self.setFocusId(201)
             return True
         elif not self.getFocusId() == 201:
             self.showOverlay(False)
@@ -354,32 +407,22 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
 
     def showOverlay(self,show=True):
         self.setProperty('show.overlay',show and 'SHOW' or '')
+        if show: self.setFocusId(201)
 
     def overlayVisible(self):
         return bool(self.getProperty('show.overlay'))
-
-    def onPlayBackStarted(self):
-        util.DEBUG_LOG('ON PLAYBACK STARTED')
-        self.showProgress()
-
-    def onPlayBackStopped(self):
-        self.setCurrent()
-        util.DEBUG_LOG('ON PLAYBACK STOPPED')
-        self.showProgress() #In case we failed to play video
-        self.showOverlay()
-
-    def onPlayBackFailed(self):
-        self.setCurrent()
-        util.DEBUG_LOG('ON PLAYBACK FAILED')
-
-    def onPlayBackEnded(self):
-        self.setCurrent()
-        util.DEBUG_LOG('ON PLAYBACK ENDED')
 
     def playChannel(self,channel):
         self.setCurrent(self.channelList.getListItemByDataSource(channel))
         self.player.playChannel(channel)
         self.fullscreenVideo()
+
+    def playChannelByNumber(self,number):
+        if number in self.lineUp:
+            channel = self.lineUp[number]
+            self.playChannel(channel)
+            return channel
+        return None
 
     def checkChannelEntry(self,action):
         if action.getId() >= xbmcgui.REMOTE_0 and action.getId() <= xbmcgui.REMOTE_9:
@@ -390,11 +433,36 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
     def doChannelEntry(self,digit):
         window = KodiChannelEntry('script-hdhomerun-view-channel_entry.xml',util.ADDON.getAddonInfo('path'),'Main','1080p',digit=digit)
         window.doModal()
-        channel = window.getChannel()
+        channelNumber = window.getChannel()
         del window
-        if not channel: return
-        if not channel in self.lineUp: return
-        self.playChannel(self.lineUp[channel])
+        if not channelNumber: return
+        util.DEBUG_LOG('Channel entered: {0}'.format(channelNumber))
+        if not channelNumber in self.lineUp: return
+        channel = self.lineUp[channelNumber]
+        self.playChannel(channel)
+        self.selectChannel(channel)
+
+    def search(self):
+        terms = xbmcgui.Dialog().input(util.T(32024))
+        if not terms: return
+        result = self.lineUp.search(terms)
+        if not result:
+            return xbmcgui.Dialog().ok(util.T(32025),'',util.T(32026))
+        items = []
+        channels = []
+        for r in result:
+            now = time.time()
+            start = float(r.get('StartTime'))
+            end = float(r.get('EndTime'))
+            if now >= start and now < end:
+                items.append(u'{0} - {1}: {2} - {3}'.format(r.get('ChannelNumber'),r.get('ChannelName'),r.get('Title')[:30],time.strftime('%I:%M %p',time.localtime(start))))
+                channels.append(r.get('ChannelNumber'))
+        if not items:
+            return xbmcgui.Dialog().ok(util.T(32025),'',util.T(32026))
+        idx = xbmcgui.Dialog().select('Results',items)
+        if idx < 0: return
+        channel = self.playChannelByNumber(channels[idx])
+        self.selectChannel(channel)
 
 def start():
     window = GuideOverlay('script-hdhomerun-view-overlay.xml',util.ADDON.getAddonInfo('path'),'Main','1080i')

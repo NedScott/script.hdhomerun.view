@@ -2,6 +2,7 @@
 import time
 import requests
 import binascii
+import urllib
 
 import discovery
 
@@ -13,6 +14,7 @@ except:
 from lib import util
 
 GUIDE_URL = 'http://mytest.hdhomerun.com/api/guide.php?DeviceID={0}'
+SEARCH_URL = 'http://mytest.hdhomerun.com/api/search?DeviceID={0}&Search={1}'
 
 class NoCompatibleDevicesException(Exception): pass
 
@@ -115,6 +117,17 @@ class LineUp(object):
                 self.channels[chanData['GuideNumber']] = Channel(chanData,lowest[0])
 
         if not self.channels: util.DEBUG_LOG(lineUps)
+
+    def search(self,terms):
+        url = SEARCH_URL.format(self.apiAuthID(),urllib.quote(terms.encode('utf-8')))
+        util.DEBUG_LOG('Search URL: {0}'.format(url))
+        try:
+            results = requests.get(url).json()
+            return results
+        except:
+            util.ERROR()
+
+        return None
 
     def apiAuthID(self):
         combined = ''

@@ -21,13 +21,18 @@
             <aspectratio>stretch</aspectratio>
         </control>
 
-        <control type="button" id="210">
+        <control type="list" id="210">
             <visible allowhiddenfocus="true">false</visible>
             <animation effect="slide" start="0,0" end="-820,0" time="0" condition="!IsEmpty(Window.Property(show.overlay))">Conditional</animation>
             <posx>0</posx>
             <posy>0</posy>
             <width>1920</width>
             <height>1080</height>
+
+            <itemlayout width="1920" height="1080">
+            </itemlayout>
+            <focusedlayout width="1920" height="1080">
+            </focusedlayout>
         </control>
 
         <control type="group" id="200">
@@ -43,7 +48,6 @@
                 <height>1080</height>
                 <scrolltime>200</scrolltime>
                 <orientation>vertical</orientation>
-                <viewtype label="$LOCALIZE[31033]">info</viewtype>
 
                 <!-- ITEM LAYOUT ########################################## -->
                 <itemlayout height="270">
@@ -153,6 +157,7 @@
                 <!-- FOCUSED LAYOUT ####################################### -->
                 <focusedlayout height="270">
                     <control type="group">
+                        <animation effect="slide" start="400,0" end="0,0" time="200" delay="500">Focus</animation>
                         <posx>0</posx>
                         <posy>0</posy>
                         <control type="image">

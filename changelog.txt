@@ -1,3 +1,13 @@
+** 0.0.8b **
+
+Video now closes when the addon exits with a settings option to disable this behavior
+Now, when entering channel numbers, select now inserts a period with a second select sumbitting the entry
+Now when a channel is entered via channel entry, the guide jumps to that channel
+Improved control focus when using mouse and keyboard
+Transcoding profile setting now has [Default = use tuner profile] and [None = no transcoding]
+Now displays an error notification on failure to load a channel
+Add WIP search which returns matches for currently playing channels
+
 ** 0.0.7b **
 
 Disable showing Kodi OSD on click

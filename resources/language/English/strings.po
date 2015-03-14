@@ -89,7 +89,37 @@ msgctxt "#32019"
 msgid "Transcoding profile"
 msgstr ""
 
+msgctxt "#32020"
+msgid "Stop video on exit"
+msgstr ""
 
+msgctxt "#32021"
+msgid "Failed"
+msgstr ""
+
+msgctxt "#32022"
+msgid "Failed to play channel"
+msgstr ""
+
+msgctxt "#32023"
+msgid "Maybe all tuners are in use?"
+msgstr ""
+
+msgctxt "#32024"
+msgid "Enter search terms:"
+msgstr ""
+
+msgctxt "#32025"
+msgid "No Results"
+msgstr ""
+
+msgctxt "#32026"
+msgid "Your search returned no results"
+msgstr ""
+
+
+
+#Transcoding
 msgctxt "#32500"
 msgid "None"
 msgstr ""
@@ -116,5 +146,9 @@ msgstr ""
 
 msgctxt "#32506"
 msgid "Internet 240"
+msgstr ""
+
+msgctxt "#32507"
+msgid "Default"
 msgstr ""
 
