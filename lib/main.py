@@ -52,6 +52,7 @@ class BaseDialog(xbmcgui.WindowXMLDialog):
 class KodiChannelEntry(BaseDialog):
     def __init__(self,*args,**kwargs):
         self.digits = str(kwargs['digit'])
+        self.hasSubChannels = kwargs.get('has_sub_channels',False)
         self.channel = ''
         self.set = False
         BaseDialog.__init__(self,*args,**kwargs)
@@ -62,17 +63,42 @@ class KodiChannelEntry(BaseDialog):
 
     def onAction(self,action):
         try:
-            if  action.getId() >= xbmcgui.REMOTE_0 and action.getId() <= xbmcgui.REMOTE_9:
+            if action.getId() >= xbmcgui.REMOTE_0 and action.getId() <= xbmcgui.REMOTE_9:
                 digit = str(action.getId() - 58)
                 self.digits += digit
-                self.showChannel()
-                if '.' in self.channel:
-                    self.close()
+                if '.' in self.digits:
+                    if len(self.digits.split('.',1)[-1]) > 1: #This can happen if you hit two keys at the same time
+                        self.digits = self.digits[:-1]
+                    self.showChannel()
+                    return self.submit()
+
+                if len(self.digits) < 5:
+                    return self.showChannel()
+
+                self.digits = self.digits[:-1]
+
+            elif action == xbmcgui.ACTION_NAV_BACK:
+                return self.backspace()
             elif action == xbmcgui.ACTION_SELECT_ITEM:
-                if not self.addDecimal():
-                    self.close()
-        finally:
+                if not self.hasSubChannels or not self.addDecimal():
+                    return self.submit()
+        except:
+            util.ERROR()
             BaseDialog.onAction(self,action)
+            return
+
+        BaseDialog.onAction(self,action)
+
+    def submit(self):
+        self.set = True
+        self.doClose()
+
+    def backspace(self):
+        self.digits = self.digits[:-1]
+        if not self.digits:
+            self.doClose()
+            return
+        self.showChannel()
 
     def addDecimal(self):
         if '.' in self.digits:
@@ -85,9 +111,13 @@ class KodiChannelEntry(BaseDialog):
 
     def showChannel(self):
         self.channel = self.digits
-        self.setProperty('channel',self.channel)
+        try:
+            self.setProperty('channel',self.channel)
+        except RuntimeError: #Sometimes happens when to fast entry during submission/close
+            self.close()
 
     def getChannel(self):
+        if not self.set: return None
         if not self.channel: return None
         if self.channel.endswith('.'):
             return self.channel[:-1]
@@ -460,7 +490,7 @@ class GuideOverlay(util.CronReceiver):
         return False
 
     def doChannelEntry(self,digit):
-        window = KodiChannelEntry('script-hdhomerun-view-channel_entry.xml',util.ADDON.getAddonInfo('path'),'Main','1080p',digit=digit)
+        window = KodiChannelEntry('script-hdhomerun-view-channel_entry.xml',util.ADDON.getAddonInfo('path'),'Main','1080p',digit=digit,has_sub_channels=self.lineUp.hasSubChannels)
         window.doModal()
         channelNumber = window.getChannel()
         del window

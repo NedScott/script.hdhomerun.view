@@ -1,6 +1,10 @@
 ** 0.0.9b **
 
 Added 'Enable enhancements for touch devices' to settings. Currently allows "flinging" the guide
+Now hides DRM channels by default - enable with setting 'Show DRM channels'
+Now detects whether lineup has any subchannels and simplifies channel entry (ie select always submits)
+Channel entry now "backspaces" on nav back
+Channel entry now limits to 4 digits before a '.'
 
 ** 0.0.8b **
 

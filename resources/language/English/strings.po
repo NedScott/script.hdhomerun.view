@@ -121,6 +121,9 @@ msgctxt "#32027"
 msgid "Enable enhancements for touch devices"
 msgstr ""
 
+msgctxt "#32028"
+msgid "Show DRM channels"
+msgstr ""
 
 
 #Transcoding

@@ -39,6 +39,7 @@ class Channel(object):
         self.name = data['GuideName']
         self.sources = [ChannelSource({'url':data['URL'],'ID':device_response.ID})]
         self.favorite = bool(data.get('Favorite',False))
+        self.DRM = bool(data.get('DRM',False))
         self.guide = None
 
     def add(self,data,device_response):
@@ -52,6 +53,7 @@ class LineUp(object):
         self.channels = OrderedDict()
         self.devices = {}
         self.hasGuideData = False
+        self.hasSubChannels = False
         self.collectLineUp()
 
     def __getitem__(self,key):
@@ -104,6 +106,8 @@ class LineUp(object):
 
         if not lineUps: raise NoCompatibleDevicesException()
 
+        hideDRM = not util.getSetting('show.DRM',False)
+
         while lineUps:
             lowest = min(lineUps,key=lambda l: l[1] and chanTuple(l[1][0]['GuideNumber'],l[0].channelCount) or (0,0,0)) #Prefer devices with the most channels assuming (possibly wrongly) that they are getting a better signal
             if not lowest[1]:
@@ -111,7 +115,14 @@ class LineUp(object):
                 continue
 
             chanData = lowest[1].pop(0)
-            if chanData['GuideNumber'] in self.channels:
+
+            if hideDRM and chanData.get('DRM'): continue
+
+            channelNumber = chanData['GuideNumber']
+
+            if '.' in channelNumber: self.hasSubChannels = True
+
+            if channelNumber in self.channels:
                 self.channels[chanData['GuideNumber']].add(chanData,lowest[0])
             else:
                 self.channels[chanData['GuideNumber']] = Channel(chanData,lowest[0])
