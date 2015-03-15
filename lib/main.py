@@ -47,6 +47,8 @@ class BaseDialog(xbmcgui.WindowXMLDialog):
         self._closing = True
         self.close()
 
+    def onClosed(self): pass
+
 class KodiChannelEntry(BaseDialog):
     def __init__(self,*args,**kwargs):
         self.digits = str(kwargs['digit'])
@@ -92,10 +94,12 @@ class KodiChannelEntry(BaseDialog):
         return self.channel
 
 
-class GuideOverlay(BaseWindow,util.CronReceiver):
+class GuideOverlay(util.CronReceiver):
+    _BASE = None
     def __init__(self,*args,**kwargs):
-        BaseWindow.__init__(self,*args,**kwargs)
+        self._BASE.__init__(self,*args,**kwargs)
         self.started = False
+        self.touchMode = False
         self.lineUp = None
         self.guide = None
         self.current = None
@@ -108,8 +112,13 @@ class GuideOverlay(BaseWindow,util.CronReceiver):
     # EVENT HANDLERS
     #==========================================================================
     def onInit(self):
-        BaseWindow.onInit(self)
+        self._BASE.onInit(self)
         if self.started: return
+        if self.touchMode:
+            util.DEBUG_LOG('Touch mode: ENABLED')
+            self.setProperty('touch.mode','True')
+        else:
+            util.DEBUG_LOG('Touch mode: DISABLED')
         self.started = True
         self.channelList = kodigui.ManagedControlList(self,201,3)
         self.currentProgress = self.getControl(250)
@@ -141,9 +150,9 @@ class GuideOverlay(BaseWindow,util.CronReceiver):
                 return
         except:
             util.ERROR()
-            BaseWindow.onAction(self,action)
+            self._BASE.onAction(self,action)
             return
-        BaseWindow.onAction(self,action)
+        self._BASE.onAction(self,action)
 
     def onClick(self,controlID):
         if self.clickShowOverlay(): return
@@ -161,12 +170,13 @@ class GuideOverlay(BaseWindow,util.CronReceiver):
     def onPlayBackStopped(self):
         self.setCurrent()
         util.DEBUG_LOG('ON PLAYBACK STOPPED')
-        self.showProgress() #In case we failed to play video
+        self.showProgress() #In case we failed to play video on startup
         self.showOverlay()
 
     def onPlayBackFailed(self):
         self.setCurrent()
         util.DEBUG_LOG('ON PLAYBACK FAILED')
+        self.showProgress() #In case we failed to play video on startup
         if self.fallbackChannel:
             channel = self.fallbackChannel
             self.fallbackChannel = None
@@ -185,7 +195,7 @@ class GuideOverlay(BaseWindow,util.CronReceiver):
             self.updateProgressBars()
 
     def doClose(self):
-        BaseWindow.doClose(self)
+        self._BASE.doClose(self)
         if util.getSetting('exit.stops.player',True):
             self.player.stop()
         else:
@@ -383,7 +393,7 @@ class GuideOverlay(BaseWindow,util.CronReceiver):
 
         self.fillChannelList()
 
-        self.player = player.ChannelPlayer().init(self,self.lineUp)
+        self.player = player.ChannelPlayer().init(self,self.lineUp,self.touchMode)
 
         channel = self.getStartChannel()
         if not channel:
@@ -399,7 +409,7 @@ class GuideOverlay(BaseWindow,util.CronReceiver):
             self.setCurrent(mli)
         else:
             util.DEBUG_LOG('HDHR video not currently playing. Starting channel...')
-            #self.playChannel(channel)
+            self.playChannel(channel)
 
         self.selectChannel(channel)
 
@@ -426,7 +436,7 @@ class GuideOverlay(BaseWindow,util.CronReceiver):
 
     def showOverlay(self,show=True):
         self.setProperty('show.overlay',show and 'SHOW' or '')
-        if show: self.setFocusId(201)
+        if show and self.getFocusId() != 201: self.setFocusId(201)
 
     def overlayVisible(self):
         return bool(self.getProperty('show.overlay'))
@@ -483,8 +493,18 @@ class GuideOverlay(BaseWindow,util.CronReceiver):
         channel = self.playChannelByNumber(channels[idx])
         self.selectChannel(channel)
 
+class GuideOverlayWindow(GuideOverlay,BaseWindow):
+    _BASE = BaseWindow
+
+class GuideOverlayDialog(GuideOverlay,BaseDialog):
+    _BASE = BaseDialog
+
 def start():
-    window = GuideOverlay('script-hdhomerun-view-overlay.xml',util.ADDON.getAddonInfo('path'),'Main','1080i')
+    if util.getSetting('touch.mode',False):
+        window = GuideOverlayWindow('script-hdhomerun-view-overlay.xml',util.ADDON.getAddonInfo('path'),'Main','1080i')
+        window.touchMode = True
+    else:
+        window = GuideOverlayDialog('script-hdhomerun-view-overlay.xml',util.ADDON.getAddonInfo('path'),'Main','1080i')
     with util.Cron(5) as window.cron:
         window.doModal()
         del window

@@ -117,6 +117,10 @@ msgctxt "#32026"
 msgid "Your search returned no results"
 msgstr ""
 
+msgctxt "#32027"
+msgid "Enable enhancements for touch devices"
+msgstr ""
+
 
 
 #Transcoding

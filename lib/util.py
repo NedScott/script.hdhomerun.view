@@ -76,7 +76,7 @@ def timeInDayLocalSeconds():
     sod = int(time.mktime(sod.timetuple()))
     return int(time.time() - sod)
 
-class CronReceiver(object):
+class CronReceiver():
     def tick(self): pass
     def halfHour(self): pass
     def day(self): pass

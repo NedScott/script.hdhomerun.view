@@ -1,3 +1,7 @@
+** 0.0.9b **
+
+Added 'Enable enhancements for touch devices' to settings. Currently allows "flinging" the guide
+
 ** 0.0.8b **
 
 Video now closes when the addon exits with a settings option to disable this behavior

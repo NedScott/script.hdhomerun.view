@@ -36,10 +36,11 @@ class PlayerStatus(object):
         return self.channel.sources[self.index]
 
 class ChannelPlayer(xbmc.Player):
-    def init(self,owner,lineup):
+    def init(self,owner,lineup,touch_mode=False):
         self.status = PlayerStatus()
         self.owner = owner
         self.lineUp = lineup
+        self.touchMode = touch_mode
 
         return self
 
@@ -88,7 +89,7 @@ class ChannelPlayer(xbmc.Player):
         util.setSetting('last.channel',channel.number)
         self.status('NOT_STARTED',channel,item)
         args = self.getArgs()
-        self.play(url + args,item,False,0)
+        self.play(url + args,item,self.touchMode,0)
 
     def isPlayingHDHR(self):
         if not self.isPlaying(): return False
