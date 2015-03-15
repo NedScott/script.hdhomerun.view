@@ -3,6 +3,7 @@
     <onload>SetProperty(loading.progress,25)</onload>
     <onload>SetProperty(loading.status,$ADDON[script.hdhomerun.view 32010])</onload>
     <defaultcontrol>200</defaultcontrol>
+    <zorder>2</zorder>
     <coordinates>
         <system>1</system>
         <posx>0</posx>

@@ -11,6 +11,25 @@ MAX_TIME_INT = 31536000000 #1000 years from Epoch
 
 CHANNEL_DISPLAY = u'[COLOR FF99CCFF]{0}[/COLOR] {1}'
 
+class BaseWindow(xbmcgui.WindowXML):
+    def __init__(self,*args,**kwargs):
+        self._closing = False
+        self._winID = ''
+
+    def onInit(self):
+        self._winID = xbmcgui.getCurrentWindowId()
+
+    def setProperty(self,key,value):
+        if self._closing: return
+        xbmcgui.Window(self._winID).setProperty(key,value)
+        xbmcgui.WindowXMLDialog.setProperty(self,key,value)
+
+    def doClose(self):
+        self._closing = True
+        self.close()
+
+    def onClosed(self): pass
+
 class BaseDialog(xbmcgui.WindowXMLDialog):
     def __init__(self,*args,**kwargs):
         self._closing = False
@@ -73,9 +92,9 @@ class KodiChannelEntry(BaseDialog):
         return self.channel
 
 
-class GuideOverlay(BaseDialog,util.CronReceiver):
+class GuideOverlay(BaseWindow,util.CronReceiver):
     def __init__(self,*args,**kwargs):
-        BaseDialog.__init__(self,*args,**kwargs)
+        BaseWindow.__init__(self,*args,**kwargs)
         self.started = False
         self.lineUp = None
         self.guide = None
@@ -89,7 +108,7 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
     # EVENT HANDLERS
     #==========================================================================
     def onInit(self):
-        BaseDialog.onInit(self)
+        BaseWindow.onInit(self)
         if self.started: return
         self.started = True
         self.channelList = kodigui.ManagedControlList(self,201,3)
@@ -122,9 +141,9 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
                 return
         except:
             util.ERROR()
-            BaseDialog.onAction(self,action)
+            BaseWindow.onAction(self,action)
             return
-        BaseDialog.onAction(self,action)
+        BaseWindow.onAction(self,action)
 
     def onClick(self,controlID):
         if self.clickShowOverlay(): return
@@ -166,7 +185,7 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
             self.updateProgressBars()
 
     def doClose(self):
-        BaseDialog.doClose(self)
+        BaseWindow.doClose(self)
         if util.getSetting('exit.stops.player',True):
             self.player.stop()
         else:
@@ -380,7 +399,7 @@ class GuideOverlay(BaseDialog,util.CronReceiver):
             self.setCurrent(mli)
         else:
             util.DEBUG_LOG('HDHR video not currently playing. Starting channel...')
-            self.playChannel(channel)
+            #self.playChannel(channel)
 
         self.selectChannel(channel)
 
