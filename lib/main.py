@@ -266,7 +266,7 @@ class GuideOverlay(util.CronReceiver):
 
 
     def fullscreenVideo(self):
-        if util.videoIsPlaying():
+        if not self.touchMode and util.videoIsPlaying():
             xbmc.executebuiltin('ActivateWindow(fullscreenvideo)')
 
     def getLineUpAndGuide(self):
