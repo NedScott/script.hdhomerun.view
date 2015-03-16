@@ -137,6 +137,7 @@ class GuideOverlay(util.CronReceiver):
         self.cron = None
         self.guideFetchPreviouslyFailed = False
         self.nextGuideUpdate = MAX_TIME_INT
+        self.filter = None
 
     #==========================================================================
     # EVENT HANDLERS
@@ -150,6 +151,9 @@ class GuideOverlay(util.CronReceiver):
         else:
             util.DEBUG_LOG('Touch mode: DISABLED')
         self.started = True
+
+        self.propertyTimer = kodigui.PropertyTimer(self._winID,util.getSetting('overlay.timeout',10),'show.overlay','')
+
         self.channelList = kodigui.ManagedControlList(self,201,3)
         self.currentProgress = self.getControl(250)
 
@@ -164,10 +168,11 @@ class GuideOverlay(util.CronReceiver):
 
     def onAction(self,action):
         try:
+            if self.overlayVisible(): self.propertyTimer.reset()
             if action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_DOWN:
                 return self.showOverlay()
             elif action == xbmcgui.ACTION_CONTEXT_MENU:
-                return self.search()
+                return self.setFilter()
             elif action == xbmcgui.ACTION_SELECT_ITEM:
                 if self.clickShowOverlay(): return
             elif action == xbmcgui.ACTION_MOVE_LEFT:
@@ -226,8 +231,9 @@ class GuideOverlay(util.CronReceiver):
 
     def doClose(self):
         self._BASE.doClose(self)
+        self.propertyTimer.stop()
         if util.getSetting('exit.stops.player',True):
-            self.player.stop()
+            xbmc.executebuiltin('PlayerControl(Stop)') #self.player.stop() will crash kodi (after a guide list reset at least)
         else:
             if xbmc.getCondVisibility('Window.IsActive(fullscreenvideo)'): xbmc.executebuiltin('Action(back)')
 
@@ -376,10 +382,15 @@ class GuideOverlay(util.CronReceiver):
 
     def fillChannelList(self):
         last = util.getSetting('last.channel')
+
+        self.channelList.reset()
+
         items = []
         for channel in self.lineUp.channels.values():
             guideChan = channel.guide
             currentShow = guideChan.currentShow()
+            if self.filter:
+                if not channel.matchesFilter(self.filter) and not currentShow.matchesFilter(self.filter): continue
             nextShow = guideChan.nextShow()
             title = channel.name
             thumb = currentShow.icon
@@ -402,6 +413,7 @@ class GuideOverlay(util.CronReceiver):
                 prog = int(prog - (prog % 5))
                 item.setProperty('show.progress','progress/script-hdhomerun-view-progress_{0}.png'.format(prog))
             items.append(item)
+
         self.channelList.addItems(items)
 
     def getStartChannel(self):
@@ -465,7 +477,10 @@ class GuideOverlay(util.CronReceiver):
         return False
 
     def showOverlay(self,show=True):
+        if self.getProperty('show.overlay'):
+            self.setFilter(clear=True)
         self.setProperty('show.overlay',show and 'SHOW' or '')
+        self.propertyTimer.reset()
         if show and self.getFocusId() != 201: self.setFocusId(201)
 
     def overlayVisible(self):
@@ -501,27 +516,15 @@ class GuideOverlay(util.CronReceiver):
         self.playChannel(channel)
         self.selectChannel(channel)
 
-    def search(self):
-        terms = xbmcgui.Dialog().input(util.T(32024))
-        if not terms: return
-        result = self.lineUp.search(terms)
-        if not result:
-            return xbmcgui.Dialog().ok(util.T(32025),'',util.T(32026))
-        items = []
-        channels = []
-        for r in result:
-            now = time.time()
-            start = float(r.get('StartTime'))
-            end = float(r.get('EndTime'))
-            if now >= start and now < end:
-                items.append(u'{0} - {1}: {2} - {3}'.format(r.get('ChannelNumber'),r.get('ChannelName'),r.get('Title')[:30],time.strftime('%I:%M %p',time.localtime(start))))
-                channels.append(r.get('ChannelNumber'))
-        if not items:
-            return xbmcgui.Dialog().ok(util.T(32025),'',util.T(32026))
-        idx = xbmcgui.Dialog().select('Results',items)
-        if idx < 0: return
-        channel = self.playChannelByNumber(channels[idx])
-        self.selectChannel(channel)
+    def setFilter(self,clear=False):
+        terms = None
+        if not clear:
+            terms = xbmcgui.Dialog().input(util.T(32024))
+            if not terms: return
+        self.filter = terms and terms.lower() or None
+        self.fillChannelList()
+        if not clear: self.showOverlay()
+
 
 class GuideOverlayWindow(GuideOverlay,BaseWindow):
     _BASE = BaseWindow

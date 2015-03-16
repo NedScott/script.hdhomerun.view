@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import xbmc, xbmcgui
+import time, threading
 
 class ManagedListItem(object):
     def __init__(self,label='', label2='', iconImage='', thumbnailImage='', path='',data_source=None):
@@ -18,7 +19,7 @@ class ManagedListItem(object):
     def listItem(self):
         if not self._listItem:
             if not self._manager: return None
-            self._listItem = self._manager.getListItemFromManagedItem(self)
+            return self._manager.getListItemFromManagedItem(self)
         return self._listItem
 
     def _takeListItem(self,manager,lid):
@@ -273,3 +274,41 @@ class ManagedControlList(object):
     def getListItemFromManagedItem(self,mli):
         pos = self.items.index(mli)
         return self.control.getListItem(pos)
+
+class PropertyTimer():
+    def __init__(self,window_id,timeout,property_,value):
+        self._winID = window_id
+        self._timeout = timeout
+        self._property = property_
+        self._value = value
+        self._endTime = 0
+
+    def _onTimeout(self):
+        self.stop()
+        xbmcgui.Window(self._winID).setProperty(self._property,self._value)
+
+    def _wait(self):
+        while not xbmc.abortRequested and time.time() < self._endTime:
+            xbmc.sleep(100)
+        if self._stopped: return
+        self._onTimeout()
+
+    def _stopped(self):
+        return self._endTime == 0
+
+    def _reset(self):
+        self._endTime = time.time() + self._timeout
+
+    def _start(self):
+        t = threading.Thread(target=self._wait)
+        t.start()
+
+    def stop(self):
+        self._endTime = 0
+
+    def reset(self):
+        if not self._timeout: return
+        self._reset()
+        if self._stopped:
+            self._start()
+

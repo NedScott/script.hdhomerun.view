@@ -48,6 +48,12 @@ class Channel(object):
     def setGuide(self,guide):
         self.guide = guide
 
+    def matchesFilter(self,filter_):
+        if filter_.isdigit():
+            return self.number.startswith(filter_)
+        else:
+            return filter_ in self.name.lower() or filter_ in self.guide.affiliate.lower()
+
 class LineUp(object):
     def __init__(self):
         self.channels = OrderedDict()
@@ -178,6 +184,9 @@ class Show(dict):
     @property
     def end(self):
         return self.get('EndTime')
+
+    def matchesFilter(self,filter_):
+        return filter_ in self.title.lower()
 
     def progress(self):
         start = self.get('StartTime')

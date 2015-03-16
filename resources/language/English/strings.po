@@ -125,6 +125,10 @@ msgctxt "#32028"
 msgid "Show DRM channels"
 msgstr ""
 
+msgctxt "#32029"
+msgid "Guide timeout seconds (0 = never auto hide)"
+msgstr ""
+
 
 #Transcoding
 msgctxt "#32500"
