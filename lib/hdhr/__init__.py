@@ -52,7 +52,7 @@ class Channel(object):
         if filter_.isdigit():
             return self.number.startswith(filter_)
         else:
-            return filter_ in self.name.lower() or filter_ in self.guide.affiliate.lower()
+            return filter_ in self.name.lower() or filter_ in self.guide.affiliate.lower() or filter_ == self.number
 
 class LineUp(object):
     def __init__(self):

@@ -2,7 +2,7 @@
 <window>
     <onload>SetProperty(loading.progress,25)</onload>
     <onload>SetProperty(loading.status,$ADDON[script.hdhomerun.view 32010])</onload>
-    <defaultcontrol>200</defaultcontrol>
+    <defaultcontrol>209</defaultcontrol>
     <coordinates>
         <system>1</system>
         <posx>0</posx>
@@ -29,18 +29,21 @@
             <height>1080</height>
         </control>
 
-        <control type="list" id="210">
-            <visible allowhiddenfocus="true">false</visible>
-            <animation effect="slide" start="0,0" end="-820,0" time="0" condition="!IsEmpty(Window.Property(show.overlay))">Conditional</animation>
-            <posx>0</posx>
-            <posy>0</posy>
-            <width>1920</width>
-            <height>1080</height>
+        <control type="group" id="209">
+            <defaultcontrol>210</defaultcontrol>
+            <control type="list" id="210">
+                <visible allowhiddenfocus="true">false</visible>
+                <animation effect="slide" start="0,0" end="-820,0" time="0" condition="!IsEmpty(Window.Property(show.overlay))">Conditional</animation>
+                <posx>0</posx>
+                <posy>0</posy>
+                <width>1920</width>
+                <height>1080</height>
 
-            <itemlayout width="1920" height="1080">
-            </itemlayout>
-            <focusedlayout width="1920" height="1080">
-            </focusedlayout>
+                <itemlayout width="1920" height="1080">
+                </itemlayout>
+                <focusedlayout width="1920" height="1080">
+                </focusedlayout>
+            </control>
         </control>
 
         <control type="group" id="200">

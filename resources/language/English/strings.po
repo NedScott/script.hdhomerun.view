@@ -126,7 +126,7 @@ msgid "Show DRM channels"
 msgstr ""
 
 msgctxt "#32029"
-msgid "Guide timeout seconds (0 = never auto hide)"
+msgid "Guide auto-hide delay seconds (0 = never hide)"
 msgstr ""
 
 

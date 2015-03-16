@@ -162,10 +162,6 @@ class GuideOverlay(util.CronReceiver):
 
         self.start()
 
-    def onFocus(self,controlID):
-        if controlID == 201:
-            self.cron.forceTick()
-
     def onAction(self,action):
         try:
             if self.overlayVisible(): self.propertyTimer.reset()
@@ -173,8 +169,8 @@ class GuideOverlay(util.CronReceiver):
                 return self.showOverlay()
             elif action == xbmcgui.ACTION_CONTEXT_MENU:
                 return self.setFilter()
-            elif action == xbmcgui.ACTION_SELECT_ITEM:
-                if self.clickShowOverlay(): return
+#            elif action == xbmcgui.ACTION_SELECT_ITEM:
+#                if self.clickShowOverlay(): return
             elif action == xbmcgui.ACTION_MOVE_LEFT:
                 return self.showOverlay(False)
             elif action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
@@ -457,6 +453,8 @@ class GuideOverlay(util.CronReceiver):
 
         self.cron.registerReceiver(self)
 
+        self.setFocusId(210) #Set focus now that dummy list is ready
+
     def selectChannel(self,channel):
         pos = self.lineUp.index(channel.number)
         if pos > -1:
@@ -476,9 +474,14 @@ class GuideOverlay(util.CronReceiver):
             return True
         return False
 
-    def showOverlay(self,show=True):
-        if self.getProperty('show.overlay'):
-            self.setFilter(clear=True)
+    def showOverlay(self,show=True,from_filter=False):
+        if not self.overlayVisible():
+            if not from_filter:
+                if not self.clearFilter():
+                    self.cron.forceTick()
+            else:
+                self.cron.forceTick()
+
         self.setProperty('show.overlay',show and 'SHOW' or '')
         self.propertyTimer.reset()
         if show and self.getFocusId() != 201: self.setFocusId(201)
@@ -516,14 +519,21 @@ class GuideOverlay(util.CronReceiver):
         self.playChannel(channel)
         self.selectChannel(channel)
 
-    def setFilter(self,clear=False):
-        terms = None
-        if not clear:
-            terms = xbmcgui.Dialog().input(util.T(32024))
-            if not terms: return
-        self.filter = terms and terms.lower() or None
+    def clearFilter(self):
+        if not self.filter: return False
+        self.filter = None
+        self.current = None
         self.fillChannelList()
-        if not clear: self.showOverlay()
+        return True
+
+    def setFilter(self):
+        terms = xbmcgui.Dialog().input(util.T(32024))
+        if not terms: return self.clearFilter()
+        self.filter = terms.lower() or None
+        self.current = None
+        self.fillChannelList()
+        self.showOverlay(from_filter=True)
+        self.setFocusId(201)
 
 
 class GuideOverlayWindow(GuideOverlay,BaseWindow):

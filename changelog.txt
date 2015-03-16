@@ -1,3 +1,9 @@
+** 0.0.10b **
+
+Added setting 'Guide auto-hide delay seconds (0 = never hide)' default: 10
+Context button now displays search input, allowing the user to set a channel filter
+Some focus fixes
+
 ** 0.0.9b **
 
 Added 'Enable enhancements for touch devices' to settings. Currently allows "flinging" the guide
