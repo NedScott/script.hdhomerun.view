@@ -152,7 +152,7 @@ class GuideOverlay(util.CronReceiver):
             util.DEBUG_LOG('Touch mode: DISABLED')
         self.started = True
 
-        self.propertyTimer = kodigui.PropertyTimer(self._winID,util.getSetting('overlay.timeout',10),'show.overlay','')
+        self.propertyTimer = kodigui.PropertyTimer(self._winID,util.getSetting('overlay.timeout',0),'show.overlay','')
 
         self.channelList = kodigui.ManagedControlList(self,201,3)
         self.currentProgress = self.getControl(250)
