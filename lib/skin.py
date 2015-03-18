@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-import xbmc
+import xbmc, xbmcvfs
 import util
 
 #Skins that work without font modification:
@@ -25,6 +25,26 @@ FONTS = ('font10','font13','font30')
 VERSION = util.ADDON.getAddonInfo('version')
 VERSION_FILE = os.path.join(xbmc.translatePath(util.ADDON.getAddonInfo('profile')).decode('utf-8'),'skin','version')
 
+def copyTree(source,target):
+	pct = 0
+	mod = 5
+	if not source or not target: return
+	if not os.path.isdir(source): return
+	sourcelen = len(source)
+	if not source.endswith(os.path.sep): sourcelen += 1
+	for path, dirs, files in os.walk(source): #@UnusedVariable
+		subpath = path[sourcelen:]
+		xbmcvfs.mkdir(os.path.join(target,subpath))
+		for f in files:
+			xbmcvfs.copy(os.path.join(path,f),os.path.join(target,subpath,f))
+			pct += mod
+			if pct > 100:
+				pct = 95
+				mod = -5
+			elif pct < 0:
+				pct = 5
+				mod = 5
+
 def currentKodiSkin():
     skinPath = xbmc.translatePath('special://skin').rstrip('/\\')
     return os.path.basename(skinPath)
@@ -39,7 +59,7 @@ def setupDynamicSkin():
     if not os.path.exists(targetDir): os.makedirs(targetDir)
 
     source = os.path.join(xbmc.translatePath(util.ADDON.getAddonInfo('path')).decode('utf-8'),'resources','skins')
-    shutil.copytree(source,target)
+    copyTree(source,target)
 
 def customizeSkinXML(skin,xml):
     source = os.path.join(xbmc.translatePath(util.ADDON.getAddonInfo('path')).decode('utf-8'),'resources','skins','Main','1080i',xml)
