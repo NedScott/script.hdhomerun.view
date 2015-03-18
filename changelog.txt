@@ -1,4 +1,4 @@
-** 2015.13.18 **
+** 2015.3.18 **
 
 Use public guide data URL and DeviceAuth
 Change 'Guide auto-hide delay seconds' default to 0
