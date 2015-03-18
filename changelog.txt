@@ -1,3 +1,9 @@
+** 0.0.11b **
+
+Use public guide data URL and DeviceAuth
+Change 'Guide auto-hide delay seconds' default to 0
+Add font conversion for skins other than Confluence
+
 ** 0.0.10b **
 
 Added setting 'Guide auto-hide delay seconds (0 = never hide)' default: 10
