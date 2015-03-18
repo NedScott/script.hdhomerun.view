@@ -322,12 +322,17 @@ class GuideOverlay(util.CronReceiver):
         return True
 
     def updateGuide(self):
+        err = None
         try:
             guide = hdhr.Guide(self.lineUp)
+        except hdhr.NoDeviceAuthException:
+            err = util.T(32030)
         except:
-            e = util.ERROR()
+            err = util.ERROR()
+
+        if err:
             if not self.guideFetchPreviouslyFailed: #Only show notification the first time. Don't need this every 5 mins if internet is down
-                util.showNotification(e,header=util.T(32013))
+                util.showNotification(err,header=util.T(32013))
             self.guideFetchPreviouslyFailed = True
             self.nextGuideUpdate = time.time() + 300 #Could not get guide data. Check again in 5 minutes
             self.setWinProperties()

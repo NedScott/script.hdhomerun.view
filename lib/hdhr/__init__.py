@@ -13,12 +13,14 @@ except:
 
 from lib import util
 
-GUIDE_URL = 'http://mytest.hdhomerun.com/api/guide.php?DeviceID={0}'
-SEARCH_URL = 'http://mytest.hdhomerun.com/api/search?DeviceID={0}&Search={1}'
+GUIDE_URL = 'http://my.hdhomerun.com/api/guide.php?DeviceAuth={0}'
+SEARCH_URL = 'http://my.hdhomerun.com/api/search?DeviceAuth={0}&Search={1}'
 
 class NoCompatibleDevicesException(Exception): pass
 
 class NoDevicesException(Exception): pass
+
+class NoDeviceAuthException(Exception): pass
 
 def chanTuple(guide_number,chanCount):
     major, minor = (guide_number + '.0').split('.',2)[:2]
@@ -151,14 +153,13 @@ class LineUp(object):
         ids = []
         for d in self.devices.values():
             ids.append(d.ID)
-            authID = d.authID
+            authID = d.deviceAuth
             if not authID: continue
             combined += authID
 
-        if combined and not GUIDE_URL.startswith('http://mytest.'):
-            return binascii.b2a_base64(combined)
-        else:
-            return ','.join(ids)
+        if not combined: raise NoDeviceAuthException()
+
+        return binascii.b2a_base64(combined)
 
 class Show(dict):
     @property
@@ -245,7 +246,12 @@ class Guide(object):
             return
         url = GUIDE_URL.format(lineup.apiAuthID())
         util.DEBUG_LOG('Fetching guide from: {0}'.format(url))
-        data = requests.get(url).json()
+        req = requests.get(url)
+        try:
+            data = req.json()
+        except:
+            import json
+            data = json.loads(req.text.strip(']')+'}')
         for chan in data:
             self.guide[chan['GuideNumber']] = chan
 

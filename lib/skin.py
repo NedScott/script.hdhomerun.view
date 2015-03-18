@@ -9,13 +9,15 @@ import util
 # skin.xperience1080
 
 FONT_TRANSLATIONS = {
-    'skin.eminence':    {'font10':'Font-RSS',               'font13':'font13',      'font30':'Font-ViewCategory'}, #Verified working
-    'skin.amber':       {'font10':'GridItems',              'font13':'Details',     'font30':'MainLabelBigTitle'}, #Old gui API level - flaws
-    'skin.metropolis':  {'font10':'METF_DialogVerySmall',   'font13':'font13',      'font30':'METF_TitleTextLarge'}, #Verified working
-    'skin.quartz':      {'font10':'size14',                 'font13':'font13',      'font30':'size28'} #Old gui API level - flaws
+    'skin.arctic.zephyr':{'font10':'Mini',                  'font13':'font13',       'font30':'Large'},
+    'skin.apptv':       {'font10':'font10',                 'font13':'font10',      'font30':'font18'}, #No font10 equivalent
+    'skin.eminence':    {'font10':'Font-RSS',               'font13':'font13',      'font30':'Font-ViewCategory'},
+    'skin.amber':       {'font10':'GridItems',              'font13':'Details',     'font30':'MainLabelBigTitle'}, #Old gui API level - alignment flaws
+    'skin.metropolis':  {'font10':'METF_DialogVerySmall',   'font13':'font13',      'font30':'METF_TitleTextLarge'},
+    'skin.quartz':      {'font10':'size14',                 'font13':'font13',      'font30':'size28'} #Old gui API level - alignment flaws
 }
 
-#helix skins =  [' skin.mimic', ' skin.arctic.zephyr', ' skin.neon', ' skin.aeon.nox.5', ' skin.refocus', ' skin.bello', ' skin.xperience1080', ' skin.nebula', ' skin.blackglassnova', ' skin.1080xf', ' skin.rapier', ' skin.titan', ' skin.box', ' skin.metropolis', ' skin.apptv', ' skin.eminence', ' skin.back-row', ' skin.maximinimalism', ' skin.transparency', ' skin.conq', ' skin.sio2']
+#helix skins to check =  [' skin.mimic', ' skin.neon', ' skin.refocus', ' skin.bello', ' skin.nebula', ' skin.blackglassnova', ' skin.1080xf', ' skin.rapier', ' skin.titan', ' skin.box', ' skin.back-row', ' skin.maximinimalism', ' skin.transparency', ' skin.conq', ' skin.sio2']
 
 SKINS_XMLS = ('script-hdhomerun-view-overlay.xml','script-hdhomerun-view-channel_entry.xml')
 FONTS = ('font10','font13','font30')

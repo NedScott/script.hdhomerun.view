@@ -129,6 +129,10 @@ msgctxt "#32029"
 msgid "Guide auto-hide delay seconds (0 = never hide)"
 msgstr ""
 
+msgctxt "#32030"
+msgid "No device authorization available"
+msgstr ""
+
 
 #Transcoding
 msgctxt "#32500"

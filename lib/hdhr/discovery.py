@@ -23,7 +23,7 @@ DEVICE_TYPE = 0x01
 DEVICE_ID = 0x02
 LINEUP_URL = 0x27
 STORAGE_URL = 0x28
-DEVICE_AUTH_ID = 0x29
+DEVICE_AUTH = 0x29
 
 LINEUP_URL_BASE = 'http://{ip}/lineup.json'
 
@@ -64,9 +64,8 @@ class DiscoveryResponse(object):
             return getattr(self,'storageURL','')
 
     @property
-    def authID(self):
-        authID = getattr(self,'_authID',None)
-        if not authID: return None
+    def deviceAuth(self):
+        return getattr(self,'_deviceAuth',None)
 
     def processPacket(self,packet):
         try:
@@ -107,8 +106,8 @@ class DiscoveryResponse(object):
                 self.lineUpURL = struct.unpack('>{0}s'.format(length),dataIO.read(length))[0]
             elif tag == STORAGE_URL:
                 self.storageURL = struct.unpack('>{0}s'.format(length),dataIO.read(length))[0]
-            elif tag == DEVICE_AUTH_ID:
-                self._authID = struct.unpack('>{0}s'.format(length),dataIO.read(length))[0]
+            elif tag == DEVICE_AUTH:
+                self._deviceAuth = struct.unpack('>{0}s'.format(length),dataIO.read(length))[0]
             else:
                 dataIO.read(length)
 
