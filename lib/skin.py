@@ -19,11 +19,28 @@ FONT_TRANSLATIONS = {
 
 #helix skins to check =  [' skin.mimic', ' skin.neon', ' skin.refocus', ' skin.bello', ' skin.nebula', ' skin.blackglassnova', ' skin.1080xf', ' skin.rapier', ' skin.titan', ' skin.box', ' skin.back-row', ' skin.maximinimalism', ' skin.transparency', ' skin.conq', ' skin.sio2']
 
-SKINS_XMLS = ('script-hdhomerun-view-overlay.xml','script-hdhomerun-view-channel_entry.xml')
 FONTS = ('font10','font13','font30')
 
 VERSION = util.ADDON.getAddonInfo('version')
 VERSION_FILE = os.path.join(xbmc.translatePath(util.ADDON.getAddonInfo('profile')).decode('utf-8'),'skin','version')
+
+def skinningAPIisOld():
+    try:
+        return util.Version(util.xbmcaddon.Addon('xbmc.gui').getAddonInfo('version')) < util.Version('5.2.0')
+    except:
+        util.ERROR()
+        return False
+
+OLD_API = True #skinningAPIisOld()
+
+if OLD_API:
+    OVERLAY = 'script-hdhomerun-view-overlay.gotham.xml'
+    CHANNEL_ENTRY = 'script-hdhomerun-view-channel_entry.gotham.xml'
+else:
+    OVERLAY = 'script-hdhomerun-view-overlay.xml'
+    CHANNEL_ENTRY = 'script-hdhomerun-view-channel_entry.xml'
+
+SKINS_XMLS = (OVERLAY,CHANNEL_ENTRY)
 
 def copyTree(source,target):
 	pct = 0
@@ -79,7 +96,7 @@ def updateNeeded():
     if not os.path.exists(VERSION_FILE): return True
     with open(VERSION_FILE, 'r') as f:
         version = f.read()
-    if version != '{0}:{1}'.format(currentKodiSkin(),VERSION): return True
+    if version != '{0}:{1}:{2}'.format(currentKodiSkin(),VERSION,OLD_API and ':old' or ''): return True
     return False
 
 def getSkinPath():
@@ -91,10 +108,11 @@ def getSkinPath():
         util.DEBUG_LOG('Updating custom skin')
         try:
             setupDynamicSkin()
+
             for xml in SKINS_XMLS:
                 customizeSkinXML(skin,xml)
             with open(VERSION_FILE, 'w') as f:
-                f.write('{0}:{1}'.format(currentKodiSkin(),VERSION))
+                f.write('{0}:{1}:{2}'.format(currentKodiSkin(),VERSION,OLD_API and ':old' or ''))
         except:
             util.ERROR()
             return default

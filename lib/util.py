@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys, binascii, json, threading, time, datetime
 import xbmc, xbmcaddon
+import verlib
 
 DEBUG = True
 
@@ -30,6 +31,9 @@ def ERROR(txt='',hide_tb=False,notify=False):
     print "`"
     if notify: showNotification('ERROR: {0}'.format(short))
     return short
+
+def Version(ver_string):
+    return verlib.NormalizedVersion(verlib.suggest_normalized_version(ver_string))
 
 def getSetting(key,default=None):
     setting = ADDON.getSetting(key)

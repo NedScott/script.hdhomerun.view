@@ -138,6 +138,7 @@ class GuideOverlay(util.CronReceiver):
         self.cron = None
         self.guideFetchPreviouslyFailed = False
         self.nextGuideUpdate = MAX_TIME_INT
+        self.lastDiscovery = time.time()
         self.filter = None
 
     #==========================================================================
@@ -303,25 +304,32 @@ class GuideOverlay(util.CronReceiver):
             xbmc.executebuiltin('ActivateWindow(fullscreenvideo)')
 
     def getLineUpAndGuide(self):
-        try:
-            self.lineUp = hdhr.LineUp()
-        except hdhr.NoCompatibleDevicesException:
-            xbmcgui.Dialog().ok(util.T(32016),util.T(32011),'',util.T(32012))
-            return False
-        except hdhr.NoDevicesException:
-            xbmcgui.Dialog().ok(util.T(32016),util.T(32014),'',util.T(32012))
-            return False
-        except:
-            e = util.ERROR()
-            xbmcgui.Dialog().ok(util.T(32016),util.T(32015),e,util.T(32012))
-            return False
-
+        self.lastDiscovery = time.time()
+        self.updateLineup()
         self.showProgress(50,util.T(32008))
+
         self.updateGuide()
         self.showProgress(75,util.T(32009))
         return True
 
+    def updateLineup(self,quiet=False):
+        try:
+            self.lineUp = hdhr.LineUp()
+        except hdhr.NoCompatibleDevicesException:
+            if not quiet: xbmcgui.Dialog().ok(util.T(32016),util.T(32011),'',util.T(32012))
+            return False
+        except hdhr.NoDevicesException:
+            if not quiet: xbmcgui.Dialog().ok(util.T(32016),util.T(32014),'',util.T(32012))
+            return False
+        except:
+            e = util.ERROR()
+            if not quiet: xbmcgui.Dialog().ok(util.T(32016),util.T(32015),e,util.T(32012))
+            return False
+
     def updateGuide(self):
+        if time.time() - self.lastDiscovery > 3600: #1 hour
+            self.updateLineup(quiet=True)
+
         err = None
         try:
             guide = hdhr.Guide(self.lineUp)
@@ -514,7 +522,7 @@ class GuideOverlay(util.CronReceiver):
         return False
 
     def doChannelEntry(self,digit):
-        window = KodiChannelEntry('script-hdhomerun-view-channel_entry.xml',util.ADDON.getAddonInfo('path'),'Main','1080p',digit=digit,has_sub_channels=self.lineUp.hasSubChannels)
+        window = KodiChannelEntry(skin.CHANNEL_ENTRY,skin.getSkinPath(),'Main','1080p',digit=digit,has_sub_channels=self.lineUp.hasSubChannels)
         window.doModal()
         channelNumber = window.getChannel()
         del window
@@ -555,10 +563,10 @@ def start():
     path = skin.getSkinPath()
 
     if util.getSetting('touch.mode',False):
-        window = GuideOverlayWindow('script-hdhomerun-view-overlay.xml',path,'Main','1080i')
+        window = GuideOverlayWindow(skin.OVERLAY,path,'Main','1080i')
         window.touchMode = True
     else:
-        window = GuideOverlayDialog('script-hdhomerun-view-overlay.xml',path,'Main','1080i')
+        window = GuideOverlayDialog(skin.OVERLAY,path,'Main','1080i')
 
     with util.Cron(5) as window.cron:
         window.doModal()

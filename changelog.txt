@@ -3,6 +3,7 @@
 Use public guide data URL and DeviceAuth
 Change 'Guide auto-hide delay seconds' default to 0
 Add font conversion for skins other than Confluence
+Added Gotham skin
 
 ** 0.0.10b **
 
