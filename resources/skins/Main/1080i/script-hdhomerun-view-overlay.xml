@@ -134,11 +134,12 @@
                         </control>
                         <control type="textbox">
                             <posx>190</posx>
-                            <posy>198</posy>
+                            <posy>193</posy>
                             <width>220</width>
-                            <height>52</height>
+                            <height>60</height>
                             <font>font10</font>
                             <align>left</align>
+                            <aligny>top</aligny>
                             <textcolor>FFFFFFFF</textcolor>
                             <label>$INFO[ListItem.Property(next.title)]</label>
                         </control>

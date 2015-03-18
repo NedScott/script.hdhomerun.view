@@ -6,6 +6,7 @@ import hdhr
 import kodigui
 import util
 import player
+import skin
 
 MAX_TIME_INT = 31536000000 #1000 years from Epoch
 
@@ -543,11 +544,17 @@ class GuideOverlayDialog(GuideOverlay,BaseDialog):
     _BASE = BaseDialog
 
 def start():
+    #import os
+    #path = os.path.join(util.ADDON.getAddonInfo('profile').decode('utf-8'),'skin')
+    util.DEBUG_LOG('Current Kodi skin: {0}'.format(skin.currentKodiSkin()))
+    path = skin.getSkinPath()
+
     if util.getSetting('touch.mode',False):
-        window = GuideOverlayWindow('script-hdhomerun-view-overlay.xml',util.ADDON.getAddonInfo('path'),'Main','1080i')
+        window = GuideOverlayWindow('script-hdhomerun-view-overlay.xml',path,'Main','1080i')
         window.touchMode = True
     else:
-        window = GuideOverlayDialog('script-hdhomerun-view-overlay.xml',util.ADDON.getAddonInfo('path'),'Main','1080i')
+        window = GuideOverlayDialog('script-hdhomerun-view-overlay.xml',path,'Main','1080i')
+
     with util.Cron(5) as window.cron:
         window.doModal()
         del window
