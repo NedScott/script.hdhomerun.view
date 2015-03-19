@@ -1,3 +1,10 @@
+** 2015.3.19a1 **
+
+Fix for un-escaped URLs
+Change name to 'HDHomeRun Live TV'
+Get guide via https
+Slightly darken currently playing background
+
 ** 2015.3.18 **
 
 Use public guide data URL and DeviceAuth

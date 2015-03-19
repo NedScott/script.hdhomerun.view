@@ -319,7 +319,7 @@
                 <width>1090</width>
                 <height>150</height>
                 <texture>script-hdhomerun-view-white_square.png</texture>
-                <colordiffuse>A0000000</colordiffuse>
+                <colordiffuse>E0000000</colordiffuse>
             </control>
             <control type="image">
                 <posx>0</posx>

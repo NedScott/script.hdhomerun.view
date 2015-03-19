@@ -7,17 +7,29 @@ import util
 #
 # skin.aeon.nox.5
 # skin.xperience1080
+# skin.mimic
+# skin.neon <- No font30, but I'll leave it for now
+# skin.bello
 
 FONT_TRANSLATIONS = {
-    'skin.arctic.zephyr':{'font10':'Mini',                  'font13':'font13',       'font30':'Large'},
-    'skin.apptv':       {'font10':'font10',                 'font13':'font10',      'font30':'font18'}, #No font10 equivalent
-    'skin.eminence':    {'font10':'Font-RSS',               'font13':'font13',      'font30':'Font-ViewCategory'},
-    'skin.amber':       {'font10':'GridItems',              'font13':'Details',     'font30':'MainLabelBigTitle'}, #Old gui API level - alignment flaws
-    'skin.metropolis':  {'font10':'METF_DialogVerySmall',   'font13':'font13',      'font30':'METF_TitleTextLarge'},
-    'skin.quartz':      {'font10':'size14',                 'font13':'font13',      'font30':'size28'} #Old gui API level - alignment flaws
+    'skin.maximinimalism':{'font10':'smallMedium',            'font13':'regular',         'font30':'large'},
+    'skin.back-row':      {'font10':'font12',                 'font13':'special14',       'font30':'special16'},
+    'skin.box':           {'font10':'Panel_ItemChooser',      'font13':'List_Focused',    'font30':'Panel_Description_Title'},
+    'skin.titan':         {'font10':'Reg24',                  'font13':'font13',          'font30':'Reg42'},
+    'skin.rapier':        {'font10':'ListFont5',              'font13':'WeatherCurrentReadingFont2', 'font30':'FullMediaInfoTitleFont3'},
+    'skin.sio2':          {'font10':'size22',                 'font13':'size28',          'font30':'size38'},
+    'skin.blackglassnova':{'font10':'rss',                    'font13':'SmallButtonFont', 'font30':'WindowTitleFont'},
+    'skin.nebula':        {'font10':'BadgeFont',              'font13':'SmallButtonFont', 'font30':'InfoTitleFont'},
+    'skin.transparency':  {'font10':'font-15',                'font13':'font13',          'font30':'font-30'},
+    'skin.arctic.zephyr': {'font10':'Mini',                   'font13':'font13',          'font30':'Large'},
+    'skin.apptv':         {'font10':'font10',                 'font13':'font10',          'font30':'font18'}, #No font10 equivalent
+    'skin.eminence':      {'font10':'Font-RSS',               'font13':'font13',          'font30':'Font-ViewCategory'},
+    'skin.amber':         {'font10':'GridItems',              'font13':'Details',         'font30':'MainLabelBigTitle'}, #Old gui API level - alignment flaws
+    'skin.metropolis':    {'font10':'METF_DialogVerySmall',   'font13':'font13',          'font30':'METF_TitleTextLarge'},
+    'skin.quartz':        {'font10':'size14',                 'font13':'font13',          'font30':'size28'} #Old gui API level - alignment flaws
 }
 
-#helix skins to check =  [' skin.mimic', ' skin.neon', ' skin.refocus', ' skin.bello', ' skin.nebula', ' skin.blackglassnova', ' skin.1080xf', ' skin.rapier', ' skin.titan', ' skin.box', ' skin.back-row', ' skin.maximinimalism', ' skin.transparency', ' skin.conq', ' skin.sio2']
+#helix skins to check =  [' skin.refocus', ' skin.1080xf', ' skin.conq']
 
 FONTS = ('font10','font13','font30')
 
@@ -31,7 +43,7 @@ def skinningAPIisOld():
         util.ERROR()
         return False
 
-OLD_API = True #skinningAPIisOld()
+OLD_API = skinningAPIisOld()
 
 if OLD_API:
     OVERLAY = 'script-hdhomerun-view-overlay.gotham.xml'

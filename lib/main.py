@@ -561,7 +561,6 @@ def start():
     #path = os.path.join(util.ADDON.getAddonInfo('profile').decode('utf-8'),'skin')
     util.DEBUG_LOG('Current Kodi skin: {0}'.format(skin.currentKodiSkin()))
     path = skin.getSkinPath()
-
     if util.getSetting('touch.mode',False):
         window = GuideOverlayWindow(skin.OVERLAY,path,'Main','1080i')
         window.touchMode = True

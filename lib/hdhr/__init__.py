@@ -3,6 +3,7 @@ import time
 import requests
 import binascii
 import urllib
+import json
 
 import discovery
 
@@ -13,8 +14,8 @@ except:
 
 from lib import util
 
-GUIDE_URL = 'http://my.hdhomerun.com/api/guide.php?DeviceAuth={0}'
-SEARCH_URL = 'http://my.hdhomerun.com/api/search?DeviceAuth={0}&Search={1}'
+GUIDE_URL = 'https://my.hdhomerun.com/api/guide.php?DeviceAuth={0}'
+SEARCH_URL = 'https://my.hdhomerun.com/api/search?DeviceAuth={0}&Search={1}'
 
 class NoCompatibleDevicesException(Exception): pass
 
@@ -244,14 +245,13 @@ class Guide(object):
         self.guide = OrderedDict()
         if not lineup:
             return
-        url = GUIDE_URL.format(lineup.apiAuthID())
+        url = GUIDE_URL.format(urllib.quote(lineup.apiAuthID(),''))
         util.DEBUG_LOG('Fetching guide from: {0}'.format(url))
-        req = requests.get(url)
-        try:
-            data = req.json()
-        except:
-            import json
-            data = json.loads(req.text.strip(']')+'}')
+
+        #data = requests.get(url).json() #Doesn't work because there is no SNI in python 2.x
+        raw = util.xbmcvfsGet(url)
+        data = json.loads(raw)
+
         for chan in data:
             self.guide[chan['GuideNumber']] = chan
 

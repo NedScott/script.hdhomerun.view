@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys, binascii, json, threading, time, datetime
-import xbmc, xbmcaddon
+import xbmc, xbmcaddon, xbmcvfs
 import verlib
 
 DEBUG = True
@@ -79,6 +79,12 @@ def timeInDayLocalSeconds():
     sod = datetime.datetime(year=now.year,month=now.month,day=now.day)
     sod = int(time.mktime(sod.timetuple()))
     return int(time.time() - sod)
+
+def xbmcvfsGet(url):
+    f = xbmcvfs.File(url)
+    data = f.read()
+    f.close()
+    return data
 
 class CronReceiver():
     def tick(self): pass
