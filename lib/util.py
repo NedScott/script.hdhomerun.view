@@ -20,15 +20,17 @@ def ERROR(txt='',hide_tb=False,notify=False):
     if isinstance (txt,str): txt = txt.decode("utf-8")
     short = str(sys.exc_info()[1])
     if hide_tb:
-        LOG('ERROR: {0} - {1}'.format(txt,short))
+        xbmc.log('script.hdhomerun.view: ERROR: {0} - {1}'.format(txt,short),xbmc.LOGERROR)
         return short
-    print "_________________________________________________________________________________"
-    LOG('ERROR: ' + txt)
+
     import traceback
     tb = traceback.format_exc()
-    for l in tb.splitlines(): print '    ' + l
-    print "_________________________________________________________________________________"
-    print "`"
+    xbmc.log("_________________________________________________________________________________",xbmc.LOGERROR)
+    xbmc.log('script.hdhomerun.view: ERROR: ' + txt,xbmc.LOGERROR)
+    for l in tb.splitlines():
+        xbmc.log('    ' + l,xbmc.LOGERROR)
+    xbmc.log("_________________________________________________________________________________",xbmc.LOGERROR)
+    xbmc.log("`",xbmc.LOGERROR)
     if notify: showNotification('ERROR: {0}'.format(short))
     return short
 
@@ -81,7 +83,7 @@ def timeInDayLocalSeconds():
     return int(time.time() - sod)
 
 def xbmcvfsGet(url):
-    f = xbmcvfs.File(url)
+    f = xbmcvfs.File(url,'r')
     data = f.read()
     f.close()
     return data

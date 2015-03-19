@@ -1,3 +1,9 @@
+***************
+** 2015.3.19 **
+***************
+Initial public release
+Retry fetching guide data if it fails on first attempt
+
 ** 2015.3.19a1 **
 
 Fix for un-escaped URLs

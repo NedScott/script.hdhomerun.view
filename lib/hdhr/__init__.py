@@ -23,6 +23,9 @@ class NoDevicesException(Exception): pass
 
 class NoDeviceAuthException(Exception): pass
 
+class NoGuideDataException(Exception): pass
+
+
 def chanTuple(guide_number,chanCount):
     major, minor = (guide_number + '.0').split('.',2)[:2]
     return (int(major),int(minor),chanCount*-1)
@@ -249,11 +252,28 @@ class Guide(object):
         util.DEBUG_LOG('Fetching guide from: {0}'.format(url))
 
         #data = requests.get(url).json() #Doesn't work because there is no SNI in python 2.x
-        raw = util.xbmcvfsGet(url)
-        data = json.loads(raw)
+        data = self.getData(url)
+
+        if not data: raise NoGuideDataException()
 
         for chan in data:
             self.guide[chan['GuideNumber']] = chan
+
+    def getData(self,url):
+        for second in (False,True):
+            if second: util.LOG('Failed to get guide data on first try - retrying...')
+            try:
+                raw = util.xbmcvfsGet(url)
+            except:
+                util.ERROR()
+                if second: raise
+                time.sleep(0.2)
+                continue
+            if not raw: continue
+
+            data = json.loads(raw)
+            if data: return data
+        return None
 
     def getChannel(self,guide_number):
         return GuideChannel(self.guide.get(guide_number) or {})
