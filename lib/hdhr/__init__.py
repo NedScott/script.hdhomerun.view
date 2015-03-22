@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import time
 import requests
-import binascii
+import base64
 import urllib
 import json
 
@@ -163,7 +163,7 @@ class LineUp(object):
 
         if not combined: raise NoDeviceAuthException()
 
-        return binascii.b2a_base64(combined)
+        return base64.standard_b64encode(combined)
 
 class Show(dict):
     @property

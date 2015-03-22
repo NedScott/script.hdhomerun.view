@@ -83,8 +83,9 @@ def timeInDayLocalSeconds():
     return int(time.time() - sod)
 
 def xbmcvfsGet(url):
+    st = xbmcvfs.Stat(url)
     f = xbmcvfs.File(url,'r')
-    data = f.read()
+    data = f.read(st.st_size())
     f.close()
     return data
 
