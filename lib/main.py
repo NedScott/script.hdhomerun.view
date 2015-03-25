@@ -137,7 +137,7 @@ class GuideOverlay(util.CronReceiver):
         self.fallbackChannel = None
         self.cron = None
         self.guideFetchPreviouslyFailed = False
-        self.nextGuideUpdate = 0
+        self.resetNextGuideUpdate()
         self.lastDiscovery = time.time()
         self.filter = None
 
@@ -223,8 +223,8 @@ class GuideOverlay(util.CronReceiver):
 
     def tick(self):
         if time.time() > self.nextGuideUpdate:
-            self.updateChannels()
             self.resetNextGuideUpdate()
+            self.updateChannels()
         else:
             self.updateProgressBars()
 
@@ -329,7 +329,9 @@ class GuideOverlay(util.CronReceiver):
                 self.resetNextGuideUpdate(300) #Could not get guide data. Check again in 5 minutes
             self.guideFetchPreviouslyFailed = True
             self.setWinProperties()
-            if self.lineUp.hasGuideData: return
+            if self.lineUp.hasGuideData:
+                util.DEBUG_LOG('Next guide update: {0} minutes'.format(int((self.nextGuideUpdate - time.time())/60)))
+                return
 
         guide = guide or hdhr.Guide()
 
@@ -564,8 +566,6 @@ class GuideOverlayDialog(GuideOverlay,BaseDialog):
     _BASE = BaseDialog
 
 def start():
-    #import os
-    #path = os.path.join(util.ADDON.getAddonInfo('profile').decode('utf-8'),'skin')
     util.DEBUG_LOG('Current Kodi skin: {0}'.format(skin.currentKodiSkin()))
     path = skin.getSkinPath()
     if util.getSetting('touch.mode',False):
