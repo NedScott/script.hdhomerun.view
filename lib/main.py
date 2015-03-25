@@ -566,6 +566,7 @@ class GuideOverlayDialog(GuideOverlay,BaseDialog):
     _BASE = BaseDialog
 
 def start():
+    util.LOG('Version: {0}'.format(util.ADDON.getAddonInfo('version')))
     util.DEBUG_LOG('Current Kodi skin: {0}'.format(skin.currentKodiSkin()))
     path = skin.getSkinPath()
     if util.getSetting('touch.mode',False):

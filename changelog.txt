@@ -1,9 +1,10 @@
-** 2015.3.24 **
+** 2015.3.25 **
 
-Improve guide update method
+Use more stable guide update method
 Update guide every 55 to 65 minutes
 On guide update failure, wait 5 minutes and try again - then return to normal interval
 Fix for DeviceAuth being encoded with a trailing newline
+Now logs addon version
 
 ** 2015.3.20b1 **
 
