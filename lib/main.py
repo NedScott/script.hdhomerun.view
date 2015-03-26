@@ -8,6 +8,8 @@ import util
 import player
 import skin
 
+API_LEVEL = 1
+
 CHANNEL_DISPLAY = u'[COLOR FF99CCFF]{0}[/COLOR] {1}'
 GUIDE_UPDATE_INTERVAL = 3300 #55 mins
 GUIDE_UPDATE_VARIANT = 600 #10 mins
@@ -511,6 +513,8 @@ class GuideOverlay(util.CronReceiver):
 
         self.setFocusId(210) #Set focus now that dummy list is ready
 
+        self.checkIfUpdated()
+
     def selectChannel(self,channel):
         pos = self.lineUp.index(channel.number)
         if pos > -1:
@@ -599,6 +603,15 @@ class GuideOverlay(util.CronReceiver):
         self.showOverlay(from_filter=True)
         self.setFocusId(201)
 
+    def checkIfUpdated(self):
+        lastAPILevel = util.getSetting('API.LEVEL')
+        util.setSetting('API.LEVEL',API_LEVEL)
+
+        if not lastAPILevel:
+            return self.firstRun()
+
+    def firstRun(self):
+        util.showTextDialog('Info',util.T(32100))
 
 class GuideOverlayWindow(GuideOverlay,BaseWindow):
     _BASE = BaseWindow

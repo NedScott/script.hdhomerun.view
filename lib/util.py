@@ -91,6 +91,30 @@ def xbmcvfsGet(url):
     f.close()
     return data
 
+def showTextDialog(heading,text):
+    t = TextBox()
+    t.setControls(heading,text)
+
+class TextBox:
+    # constants
+    WINDOW = 10147
+    CONTROL_LABEL = 1
+    CONTROL_TEXTBOX = 5
+
+    def __init__(self, *args, **kwargs):
+        # activate the text viewer window
+        xbmc.executebuiltin("ActivateWindow(%d)" % ( self.WINDOW, ))
+        # get window
+        self.win = xbmcgui.Window(self.WINDOW)
+        # give window time to initialize
+        xbmc.sleep(1000)
+
+    def setControls(self,heading,text):
+        # set heading
+        self.win.getControl(self.CONTROL_LABEL).setLabel(heading)
+        # set text
+        self.win.getControl(self.CONTROL_TEXTBOX).setText(text)
+
 class CronReceiver():
     def tick(self): pass
     def halfHour(self): pass

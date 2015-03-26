@@ -137,6 +137,11 @@ msgctxt "#32031"
 msgid "No guide data available"
 msgstr ""
 
+#First run text
+msgctxt "#32100"
+msgid "[B]Controls:[/B][CR][CR]   Show guide:[CR]      Remote/Controller: Select or move right[CR]      Touch: Tap or swipe left[CR]      Keyboard: Enter or right[CR]      Mouse: Left click[CR][CR]   Show options:[CR]      Remote/Controller: Context menu button or (when guide is visible) move right[CR]      Touch: Swipe left when guide is visible[CR]      Keyboard: C or (when guide is visible) move right[CR]      Mouse: Right click[CR][CR]   Channel Entry (if supported):[CR]      Remote: Press buttons 0-9 - select when finished[CR]      Keyboard: Press keys 0-9 - enter when finished[CR][CR]      *For sub-channels, the first enter/select will add a [B].[/B] and the second will finish channel entry"
+msgstr ""
+
 
 #Transcoding
 msgctxt "#32500"

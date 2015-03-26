@@ -5,6 +5,7 @@ Options dialog opens on context menu button or mouse right click
 Options dialog also opens on move right or swipe left when the guide overlay is visible
 Guide overlay now also opens/closes on swipe left/right
 When 'Enable enhancements for touch devices' is enabled, all guide overlay items are now full detail even when not selected
+Added first run dialog with basic control description
 
 ** 2015.3.25 **
 
