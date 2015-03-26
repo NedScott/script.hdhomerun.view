@@ -23,7 +23,7 @@ class BaseWindow(xbmcgui.WindowXML):
     def setProperty(self,key,value):
         if self._closing: return
         xbmcgui.Window(self._winID).setProperty(key,value)
-        xbmcgui.WindowXMLDialog.setProperty(self,key,value)
+        xbmcgui.WindowXML.setProperty(self,key,value)
 
     def doClose(self):
         self._closing = True
@@ -245,11 +245,14 @@ class GuideOverlay(util.CronReceiver):
             self.fallbackChannel = None
             self.playChannel(channel)
         util.showNotification(util.T(32023),time_ms=5000,header=util.T(32022))
-    # END - EVENT HANDLERS ####################################################
 
     def onPlayBackEnded(self):
         self.setCurrent()
         util.DEBUG_LOG('ON PLAYBACK ENDED')
+    # END - EVENT HANDLERS ####################################################
+
+    def setProperty(self,key,val):
+        self._BASE.setProperty(self,key,val)
 
     def tick(self):
         if time.time() > self.nextGuideUpdate:
@@ -606,11 +609,14 @@ class GuideOverlayDialog(GuideOverlay,BaseDialog):
 def start():
     util.LOG('Version: {0}'.format(util.ADDON.getAddonInfo('version')))
     util.DEBUG_LOG('Current Kodi skin: {0}'.format(skin.currentKodiSkin()))
+
     path = skin.getSkinPath()
     if util.getSetting('touch.mode',False):
+        util.setGlobalProperty('touch.mode','true')
         window = GuideOverlayWindow(skin.OVERLAY,path,'Main','1080i')
         window.touchMode = True
     else:
+        util.setGlobalProperty('touch.mode','')
         window = GuideOverlayDialog(skin.OVERLAY,path,'Main','1080i')
 
     with util.Cron(5) as window.cron:

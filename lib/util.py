@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys, binascii, json, threading, time, datetime
-import xbmc, xbmcaddon, xbmcvfs
+import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 import verlib
 
 DEBUG = True
@@ -65,6 +65,9 @@ def _processSettingForWrite(value):
     elif isinstance(value,bool):
         value = value and 'true' or 'false'
     return str(value)
+
+def setGlobalProperty(key,val):
+    xbmcgui.Window(10000).setProperty('script.hdhomerun.view.{0}'.format(key),val)
 
 def showNotification(message,time_ms=3000,icon_path=None,header=ADDON.getAddonInfo('name')):
     try:
