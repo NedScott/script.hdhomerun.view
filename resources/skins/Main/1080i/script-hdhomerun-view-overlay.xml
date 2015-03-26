@@ -35,15 +35,6 @@
             <posy>0</posy>
             <defaultcontrol>210</defaultcontrol>
 
-            <control type="image">
-                <posx>-1920</posx>
-                <posy>0</posy>
-                <width>1920</width>
-                <height>1080</height>
-                <texture>script-hdhomerun-view-white_square.png</texture>
-                <colordiffuse>33FFFFFF</colordiffuse>
-                <aspectratio>stretch</aspectratio>
-            </control>
             <control type="list" id="210">
                 <posx>-1920</posx>
                 <posy>0</posy>
