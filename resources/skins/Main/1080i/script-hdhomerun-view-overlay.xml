@@ -2,7 +2,7 @@
 <window>
     <onload>SetProperty(loading.progress,25)</onload>
     <onload>SetProperty(loading.status,$ADDON[script.hdhomerun.view 32010])</onload>
-    <defaultcontrol>209</defaultcontrol>
+    <defaultcontrol>200</defaultcontrol>
     <coordinates>
         <system>1</system>
         <posx>0</posx>
@@ -29,12 +29,23 @@
             <height>1080</height>
         </control>
 
-        <control type="group" id="209">
+        <control type="group" id="200">
+            <animation effect="slide" start="0,0" end="-820,0" time="500" condition="!IsEmpty(Window.Property(show.overlay))">Conditional</animation>
+            <posx>1920</posx>
+            <posy>0</posy>
             <defaultcontrol>210</defaultcontrol>
+
+            <control type="image">
+                <posx>-1920</posx>
+                <posy>0</posy>
+                <width>1920</width>
+                <height>1080</height>
+                <texture>script-hdhomerun-view-white_square.png</texture>
+                <colordiffuse>33FFFFFF</colordiffuse>
+                <aspectratio>stretch</aspectratio>
+            </control>
             <control type="list" id="210">
-                <visible allowhiddenfocus="true">false</visible>
-                <animation effect="slide" start="0,0" end="-820,0" time="0" condition="!IsEmpty(Window.Property(show.overlay))">Conditional</animation>
-                <posx>0</posx>
+                <posx>-1920</posx>
                 <posy>0</posy>
                 <width>1920</width>
                 <height>1080</height>
@@ -44,14 +55,7 @@
                 <focusedlayout width="1920" height="1080">
                 </focusedlayout>
             </control>
-        </control>
 
-        <control type="group" id="200">
-            <visible>!IsEmpty(Window.Property(show.overlay))</visible>
-            <animation effect="slide" start="1920,0" end="-820,0" time="500">VisibleChange</animation>
-            <posx>1920</posx>
-            <posy>0</posy>
-            <defaultcontrol>201</defaultcontrol>
             <control type="list" id="201">
                 <posx>0</posx>
                 <posy>0</posy>
