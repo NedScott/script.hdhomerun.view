@@ -134,10 +134,6 @@ class OptionsDialog(BaseDialog):
         self.searchClicked = False
         self.setFocusId(240)
 
-    def onFocus(self,controlID):
-        if not self.touchMode and controlID == 239:
-            self.hide()
-
     def onAction(self,action):
         if action == xbmcgui.ACTION_GESTURE_SWIPE_RIGHT or  action == xbmcgui.ACTION_MOVE_LEFT:
             self.hide()
@@ -207,7 +203,7 @@ class GuideOverlay(util.CronReceiver):
                 return self.showOptions()
 #            elif action == xbmcgui.ACTION_SELECT_ITEM:
 #                if self.clickShowOverlay(): return
-            elif action == xbmcgui.ACTION_MOVE_LEFT:
+            elif action == xbmcgui.ACTION_MOVE_LEFT or action == xbmcgui.ACTION_GESTURE_SWIPE_RIGHT:
                 return self.showOverlay(False)
             elif action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
                 if self.closeHandler(): return
