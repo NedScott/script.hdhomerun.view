@@ -124,6 +124,35 @@ class KodiChannelEntry(BaseDialog):
             return self.channel[:-1]
         return self.channel
 
+class OptionsDialog(BaseDialog):
+    def __init__(self,*args,**kwargs):
+        self.touchMode = kwargs.get('touch_mode',False)
+        BaseDialog.__init__(self,*args,**kwargs)
+
+    def onInit(self):
+        BaseDialog.onInit(self)
+        self.searchClicked = False
+        self.setFocusId(240)
+
+    def onFocus(self,controlID):
+        if not self.touchMode and controlID == 239:
+            self.hide()
+
+    def onAction(self,action):
+        if action == xbmcgui.ACTION_GESTURE_SWIPE_RIGHT or  action == xbmcgui.ACTION_MOVE_LEFT:
+            self.hide()
+            return
+
+        BaseDialog.onAction(self,action)
+
+    def onClick(self,controlID):
+        if controlID in (238,244,245): return
+        if controlID == 241: self.searchClicked = True
+        self.hide()
+
+    def hide(self):
+        self.setFocusId(240)
+        self.doClose()
 
 class GuideOverlay(util.CronReceiver):
     _BASE = None
@@ -167,10 +196,15 @@ class GuideOverlay(util.CronReceiver):
     def onAction(self,action):
         try:
             if self.overlayVisible(): self.propertyTimer.reset()
-            if action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_DOWN:
+            if action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_GESTURE_SWIPE_LEFT:
+                if self.overlayVisible():
+                    return self.showOptions()
+                else:
+                    return self.showOverlay()
+            elif action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_DOWN:
                 return self.showOverlay()
             elif action == xbmcgui.ACTION_CONTEXT_MENU:
-                return self.setFilter()
+                return self.showOptions()
 #            elif action == xbmcgui.ACTION_SELECT_ITEM:
 #                if self.clickShowOverlay(): return
             elif action == xbmcgui.ACTION_MOVE_LEFT:
@@ -511,6 +545,14 @@ class GuideOverlay(util.CronReceiver):
 
     def overlayVisible(self):
         return bool(self.getProperty('show.overlay'))
+
+    def showOptions(self):
+        path = util.ADDON.getAddonInfo('path')
+        dialog = OptionsDialog(skin.OPTIONS_DIALOG,path,'Main','1080i')
+        dialog.doModal()
+        search = dialog.searchClicked
+        del dialog
+        if search: self.setFilter()
 
     def playChannel(self,channel):
         self.setCurrent(self.channelList.getListItemByDataSource(channel))
