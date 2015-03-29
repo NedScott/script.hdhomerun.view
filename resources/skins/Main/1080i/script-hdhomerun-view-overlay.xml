@@ -59,7 +59,7 @@
                 <itemlayout height="270">
 
                     <control type="group">
-                        <visible>!IsEmpty(Window(10000).Property(script.hdhomerun.view.touch.mode))</visible>
+                        <visible>!IsEmpty(Window(10000).Property(script.hdhomerun.view.touch.mode)) | !IsEmpty(Window(10000).Property(script.hdhomerun.view.guide.full.detail))</visible>
                         <posx>0</posx>
                         <posy>0</posy>
                         <control type="image">
@@ -188,7 +188,7 @@
                     </control>
 
                     <control type="group">
-                        <visible>IsEmpty(Window(10000).Property(script.hdhomerun.view.touch.mode))</visible>
+                        <visible>IsEmpty(Window(10000).Property(script.hdhomerun.view.touch.mode)) + IsEmpty(Window(10000).Property(script.hdhomerun.view.guide.full.detail))</visible>
                         <posx>400</posx>
                         <posy>0</posy>
 
@@ -295,7 +295,7 @@
                 <!-- FOCUSED LAYOUT ####################################### -->
                 <focusedlayout height="270">
                     <control type="group">
-                        <visible>!IsEmpty(Window(10000).Property(script.hdhomerun.view.touch.mode))</visible>
+                        <visible>!IsEmpty(Window(10000).Property(script.hdhomerun.view.touch.mode)) | !IsEmpty(Window(10000).Property(script.hdhomerun.view.guide.full.detail))</visible>
                         <posx>0</posx>
                         <posy>0</posy>
                         <control type="image">
@@ -432,7 +432,7 @@
                     </control>
 
                     <control type="group">
-                        <visible>IsEmpty(Window(10000).Property(script.hdhomerun.view.touch.mode))</visible>
+                        <visible>IsEmpty(Window(10000).Property(script.hdhomerun.view.touch.mode)) + IsEmpty(Window(10000).Property(script.hdhomerun.view.guide.full.detail))</visible>
                         <animation effect="slide" start="400,0" end="0,0" time="200" delay="500">Focus</animation>
                         <posx>0</posx>
                         <posy>0</posy>
@@ -573,7 +573,7 @@
         </control>
 
         <control type="group">
-            <visible>!IsEmpty(Window.Property(show.overlay)) + !IsEmpty(Window.Property(channel.name))</visible>
+            <visible>[!IsEmpty(Window.Property(show.overlay)) | !IsEmpty(Window.Property(show.current))] + !IsEmpty(Window.Property(channel.name))</visible>
             <animation effect="slide" start="0,1080" end="0,-150" time="500">VisibleChange</animation>
             <posx>0</posx>
             <posy>1080</posy>
