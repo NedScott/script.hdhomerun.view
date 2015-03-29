@@ -2,6 +2,7 @@
 <window>
     <onload>SetProperty(loading.progress,25)</onload>
     <onload>SetProperty(loading.status,$ADDON[script.hdhomerun.view 32010])</onload>
+    <allowoverlay>no</allowoverlay>
     <defaultcontrol>200</defaultcontrol>
     <coordinates>
         <system>1</system>
