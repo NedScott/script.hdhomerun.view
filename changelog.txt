@@ -6,9 +6,9 @@ Fix for errors when no devices are found
 Add handling for empty lineup
 Improved icons on options dialog
 Options dialog now auto-hides
-After selecting a channel from a filtered list focus is maintained on the channel when the list resets
+After selecting a channel from a filtered list, focus is maintained on the channel when the list resets
 Added channel changing via channel up/down buttons on remote (may not work - needs testing)
-Orginized first run control info by control type and removed some text
+Organized first run control info by control type and removed some text
 
 2015.3.26a1
 
