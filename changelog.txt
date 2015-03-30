@@ -1,4 +1,4 @@
-** 2015.3.29 **
+** 2015.3.30 **
 
 Channel entry now accepts 'down' for '.' instead of 'select' and includes instructions to this effect
 Added setting 'Show full detail on all guide items'
