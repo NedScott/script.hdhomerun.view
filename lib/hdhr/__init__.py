@@ -138,6 +138,7 @@ class LineUp(object):
 
         if not lineUps:
             if err:
+                util.LOG('ERROR: No compatible devices found!')
                 raise NoCompatibleDevicesException()
             else:
                 util.DEBUG_LOG('ERROR: Empty lineup!')
@@ -186,7 +187,9 @@ class LineUp(object):
             if not authID: continue
             combined += authID
 
-        if not combined: raise NoDeviceAuthException()
+        if not combined:
+            util.LOG('WARNING: No device auth for any devices!')
+            raise NoDeviceAuthException()
 
         return base64.standard_b64encode(combined)
 
@@ -274,11 +277,12 @@ class Guide(object):
         if not lineup:
             return
         url = GUIDE_URL.format(urllib.quote(lineup.apiAuthID(),''))
-        util.DEBUG_LOG('Fetching guide from: {0}'.format(url))
 
         data = self.getData(url)
 
-        if not data: raise NoGuideDataException()
+        if not data:
+            util.LOG('WARNING: No guide data returned!')
+            raise NoGuideDataException()
 
         for chan in data:
             self.guide[chan['GuideNumber']] = chan
@@ -287,7 +291,9 @@ class Guide(object):
         for second in (False,True):
             if second: util.LOG('Failed to get guide data on first try - retrying...')
             try:
+                util.DEBUG_LOG('Fetching guide from: {0}'.format(url))
                 raw = requests.get(url).text
+                util.DEBUG_LOG('Guide data received.'.format(url))
             except:
                 util.ERROR()
                 if second: raise
