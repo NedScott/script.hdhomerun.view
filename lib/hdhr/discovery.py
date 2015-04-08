@@ -124,7 +124,9 @@ class DiscoveryResponse(object):
         try:
             return out.format(ip=self.ip,dtype=self.typeName(),ID=self.ID,auth=base64.standard_b64encode(self.deviceAuth),url=self.url,chancount=self.channelCount)
         except:
+            util.ERROR('Failed to format device info',hide_tb=True)
             return repr(self)
+
 
 def discover(device=None):
     import netif
@@ -154,8 +156,8 @@ def discover(device=None):
         end = time.time() + 0.25 #250ms
 
         while time.time() < end:
-            try:
-                for s,i in sockets:
+            for s,i in sockets:
+                try:
                     message, address = s.recvfrom(8096)
                     response = DiscoveryResponse(message,address)
                     if (not device or device == response.device) and response.valid and not response in responses:
@@ -163,12 +165,12 @@ def discover(device=None):
                         util.DEBUG_LOG('<-o   Response Packet[{0}]({1})'.format(i.name,binascii.hexlify(message)))
                     elif response.valid:
                         util.DEBUG_LOG('<-o   Response Packet[{0}](Duplicate)'.format(i.name))
-            except (KeyboardInterrupt, SystemExit):
-                raise
-            except socket.timeout:
-                pass
-            except:
-                traceback.print_exc()
+                    else:
+                        util.DEBUG_LOG('<-o   INVALID RESPONSE[{0}]({1})'.format(i.name,binascii.hexlify(message)))
+                except socket.timeout:
+                    pass
+                except:
+                    traceback.print_exc()
 
     return responses
 
