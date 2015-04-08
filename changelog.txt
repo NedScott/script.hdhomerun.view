@@ -1,5 +1,9 @@
 ** 2015.4.8 **
 
+Fix error causing issues with multiple devices
+
+2015.4.1a15
+
 Do subnet broadcast to individual interfaces - fixes issues for devices with multiple interfaces
 Improved logging
 
