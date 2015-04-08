@@ -127,9 +127,15 @@ class LineUp(object):
         for r in responses:
             self.devices[r.ID] = r
             try:
-                lineup = requests.get(r.url).json()
+                req = requests.get(r.url)
             except:
                 err = util.ERROR()
+                continue
+
+            try:
+                lineup = req.json()
+            except:
+                util.ERROR('Failed to parse lineup JSON data. Older device?',hide_tb=True)
                 continue
 
             if lineup:

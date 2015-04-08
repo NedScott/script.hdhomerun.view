@@ -1,6 +1,7 @@
 ** 2015.4.8 **
 
 Fix error causing issues with multiple devices
+Log lineup JSON decoding errors without traceback
 
 2015.4.1a15
 
