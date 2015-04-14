@@ -91,6 +91,7 @@
                     <onclick>ActivateWindow(OSDAudioSettings)</onclick>
                 </control>
                 <control type="button" id="246">
+                    <visible>!IsEmpty(Window(10000).Property(script.hdhomerun.view.DVR_ENABLED))</visible>
                     <left>0</left>
                     <top>420</top>
                     <width>110</width>

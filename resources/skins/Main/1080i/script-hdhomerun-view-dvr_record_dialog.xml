@@ -56,12 +56,21 @@
             <posx>150</posx>
             <posy>0</posy>
             <control type="image">
-                <posx>0</posx>
-                <posy>0</posy>
-                <width>1680</width>
-                <height>320</height>
+                <posx>10</posx>
+                <posy>10</posy>
+                <width>1665</width>
+                <height>300</height>
                 <texture>script-hdhomerun-view-white_square.png</texture>
                 <colordiffuse>E0202020</colordiffuse>
+                <aspectratio>stretch</aspectratio>
+            </control>
+            <control type="image">
+                <posx>186</posx>
+                <posy>136</posy>
+                <width>48</width>
+                <height>48</height>
+                <texture>script-hdhomerun-view-dvr_rules_icon.png</texture>
+                <colordiffuse>FF000000</colordiffuse>
                 <aspectratio>stretch</aspectratio>
             </control>
             <control type="image">
@@ -69,13 +78,13 @@
                 <posy>10</posy>
                 <width>400</width>
                 <height>300</height>
-                <texture>$INFO[Container(201).ListItem.Thumb]</texture>
+                <texture fallback="script-hdhomerun-view-no_image.png">$INFO[Container(201).ListItem.Thumb]</texture>
                 <aspectratio>scale</aspectratio>
             </control>
             <control type="label">
                 <posx>450</posx>
-                <posy>10</posy>
-                <width>1225</width>
+                <posy>28</posy>
+                <width>1205</width>
                 <height>40</height>
                 <font>font13</font>
                 <align>left</align>
@@ -84,8 +93,8 @@
             </control>
             <control type="label">
                 <posx>450</posx>
-                <posy>70</posy>
-                <width>1225</width>
+                <posy>88</posy>
+                <width>1205</width>
                 <height>40</height>
                 <font>font13</font>
                 <align>left</align>
@@ -95,8 +104,8 @@
             <control type="textbox">
                 <posx>450</posx>
                 <posy>130</posy>
-                <width>1225</width>
-                <height>180</height>
+                <width>1205</width>
+                <height>145</height>
                 <font>font13</font>
                 <align>left</align>
                 <textcolor>FFCCCCCC</textcolor>
@@ -199,6 +208,7 @@
                 <onright>203</onright>
                 <onleft>203</onleft>
                 <onup>203</onup>
+                <pagecontrol>251</pagecontrol>
 
                 <!-- ITEM LAYOUT ########################################## -->
                 <itemlayout height="92">
@@ -309,9 +319,9 @@
                                 <align>left</align>
                                 <aligny>center</aligny>
                                 <textcolor>FFFFFFFF</textcolor>
-                                <label>[B]$INFO[ListItem.Property(season.number)][/B]</label>
+                                <label>[B]$INFO[ListItem.Property(episode.number),Ep. ][/B]</label>
                             </control>
-                            <control type="label">
+                            <!-- <control type="label">
                                 <posx>10</posx>
                                 <posy>45</posy>
                                 <width>240</width>
@@ -321,7 +331,7 @@
                                 <aligny>center</aligny>
                                 <textcolor>FFCCCCCC</textcolor>
                                 <label>$INFO[ListItem.Property(episode.number),Ep. ]</label>
-                            </control>
+                            </control> -->
                         </control>
 
                         <control type="group">
@@ -537,9 +547,9 @@
                                 <align>left</align>
                                 <aligny>center</aligny>
                                 <textcolor>FFFFFFFF</textcolor>
-                                <label>[B]$INFO[ListItem.Property(season.number)][/B]</label>
+                                <label>[B]$INFO[ListItem.Property(episode.number),Ep. ][/B]</label>
                             </control>
-                            <control type="label">
+                            <!-- <control type="label">
                                 <posx>10</posx>
                                 <posy>45</posy>
                                 <width>240</width>
@@ -549,7 +559,7 @@
                                 <aligny>center</aligny>
                                 <textcolor>FFCCCCCC</textcolor>
                                 <label>$INFO[ListItem.Property(episode.number),Ep. ]</label>
-                            </control>
+                            </control> -->
                         </control>
 
                         <control type="group">
@@ -647,6 +657,28 @@
                     </control>
                 </focusedlayout>
             </control>
+
+            <control type="scrollbar" id="251">
+                <visible>Container(201).Scrolling</visible>
+                <animation effect="fade" start="100" end="0" time="200" delay="500">Hidden</animation>
+                <posx>1770</posx>
+                <posy>90</posy>
+                <width>10</width>
+                <height>600</height>
+                <visible>true</visible>
+                <texturesliderbackground colordiffuse="40000000">script-hdhomerun-view-white_square.png</texturesliderbackground>
+                <texturesliderbar colordiffuse="40FFFFFF">script-hdhomerun-view-white_square.png</texturesliderbar>
+                <texturesliderbarfocus>-</texturesliderbarfocus>
+                <textureslidernib>-</textureslidernib>
+                <textureslidernibfocus>-</textureslidernibfocus>
+                <orientation>vertical</orientation>
+                <showonepage>false</showonepage>
+                <onup>201</onup>
+                <ondown>201</ondown>
+                <onleft>201</onleft>
+                <onright>201</onright>
+            </control>
+
         </control>
     </controls>
 </window>

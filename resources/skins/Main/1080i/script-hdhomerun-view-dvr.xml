@@ -114,7 +114,25 @@
                         <posy>0</posy>
                         <width>400</width>
                         <height>300</height>
-                        <texture>$INFO[Container(101).ListItem.Thumb]</texture>
+                        <texture>script-hdhomerun-view-white_square.png</texture>
+                        <colordiffuse>FF202020</colordiffuse>
+                        <aspectratio>stretch</aspectratio>
+                    </control>
+                    <control type="image">
+                        <posx>176</posx>
+                        <posy>126</posy>
+                        <width>48</width>
+                        <height>48</height>
+                        <texture>script-hdhomerun-view-dvr_rules_icon.png</texture>
+                        <colordiffuse>FF000000</colordiffuse>
+                        <aspectratio>stretch</aspectratio>
+                    </control>
+                    <control type="image">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>400</width>
+                        <height>300</height>
+                        <texture fallback="script-hdhomerun-view-no_image.png">$INFO[Container(101).ListItem.Thumb]</texture>
                         <aspectratio>scale</aspectratio>
                     </control>
                     <control type="label">
@@ -207,6 +225,8 @@
                     <scrolltime>200</scrolltime>
                     <orientation>vertical</orientation>
                     <onright>102</onright>
+                    <pagecontrol>151</pagecontrol>
+
 
                     <!-- ITEM LAYOUT ########################################## -->
                     <itemlayout height="92">
@@ -317,9 +337,9 @@
                                     <align>left</align>
                                     <aligny>center</aligny>
                                     <textcolor>FFFFFFFF</textcolor>
-                                    <label>[B]$INFO[ListItem.Property(season.number)][/B]</label>
+                                    <label>[B]$INFO[ListItem.Property(episode.number),Ep. ][/B]</label>
                                 </control>
-                                <control type="label">
+                                <!-- <control type="label">
                                     <posx>10</posx>
                                     <posy>45</posy>
                                     <width>240</width>
@@ -329,7 +349,7 @@
                                     <aligny>center</aligny>
                                     <textcolor>FFCCCCCC</textcolor>
                                     <label>$INFO[ListItem.Property(episode.number),Ep. ]</label>
-                                </control>
+                                </control> -->
                             </control>
 
                             <control type="group">
@@ -479,9 +499,9 @@
                                     <align>left</align>
                                     <aligny>center</aligny>
                                     <textcolor>FFFFFFFF</textcolor>
-                                    <label>[B]$INFO[ListItem.Property(season.number)][/B]</label>
+                                    <label>[B]$INFO[ListItem.Property(episode.number),Ep. ][/B]</label>
                                 </control>
-                                <control type="label">
+                                <!-- <control type="label">
                                     <posx>10</posx>
                                     <posy>45</posy>
                                     <width>240</width>
@@ -491,7 +511,7 @@
                                     <aligny>center</aligny>
                                     <textcolor>FFCCCCCC</textcolor>
                                     <label>$INFO[ListItem.Property(episode.number),Ep. ]</label>
-                                </control>
+                                </control> -->
                             </control>
 
                             <control type="group">
@@ -532,6 +552,27 @@
 
                         </control>
                     </focusedlayout>
+                </control>
+
+                <control type="scrollbar" id="151">
+                    <visible>Container(101).Scrolling</visible>
+                    <animation effect="fade" start="100" end="0" time="200" delay="500">Hidden</animation>
+                    <posx>1765</posx>
+                    <posy>90</posy>
+                    <width>10</width>
+                    <height>1000</height>
+                    <visible>true</visible>
+                    <texturesliderbackground colordiffuse="40000000">script-hdhomerun-view-white_square.png</texturesliderbackground>
+                    <texturesliderbar colordiffuse="40FFFFFF">script-hdhomerun-view-white_square.png</texturesliderbar>
+                    <texturesliderbarfocus>-</texturesliderbarfocus>
+                    <textureslidernib>-</textureslidernib>
+                    <textureslidernibfocus>-</textureslidernibfocus>
+                    <orientation>vertical</orientation>
+                    <showonepage>false</showonepage>
+                    <onup>201</onup>
+                    <ondown>201</ondown>
+                    <onleft>201</onleft>
+                    <onright>201</onright>
                 </control>
 
                 <control type="label">
@@ -661,6 +702,7 @@
                     <onleft>100</onleft>
                     <onright>300</onright>
                     <scrolltime tween="sine" easing="out">200</scrolltime>
+                    <pagecontrol>251</pagecontrol>
                     <hitrect x="65" y="0" w="1725" h="1080" />
                     <itemlayout width="563" height="430">
                         <control type="image">
@@ -686,7 +728,7 @@
                             <posy>10</posy>
                             <width>533</width>
                             <height>400</height>
-                            <info>ListItem.Thumb</info>
+                            <texture fallback="script-hdhomerun-view-no_image.png">$INFO[ListItem.Thumb]</texture>
                             <aspectratio>scale</aspectratio>
                         </control>
                         <control type="image">
@@ -742,7 +784,7 @@
                                 <aspectratio>stretch</aspectratio>
                             </control>
                             <control type="label">
-                                <posx>0</posx>
+                                <posx>0</posx><!-- GOTHAM 26 -->
                                 <posy>0</posy>
                                 <width>52</width>
                                 <height>40</height>
@@ -778,7 +820,7 @@
                             <posy>10</posy>
                             <width>533</width>
                             <height>400</height>
-                            <info>ListItem.Thumb</info>
+                            <texture fallback="script-hdhomerun-view-no_image.png">$INFO[ListItem.Thumb]</texture>
                             <aspectratio>scale</aspectratio>
                         </control>
                         <control type="image">
@@ -861,7 +903,7 @@
                                 <aspectratio>stretch</aspectratio>
                             </control>
                             <control type="label">
-                                <posx>0</posx>
+                                <posx>0</posx><!-- GOTHAM 26 -->
                                 <posy>0</posy>
                                 <width>52</width>
                                 <height>40</height>
@@ -873,6 +915,27 @@
                             </control>
                         </control>
                     </focusedlayout>
+                </control>
+
+                <control type="scrollbar" id="251">
+                    <visible>Container(201).Scrolling</visible>
+                    <animation effect="fade" start="100" end="0" time="200" delay="500">Hidden</animation>
+                    <posx>1770</posx>
+                    <posy>0</posy>
+                    <width>10</width>
+                    <height>1080</height>
+                    <visible>true</visible>
+                    <texturesliderbackground colordiffuse="40000000">script-hdhomerun-view-white_square.png</texturesliderbackground>
+                    <texturesliderbar colordiffuse="40FFFFFF">script-hdhomerun-view-white_square.png</texturesliderbar>
+                    <texturesliderbarfocus>-</texturesliderbarfocus>
+                    <textureslidernib>-</textureslidernib>
+                    <textureslidernibfocus>-</textureslidernibfocus>
+                    <orientation>vertical</orientation>
+                    <showonepage>false</showonepage>
+                    <onup>201</onup>
+                    <ondown>201</ondown>
+                    <onleft>201</onleft>
+                    <onright>201</onright>
                 </control>
 
                 <control type="label">
@@ -976,21 +1039,21 @@
                     </control>
                 </control>
                 <control type="button" id="302">
-                    <visible>!Control.HasFocus(301)</visible>
-                    <left>0</left>
-                    <top>-20</top>
-                    <width>10</width>
-                    <height>10</height>
+                    <posx>65</posx>
+                    <posy>0</posy>
+                    <width>1725</width>
+                    <height>1080</height>
                     <label> </label>
                     <font>-</font>
                     <texturefocus>-</texturefocus>
                     <texturenofocus>-</texturenofocus>
-                    <onleft>301</onleft>
+                    <onleft>200</onleft>
                     <onup>301</onup>
                     <ondown>301</ondown>
                 </control>
 
                 <control type="group">
+                    <visible>IsEmpty(Window(10000).Property(script.hdhomerun.view.NO_RULES))</visible>
                     <posx>90</posx>
                     <posy>40</posy>
                     <control type="label">
@@ -1028,6 +1091,19 @@
                     </control>
                 </control>
 
+                <control type="label">
+                    <visible>!IsEmpty(Window(10000).Property(script.hdhomerun.view.NO_RULES))</visible>
+                    <posx>65</posx>
+                    <posy>510</posy>
+                    <width>1725</width>
+                    <height>60</height>
+                    <font>font30</font>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <textcolor>FF404040</textcolor>
+                    <label>[B]$INFO[Window(10000).Property(script.hdhomerun.view.NO_RULES)][/B]</label>
+                </control>
+
                 <control type="list" id="301">
                     <posx>90</posx>
                     <posy>90</posy>
@@ -1036,8 +1112,8 @@
                     <scrolltime>200</scrolltime>
                     <orientation>vertical</orientation>
                     <onleft>200</onleft>
-                    <onright>302</onright>
                     <hitrect x="65" y="0" w="1725" h="1080" />
+                    <pagecontrol>351</pagecontrol>
 
                     <!-- ITEM LAYOUT ########################################## -->
                     <itemlayout height="92">
@@ -1227,6 +1303,26 @@
                     </focusedlayout>
                 </control>
 
+                <control type="scrollbar" id="351">
+                    <visible>Container(301).Scrolling</visible>
+                    <animation effect="fade" start="100" end="0" time="200" delay="500">Hidden</animation>
+                    <posx>1767</posx>
+                    <posy>90</posy>
+                    <width>10</width>
+                    <height>920</height>
+                    <visible>true</visible>
+                    <texturesliderbackground colordiffuse="40000000">script-hdhomerun-view-white_square.png</texturesliderbackground>
+                    <texturesliderbar colordiffuse="40FFFFFF">script-hdhomerun-view-white_square.png</texturesliderbar>
+                    <texturesliderbarfocus>-</texturesliderbarfocus>
+                    <textureslidernib>-</textureslidernib>
+                    <textureslidernibfocus>-</textureslidernibfocus>
+                    <orientation>vertical</orientation>
+                    <showonepage>false</showonepage>
+                    <onup>201</onup>
+                    <ondown>201</ondown>
+                    <onleft>201</onleft>
+                    <onright>201</onright>
+                </control>
             </control>
         </control>
     </controls>

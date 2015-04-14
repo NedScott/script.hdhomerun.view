@@ -503,6 +503,7 @@ class GuideOverlay(util.CronReceiver):
             self.doClose()
             return
 
+        util.setGlobalProperty('DVR_ENABLED',self.devices.hasStorageServers() and 'true' or '')
         self.fillChannelList()
 
         self.player = player.ChannelPlayer().init(self,self.lineUp,self.touchMode)
@@ -687,6 +688,7 @@ def start():
     util.DEBUG_LOG('Current Kodi skin: {0}'.format(skin.currentKodiSkin()))
 
     util.setGlobalProperty('guide.full.detail',util.getSetting('guide.full.detail',False) and 'true' or '')
+    util.setGlobalProperty('DVR_ENABLED','')
 
     path = skin.getSkinPath()
     if util.getSetting('touch.mode',False):

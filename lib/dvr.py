@@ -65,7 +65,9 @@ class DVRBase(util.CronReceiver):
     WATCH_BUTTON = 103
     SEARCH_BUTTON = 203
     RULES_BUTTON = 303
+
     RECORDINGS_REFRESH_INTERVAL = 600
+    SEARCH_REFRESH_INTERVAL = 600
 
     def __init__(self,*args,**kwargs):
         self._BASE.__init__(self,*args,**kwargs)
@@ -81,9 +83,11 @@ class DVRBase(util.CronReceiver):
         self.lineUp = kwargs.get('lineup')
         self.cron = kwargs.get('cron')
         self.lastRecordingsRefresh = 0
+        self.lastSearchRefresh = 0
         self.mode = 'WATCH'
         util.setGlobalProperty('NO_RESULTS','NO SEARCH RESULTS')
         util.setGlobalProperty('NO_RECORDINGS','NO RECORDINGS')
+        util.setGlobalProperty('NO_RULES','NO RULES SET')
 
     @property
     def mode(self):
@@ -92,6 +96,9 @@ class DVRBase(util.CronReceiver):
     @mode.setter
     def mode(self,val):
         util.setGlobalProperty('DVR_MODE',val)
+        if val == 'SEARCH':
+            if time.time() - self.lastSearchRefresh > self.SEARCH_REFRESH_INTERVAL:
+                self.fillSearchPanel()
 
     def onFirstInit(self):
         if self.recordingList:
@@ -133,6 +140,7 @@ class DVRBase(util.CronReceiver):
         self._BASE.onAction(self,action)
 
     def onClick(self,controlID):
+        #print 'click: {0}'.format(controlID)
         if controlID == self.RECORDING_LIST_ID:
             item = self.recordingList.getSelectedItem()
             self.play = item.dataSource.playURL
@@ -151,6 +159,7 @@ class DVRBase(util.CronReceiver):
             self.setMode('RULES')
 
     def onFocus(self,controlID):
+        #print 'focus: {0}'.format(controlID)
         if xbmc.getCondVisibility('ControlGroup(100).HasFocus(0)'):
             self.mode = 'WATCH'
         elif xbmc.getCondVisibility('ControlGroup(200).HasFocus(0)'):
@@ -169,7 +178,7 @@ class DVRBase(util.CronReceiver):
         elif mode == 'SEARCH':
             self.setFocusId(200)
         elif mode == 'RULES':
-            self.setFocusId(301)
+            self.setFocusId(300)
 
     def updateRecordings(self):
         util.DEBUG_LOG('DVR: Refreshing recordings')
@@ -191,9 +200,12 @@ class DVRBase(util.CronReceiver):
             items.append(item)
 
         util.setGlobalProperty('NO_RECORDINGS',not items and 'NO RECORDINGS' or '')
+        self.recordingList.reset()
         self.recordingList.addItems(items)
 
     def fillSearchPanel(self):
+        self.lastSearchRefresh = time.time()
+
         items = []
         series = {}
         self.searchResults = hdhr.guide.search(self.devices.apiAuthID(),terms=self.searchTerms) or []
@@ -227,6 +239,7 @@ class DVRBase(util.CronReceiver):
             item.setProperty('rule.recent_only',r.recentOnly and 'RECENT' or 'ALWAYS')
             items.append(item)
 
+        util.setGlobalProperty('NO_RULES',not items and 'NO RULES SET' or '')
         self.ruleList.reset()
         self.ruleList.addItems(items)
 
@@ -237,17 +250,17 @@ class DVRBase(util.CronReceiver):
         if idx < 0: return
         if idx == 0:
             item.dataSource.recentOnly = not item.dataSource.recentOnly
-            item.setProperty('rule.recent_only',item.dataSource.recentOnly and 'RECENT' or 'ALWAYS')
         elif idx == 1:
             priority = xbmcgui.Dialog().input('Enter Priority',str(item.dataSource.priority))
             try:
                 item.dataSource.priority = int(priority)
-                item.setLabel2(str(item.dataSource.priority))
+                #item.setLabel2(str(item.dataSource.priority))
             except ValueError:
                 return
         elif idx == 2:
-            if self.storageServer.deleteRule(item.dataSource):
-                self.ruleList.removeItem(item.pos())
+            self.storageServer.deleteRule(item.dataSource)
+
+        self.fillRules(update=True)
 
     def setSearch(self):
         self.searchTerms = xbmcgui.Dialog().input('Enter search terms',self.searchTerms)
