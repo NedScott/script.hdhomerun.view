@@ -50,7 +50,7 @@
 
             <control type="group">
                 <left>10</left>
-                <top>100</top>
+                <top>50</top>
                 <height>390</height>
                 <control type="button" id="241">
                     <left>0</left>
@@ -87,8 +87,20 @@
                     <texturefocus>script-hdhomerun-view-audio_icon_focus.png</texturefocus>
                     <texturenofocus>script-hdhomerun-view-audio_icon.png</texturenofocus>
                     <onup>242</onup>
-                    <ondown>244</ondown>
+                    <ondown>246</ondown>
                     <onclick>ActivateWindow(OSDAudioSettings)</onclick>
+                </control>
+                <control type="button" id="246">
+                    <left>0</left>
+                    <top>420</top>
+                    <width>110</width>
+                    <height>110</height>
+                    <label>13396</label>
+                    <font>-</font>
+                    <texturefocus>script-hdhomerun-view-dvr_icon_focus.png</texturefocus>
+                    <texturenofocus>script-hdhomerun-view-dvr_icon.png</texturenofocus>
+                    <onup>243</onup>
+                    <ondown>244</ondown>
                 </control>
             </control>
 
@@ -101,7 +113,7 @@
                 <font>-</font>
                 <texturefocus>script-hdhomerun-view-volume_up_icon.png</texturefocus>
                 <texturenofocus colordiffuse="FFA0A0A0">script-hdhomerun-view-volume_up_icon.png</texturenofocus>
-                <onup>243</onup>
+                <onup>246</onup>
                 <ondown>245</ondown>
                 <onclick>VolumeUp</onclick>
             </control>

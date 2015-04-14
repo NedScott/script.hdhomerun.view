@@ -2,6 +2,65 @@
 import xbmc, xbmcgui
 import time, threading
 
+class BaseWindow(xbmcgui.WindowXML):
+    def __init__(self,*args,**kwargs):
+        self._closing = False
+        self._winID = ''
+        self.started = False
+
+    def onInit(self):
+        self._winID = xbmcgui.getCurrentWindowId()
+        if self.started:
+            self.onReInit()
+
+        else:
+            self.started = True
+            self.onFirstInit()
+
+    def onFirstInit(self): pass
+
+    def onReInit(self): pass
+
+    def setProperty(self,key,value):
+        if self._closing: return
+        xbmcgui.Window(self._winID).setProperty(key,value)
+        xbmcgui.WindowXML.setProperty(self,key,value)
+
+    def doClose(self):
+        self._closing = True
+        self.close()
+
+    def onClosed(self): pass
+
+class BaseDialog(xbmcgui.WindowXMLDialog):
+    def __init__(self,*args,**kwargs):
+        self._closing = False
+        self._winID = ''
+        self.started = False
+
+    def onInit(self):
+        self._winID = xbmcgui.getCurrentWindowDialogId()
+        if self.started:
+            self.onReInit()
+
+        else:
+            self.started = True
+            self.onFirstInit()
+
+    def onFirstInit(self): pass
+
+    def onReInit(self): pass
+    def setProperty(self,key,value):
+        if self._closing: return
+        xbmcgui.Window(self._winID).setProperty(key,value)
+        xbmcgui.WindowXMLDialog.setProperty(self,key,value)
+
+    def doClose(self):
+        self._closing = True
+        self.close()
+
+    def onClosed(self): pass
+
 class ManagedListItem(object):
     def __init__(self,label='', label2='', iconImage='', thumbnailImage='', path='',data_source=None):
         self._listItem = xbmcgui.ListItem(label,label2,iconImage,thumbnailImage,path)
@@ -144,6 +203,12 @@ class ManagedControlList(object):
     def _nextID(self):
         self._idCounter+=1
         return str(self._idCounter)
+
+    def reInit(self,window,control_id):
+        self.controlID = control_id
+        self.window = window
+        self.control = window.getControl(control_id)
+        self.control.addItems([i._takeListItem(self,self._nextID()) for i in self.items])
 
     def setSort(self,sort):
         self._sortKey = sort

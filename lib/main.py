@@ -7,6 +7,7 @@ import kodigui
 import util
 import player
 import skin
+import dvr
 
 API_LEVEL = 1
 
@@ -16,54 +17,16 @@ GUIDE_UPDATE_VARIANT = 600 #10 mins
 
 MAX_TIME_INT = 31536000000
 
-class BaseWindow(xbmcgui.WindowXML):
-    def __init__(self,*args,**kwargs):
-        self._closing = False
-        self._winID = ''
-
-    def onInit(self):
-        self._winID = xbmcgui.getCurrentWindowId()
-
-    def setProperty(self,key,value):
-        if self._closing: return
-        xbmcgui.Window(self._winID).setProperty(key,value)
-        xbmcgui.WindowXML.setProperty(self,key,value)
-
-    def doClose(self):
-        self._closing = True
-        self.close()
-
-    def onClosed(self): pass
-
-class BaseDialog(xbmcgui.WindowXMLDialog):
-    def __init__(self,*args,**kwargs):
-        self._closing = False
-        self._winID = ''
-
-    def onInit(self):
-        self._winID = xbmcgui.getCurrentWindowDialogId()
-
-    def setProperty(self,key,value):
-        if self._closing: return
-        xbmcgui.Window(self._winID).setProperty(key,value)
-        xbmcgui.WindowXMLDialog.setProperty(self,key,value)
-
-    def doClose(self):
-        self._closing = True
-        self.close()
-
-    def onClosed(self): pass
-
-class KodiChannelEntry(BaseDialog):
+class KodiChannelEntry(kodigui.BaseDialog):
     def __init__(self,*args,**kwargs):
         self.digits = str(kwargs['digit'])
         self.hasSubChannels = kwargs.get('has_sub_channels',False)
         self.channel = ''
         self.set = False
-        BaseDialog.__init__(self,*args,**kwargs)
+        kodigui.BaseDialog.__init__(self,*args,**kwargs)
 
     def onInit(self):
-        BaseDialog.onInit(self)
+        kodigui.BaseDialog.onInit(self)
         self.showChannel()
 
     def onAction(self,action):
@@ -90,10 +53,10 @@ class KodiChannelEntry(BaseDialog):
                 return self.submit()
         except:
             util.ERROR()
-            BaseDialog.onAction(self,action)
+            kodigui.BaseDialog.onAction(self,action)
             return
 
-        BaseDialog.onAction(self,action)
+        kodigui.BaseDialog.onAction(self,action)
 
     def submit(self):
         self.set = True
@@ -127,15 +90,15 @@ class KodiChannelEntry(BaseDialog):
             return self.channel[:-1]
         return self.channel
 
-class OptionsDialog(BaseDialog):
+class OptionsDialog(kodigui.BaseDialog):
     def __init__(self,*args,**kwargs):
         self.main = kwargs.get('main')
         self.touchMode = kwargs.get('touch_mode',False)
-        BaseDialog.__init__(self,*args,**kwargs)
+        kodigui.BaseDialog.__init__(self,*args,**kwargs)
 
     def onInit(self):
-        BaseDialog.onInit(self)
-        self.searchClicked = False
+        kodigui.BaseDialog.onInit(self)
+        self.option = None
         self.setFocusId(240)
         self.main.propertyTimer.reset(self)
 
@@ -148,13 +111,17 @@ class OptionsDialog(BaseDialog):
 
             self.main.propertyTimer.reset(self)
         except:
-            return BaseDialog.onAction(self,action)
+            return kodigui.BaseDialog.onAction(self,action)
 
-        BaseDialog.onAction(self,action)
+        kodigui.BaseDialog.onAction(self,action)
 
     def onClick(self,controlID):
         if controlID in (238,244,245): return
-        if controlID == 241: self.searchClicked = True
+        if controlID == 241:
+            self.option = 'SEARCH'
+        elif controlID == 246:
+            self.option = 'DVR'
+
         self.doClose()
 
 
@@ -176,13 +143,16 @@ class GuideOverlay(util.CronReceiver):
         self.lastDiscovery = time.time()
         self.filter = None
         self.optionsDialog = None
+        self.dvrWindow = None
+        self.propertyTimer = None
+        self.currentDetailsTimer = None
+
+        self.devices = None
 
     #==========================================================================
     # EVENT HANDLERS
     #==========================================================================
-    def onInit(self):
-        self._BASE.onInit(self)
-        if self.started: return
+    def onFirstInit(self):
         if self.touchMode:
             util.DEBUG_LOG('Touch mode: ENABLED')
             self.setProperty('touch.mode','True')
@@ -374,8 +344,9 @@ class GuideOverlay(util.CronReceiver):
         if not self.updateLineup(): return False
         self.showProgress(50,util.T(32008))
 
-        for d in self.lineUp.devices.values():
-            util.DEBUG_LOG(d.display())
+        if self.devices:
+            for d in self.devices.allDevices:
+                util.DEBUG_LOG(d.display())
 
         self.updateGuide()
         self.showProgress(75,util.T(32009))
@@ -384,14 +355,16 @@ class GuideOverlay(util.CronReceiver):
 
     def updateLineup(self,quiet=False):
         try:
-            self.lineUp = hdhr.LineUp()
-        except hdhr.NoCompatibleDevicesException:
+            self.devices = hdhr.discovery.discover()
+            self.lineUp = hdhr.tuners.LineUp(self.devices)
+            return True
+        except hdhr.errors.NoCompatibleDevicesException:
             if not quiet: xbmcgui.Dialog().ok(util.T(32016),util.T(32011),'',util.T(32012))
             return False
-        except hdhr.NoDevicesException:
+        except hdhr.errors.NoTunersException:
             if not quiet: xbmcgui.Dialog().ok(util.T(32016),util.T(32014),'',util.T(32012))
             return False
-        except hdhr.EmptyLineupException:
+        except hdhr.errors.EmptyLineupException:
             if not quiet: xbmcgui.Dialog().ok(util.T(32016),util.T(32034),'',util.T(32012))
             return False
         except:
@@ -399,12 +372,10 @@ class GuideOverlay(util.CronReceiver):
             if not quiet: xbmcgui.Dialog().ok(util.T(32016),util.T(32015),e,util.T(32012))
             return False
 
-        return True
-
     def updateGuide(self):
         newLinup = False
 
-        if self.lineUp.isOld(): #1 hour
+        if self.devices.isOld(): #1 hour
             if self.updateLineup(quiet=True):
                 if self.player: self.player.init(self,self.lineUp,self.touchMode)
                 newLinup = True
@@ -416,10 +387,10 @@ class GuideOverlay(util.CronReceiver):
         err = None
         guide = None
         try:
-            guide = hdhr.Guide(self.lineUp)
-        except hdhr.NoDeviceAuthException:
+            guide = hdhr.guide.Guide(self.lineUp)
+        except hdhr.errors.NoDeviceAuthException:
             err = util.T(32030)
-        except hdhr.NoGuideDataException:
+        except hdhr.errors.NoGuideDataException:
             err = util.T(32031)
         except:
             err = util.ERROR()
@@ -600,9 +571,22 @@ class GuideOverlay(util.CronReceiver):
         path = util.ADDON.getAddonInfo('path')
         self.optionsDialog = OptionsDialog(skin.OPTIONS_DIALOG,path,'Main','1080i',main=self)
         self.optionsDialog.doModal()
-        search = self.optionsDialog.searchClicked
+        option = self.optionsDialog.option
         self.optionsDialog = None
-        if search: self.setFilter()
+        if option == 'SEARCH':
+            self.setFilter()
+        elif option == 'DVR':
+            self.openDVRWindow()
+
+    def openDVRWindow(self):
+        path = skin.getSkinPath()
+        if not self.dvrWindow:
+            self.dvrWindow = dvr.DVRWindow(skin.DVR_WINDOW,path,'Main','1080i',devices=self.devices,lineup=self.lineUp)
+
+        self.dvrWindow.doModal()
+        if self.dvrWindow.play:
+            self.player.play(self.dvrWindow.play)
+            self.dvrWindow.play = None
 
     def playChannel(self,channel):
         self.setCurrent(self.channelList.getListItemByDataSource(channel))
@@ -669,6 +653,15 @@ class GuideOverlay(util.CronReceiver):
         self.showOverlay(from_filter=True)
         self.setFocusId(201)
 
+    def shutdown(self):
+        util.DEBUG_LOG('Shutting down...')
+        if self.propertyTimer:
+            self.propertyTimer.close()
+        util.DEBUG_LOG('Overlay timer done')
+        if  self.currentDetailsTimer:
+            self.currentDetailsTimer.close()
+        util.DEBUG_LOG('Details timer done')
+
     def checkIfUpdated(self):
         lastAPILevel = util.getSetting('API.LEVEL')
         util.setSetting('API.LEVEL',API_LEVEL)
@@ -679,11 +672,11 @@ class GuideOverlay(util.CronReceiver):
     def firstRun(self):
         util.showTextDialog('Info',util.T(32100))
 
-class GuideOverlayWindow(GuideOverlay,BaseWindow):
-    _BASE = BaseWindow
+class GuideOverlayWindow(GuideOverlay,kodigui.BaseWindow):
+    _BASE = kodigui.BaseWindow
 
-class GuideOverlayDialog(GuideOverlay,BaseDialog):
-    _BASE = BaseDialog
+class GuideOverlayDialog(GuideOverlay,kodigui.BaseDialog):
+    _BASE = kodigui.BaseDialog
 
 def start():
     util.LOG('Version: {0}'.format(util.ADDON.getAddonInfo('version')))
@@ -703,10 +696,6 @@ def start():
 
     with util.Cron(5) as window.cron:
         window.doModal()
-        util.DEBUG_LOG('Shutting down...')
-        window.propertyTimer.close()
-        util.DEBUG_LOG('Overlay timer done')
-        window.currentDetailsTimer.close()
-        util.DEBUG_LOG('Details timer done')
+        window.shutdown()
         del window
     util.DEBUG_LOG('Finished')

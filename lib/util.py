@@ -69,6 +69,9 @@ def _processSettingForWrite(value):
 def setGlobalProperty(key,val):
     xbmcgui.Window(10000).setProperty('script.hdhomerun.view.{0}'.format(key),val)
 
+def getGlobalProperty(key):
+    return xbmc.getInfoLabel('Window(10000).Property(script.hdhomerun.view.{0})'.format(key))
+
 def showNotification(message,time_ms=3000,icon_path=None,header=ADDON.getAddonInfo('name')):
     try:
         icon_path = icon_path or xbmc.translatePath(ADDON.getAddonInfo('icon')).decode('utf-8')
