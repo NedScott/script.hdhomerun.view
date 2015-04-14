@@ -59,7 +59,7 @@ else:
 OPTIONS_DIALOG = "script-hdhomerun-view-options.xml"
 
 
-SKINS_XMLS = (OVERLAY,CHANNEL_ENTRY,DVR_WINDOW)
+SKINS_XMLS = (OVERLAY,CHANNEL_ENTRY,DVR_WINDOW,DVR_RECORD_DIALOG)
 
 def copyTree(source,target):
 	pct = 0

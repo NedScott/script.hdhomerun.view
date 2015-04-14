@@ -128,6 +128,9 @@ class StorageServers(object):
     def rules(self):
         return self._rules
 
+    def updateRecordings(self):
+        self._getRecordings()
+
     def updateRules(self):
         self._getRules()
 

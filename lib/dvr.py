@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import time
 import xbmc, xbmcgui
 import kodigui
 import hdhr
@@ -9,6 +10,7 @@ import util
 class RecordDialog(kodigui.BaseDialog):
     EPISODE_LIST = 201
     RECORD_BUTTON = 203
+
     def __init__(self,*args,**kwargs):
         kodigui.BaseDialog.__init__(self,*args,**kwargs)
         self.seriesID = kwargs.get('series_id')
@@ -56,13 +58,14 @@ class RecordDialog(kodigui.BaseDialog):
         self.ruleAdded = True
         self.doClose()
 
-class DVRBase():
+class DVRBase(util.CronReceiver):
     RECORDING_LIST_ID = 101
     SEARCH_PANEL_ID = 201
     RULE_LIST_ID = 301
     WATCH_BUTTON = 103
     SEARCH_BUTTON = 203
     RULES_BUTTON = 303
+    RECORDINGS_REFRESH_INTERVAL = 600
 
     def __init__(self,*args,**kwargs):
         self._BASE.__init__(self,*args,**kwargs)
@@ -76,6 +79,8 @@ class DVRBase():
         self.devices = kwargs.get('devices')
         self.storageServer = hdhr.storageservers.StorageServers(self.devices)
         self.lineUp = kwargs.get('lineup')
+        self.cron = kwargs.get('cron')
+        self.lastRecordingsRefresh = 0
         self.mode = 'WATCH'
         util.setGlobalProperty('NO_RESULTS','NO SEARCH RESULTS')
         util.setGlobalProperty('NO_RECORDINGS','NO RECORDINGS')
@@ -105,6 +110,8 @@ class DVRBase():
             self.setFocusId(self.RECORDING_LIST_ID)
         else:
             self.setMode('SEARCH')
+
+        self.cron.registerReceiver(self)
 
     def onAction(self,action):
         if action == xbmcgui.ACTION_GESTURE_SWIPE_LEFT:
@@ -151,6 +158,10 @@ class DVRBase():
         elif xbmc.getCondVisibility('ControlGroup(300).HasFocus(0)'):
             self.mode = 'RULES'
 
+    def tick(self):
+        if time.time() - self.lastRecordingsRefresh > self.RECORDINGS_REFRESH_INTERVAL:
+            self.updateRecordings()
+
     def setMode(self,mode):
         self.mode == mode
         if mode == 'WATCH':
@@ -160,8 +171,14 @@ class DVRBase():
         elif mode == 'RULES':
             self.setFocusId(301)
 
+    def updateRecordings(self):
+        util.DEBUG_LOG('DVR: Refreshing recordings')
+        self.storageServer.updateRecordings()
+        self.fillRecordings()
 
     def fillRecordings(self):
+        self.lastRecordingsRefresh = time.time()
+
         items = []
         for r in self.storageServer.recordings:
             item = kodigui.ManagedListItem(r.episodeTitle,r.synopsis,thumbnailImage=r.icon,data_source=r)
@@ -185,7 +202,8 @@ class DVRBase():
         for r in self.searchResults:
             if r.seriesID in series:
                 series[r.seriesID][1] += 1
-                series[r.seriesID][0].setProperty('episode.count',str(series[r.seriesID][1]))
+                ct = series[r.seriesID][1]
+                series[r.seriesID][0].setProperty('episode.count',ct < 100 and str(ct) or '+')
                 continue
             item = kodigui.ManagedListItem(r.episodeTitle,r.synopsis,thumbnailImage=r.icon,data_source=r)
             series[r.seriesID] = [item,1]

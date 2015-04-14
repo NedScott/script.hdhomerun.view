@@ -136,10 +136,10 @@ class SearchResult(dict):
         return int(self.get('OriginalAirdate',0))
 
     def displayDate(self,original=False):
-        return time.strftime('%B %d, %Y',time.localtime(original and self.originalTimestamp or self.startTimestamp))
+        return time.strftime('%b %d, %Y',time.localtime(original and self.originalTimestamp or self.startTimestamp))
 
     def displayTime(self,original=False):
-        return time.strftime('%I:%M:%S %p %Z',time.localtime(original and self.originalTimestamp or self.startTimestamp))
+        return time.strftime('%I:%M:%S %p',time.localtime(original and self.originalTimestamp or self.startTimestamp))
 
 def search(deviceAuth,terms=''):
     url = SEARCH_URL.format(deviceAuth,urllib.quote(terms.encode('utf-8')))

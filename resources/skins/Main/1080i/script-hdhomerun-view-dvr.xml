@@ -634,7 +634,7 @@
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
                         <angle>90</angle>
-                        <label>[B]GUIDE SEARCH[UPPERCASE][COLOR FFBBBBBB]$INFO[Window.Property(search.terms),[COLOR FFFFFFFF]:[/COLOR] ][/COLOR][/UPPERCASE][/B]</label>
+                        <label>[B]GUIDE SEARCH[UPPERCASE][COLOR FF000000]$INFO[Window.Property(search.terms),[COLOR FFFFFFFF]:[/COLOR] ][/COLOR][/UPPERCASE][/B]</label>
                     </control>
                 </control>
 
