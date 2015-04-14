@@ -668,9 +668,9 @@
                             <posy>10</posy>
                             <width>533</width>
                             <height>400</height>
-                            <info>script-hdhomerun-view-white_square.png</info>
-                            <aspectratio>scale</aspectratio>
-                            <colordiffuse>FF404040</colordiffuse>
+                            <texture>script-hdhomerun-view-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                            <colordiffuse>FF202020</colordiffuse>
                         </control>
                         <control type="image">
                             <posx>242</posx>
@@ -760,9 +760,9 @@
                             <posy>10</posy>
                             <width>533</width>
                             <height>400</height>
-                            <info>script-hdhomerun-view-white_square.png</info>
-                            <aspectratio>scale</aspectratio>
-                            <colordiffuse>FF404040</colordiffuse>
+                            <texture>script-hdhomerun-view-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                            <colordiffuse>FF202020</colordiffuse>
                         </control>
                         <control type="image">
                             <posx>242</posx>
