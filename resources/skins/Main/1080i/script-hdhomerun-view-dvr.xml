@@ -673,6 +673,15 @@
                             <colordiffuse>FF404040</colordiffuse>
                         </control>
                         <control type="image">
+                            <posx>242</posx>
+                            <posy>131</posy>
+                            <width>48</width>
+                            <height>48</height>
+                            <texture>script-hdhomerun-view-dvr_rules_icon.png</texture>
+                            <colordiffuse>FF000000</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
                             <posx>10</posx>
                             <posy>10</posy>
                             <width>533</width>
@@ -754,6 +763,15 @@
                             <info>script-hdhomerun-view-white_square.png</info>
                             <aspectratio>scale</aspectratio>
                             <colordiffuse>FF404040</colordiffuse>
+                        </control>
+                        <control type="image">
+                            <posx>242</posx>
+                            <posy>131</posy>
+                            <width>48</width>
+                            <height>48</height>
+                            <texture>script-hdhomerun-view-dvr_rules_icon.png</texture>
+                            <colordiffuse>FF000000</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
                         </control>
                         <control type="image">
                             <posx>10</posx>
