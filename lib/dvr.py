@@ -56,7 +56,7 @@ class RecordDialog(kodigui.BaseDialog):
         self.ruleAdded = True
         self.doClose()
 
-class DVRWindow(kodigui.BaseDialog):
+class DVRBase():
     RECORDING_LIST_ID = 101
     SEARCH_PANEL_ID = 201
     RULE_LIST_ID = 301
@@ -65,7 +65,7 @@ class DVRWindow(kodigui.BaseDialog):
     RULES_BUTTON = 303
 
     def __init__(self,*args,**kwargs):
-        kodigui.BaseDialog.__init__(self,*args,**kwargs)
+        self._BASE.__init__(self,*args,**kwargs)
         self.started = False
         self.recordingList = None
         self.searchPanel = None
@@ -123,10 +123,9 @@ class DVRWindow(kodigui.BaseDialog):
             elif xbmc.getCondVisibility('ControlGroup(200).HasFocus(0)'):
                 return self.setSearch()
 
-        kodigui.BaseDialog.onAction(self,action)
+        self._BASE.onAction(self,action)
 
     def onClick(self,controlID):
-        print 'Click: %s' % controlID
         if controlID == self.RECORDING_LIST_ID:
             item = self.recordingList.getSelectedItem()
             self.play = item.dataSource.playURL
@@ -145,15 +144,11 @@ class DVRWindow(kodigui.BaseDialog):
             self.setMode('RULES')
 
     def onFocus(self,controlID):
-        print controlID
         if xbmc.getCondVisibility('ControlGroup(100).HasFocus(0)'):
-            print 'TEST1'
             self.mode = 'WATCH'
         elif xbmc.getCondVisibility('ControlGroup(200).HasFocus(0)'):
-            print 'TEST2'
             self.mode = 'SEARCH'
         elif xbmc.getCondVisibility('ControlGroup(300).HasFocus(0)'):
-            print 'TEST3'
             self.mode = 'RULES'
 
     def setMode(self,mode):
@@ -255,3 +250,8 @@ class DVRWindow(kodigui.BaseDialog):
             self.fillRules(update=True)
         del d
 
+class DVRWindow(DVRBase,kodigui.BaseWindow):
+    _BASE = kodigui.BaseWindow
+
+class DVRDialog(DVRBase,kodigui.BaseDialog):
+    _BASE = kodigui.BaseDialog

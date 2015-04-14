@@ -581,9 +581,13 @@ class GuideOverlay(util.CronReceiver):
     def openDVRWindow(self):
         path = skin.getSkinPath()
         if not self.dvrWindow:
-            self.dvrWindow = dvr.DVRWindow(skin.DVR_WINDOW,path,'Main','1080i',devices=self.devices,lineup=self.lineUp)
+            if util.getSetting('touch.mode',False):
+                self.dvrWindow = dvr.DVRWindow(skin.DVR_WINDOW,path,'Main','1080i',devices=self.devices,lineup=self.lineUp)
+            else:
+                self.dvrWindow = dvr.DVRDialog(skin.DVR_WINDOW,path,'Main','1080i',devices=self.devices,lineup=self.lineUp)
 
         self.dvrWindow.doModal()
+        self.showProgress() #Hide the progres because of re-init triggering <onload>
         if self.dvrWindow.play:
             self.player.play(self.dvrWindow.play)
             self.dvrWindow.play = None
