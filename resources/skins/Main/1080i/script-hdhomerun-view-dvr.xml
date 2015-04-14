@@ -668,6 +668,15 @@
                             <posy>10</posy>
                             <width>533</width>
                             <height>400</height>
+                            <info>script-hdhomerun-view-white_square.png</info>
+                            <aspectratio>scale</aspectratio>
+                            <colordiffuse>FF404040</colordiffuse>
+                        </control>
+                        <control type="image">
+                            <posx>10</posx>
+                            <posy>10</posy>
+                            <width>533</width>
+                            <height>400</height>
                             <info>ListItem.Thumb</info>
                             <aspectratio>scale</aspectratio>
                         </control>
@@ -737,6 +746,15 @@
                         </control>
                     </itemlayout>
                     <focusedlayout width="563" height="430">
+                        <control type="image">
+                            <posx>10</posx>
+                            <posy>10</posy>
+                            <width>533</width>
+                            <height>400</height>
+                            <info>script-hdhomerun-view-white_square.png</info>
+                            <aspectratio>scale</aspectratio>
+                            <colordiffuse>FF404040</colordiffuse>
+                        </control>
                         <control type="image">
                             <posx>10</posx>
                             <posy>10</posy>
