@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <window>
-    <defaultcontrol>200</defaultcontrol>
+    <defaultcontrol>203</defaultcontrol>
     <coordinates>
         <system>1</system>
         <posx>0</posx>
@@ -102,11 +102,33 @@
                 <textcolor>FFCCCCCC</textcolor>
                 <label>$INFO[Container(201).ListItem.Label2]</label>
             </control>
+            <control type="image">
+                <posx>635</posx>
+                <posy>340</posy>
+                <width>410</width>
+                <height>70</height>
+                <texture>script-hdhomerun-view-white_square.png</texture>
+                <colordiffuse>FF202020</colordiffuse>
+                <aspectratio>stretch</aspectratio>
+            </control>
+            <control type="button" id="203">
+                <left>640</left>
+                <top>345</top>
+                <width>400</width>
+                <height>60</height>
+                <label>[B]Record Series[/B]</label>
+                <font>font13</font>
+                <align>center</align>
+                <texturefocus colordiffuse="FF006000">script-hdhomerun-view-white_square.png</texturefocus>
+                <texturenofocus colordiffuse="FF404040">script-hdhomerun-view-white_square.png</texturenofocus>
+                <ondown>200</ondown>
+            </control>
         </control>
+
         <control type="group" id="200">
             <defaultcontrol>201</defaultcontrol>
             <posx>70</posx>
-            <posy>310</posy>
+            <posy>390</posy>
             <control type="group">
                 <posx>90</posx>
                 <posy>40</posy>
@@ -171,9 +193,12 @@
                 <posx>90</posx>
                 <posy>90</posy>
                 <width>1665</width>
-                <height>680</height>
+                <height>600</height>
                 <scrolltime>200</scrolltime>
                 <orientation>vertical</orientation>
+                <onright>203</onright>
+                <onleft>203</onleft>
+                <onup>203</onup>
 
                 <!-- ITEM LAYOUT ########################################## -->
                 <itemlayout height="92">
@@ -398,6 +423,16 @@
                                 <width>190</width>
                                 <height>80</height>
                                 <texture>script-hdhomerun-view-white_square.png</texture>
+                                <colordiffuse>FF404040</colordiffuse>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="image">
+                                <visible>Control.HasFocus(201)</visible>
+                                <posx>0</posx>
+                                <posy>0</posy>
+                                <width>190</width>
+                                <height>80</height>
+                                <texture>script-hdhomerun-view-white_square.png</texture>
                                 <colordiffuse>FF006000</colordiffuse>
                                 <aspectratio>stretch</aspectratio>
                             </control>
@@ -429,6 +464,16 @@
                             <posx>205</posx>
                             <posy>5</posy>
                             <control type="image">
+                                <posx>0</posx>
+                                <posy>0</posy>
+                                <width>765</width>
+                                <height>80</height>
+                                <texture>script-hdhomerun-view-white_square.png</texture>
+                                <colordiffuse>FF404040</colordiffuse>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="image">
+                                <visible>Control.HasFocus(201)</visible>
                                 <posx>0</posx>
                                 <posy>0</posy>
                                 <width>765</width>
@@ -470,6 +515,16 @@
                                 <width>260</width>
                                 <height>80</height>
                                 <texture>script-hdhomerun-view-white_square.png</texture>
+                                <colordiffuse>FF404040</colordiffuse>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="image">
+                                <visible>Control.HasFocus(201)</visible>
+                                <posx>0</posx>
+                                <posy>0</posy>
+                                <width>260</width>
+                                <height>80</height>
+                                <texture>script-hdhomerun-view-white_square.png</texture>
                                 <colordiffuse>FF006000</colordiffuse>
                                 <aspectratio>stretch</aspectratio>
                             </control>
@@ -506,6 +561,16 @@
                                 <width>200</width>
                                 <height>80</height>
                                 <texture>script-hdhomerun-view-white_square.png</texture>
+                                <colordiffuse>FF404040</colordiffuse>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="image">
+                                <visible>Control.HasFocus(201)</visible>
+                                <posx>0</posx>
+                                <posy>0</posy>
+                                <width>200</width>
+                                <height>80</height>
+                                <texture>script-hdhomerun-view-white_square.png</texture>
                                 <colordiffuse>FF006000</colordiffuse>
                                 <aspectratio>stretch</aspectratio>
                             </control>
@@ -537,6 +602,16 @@
                             <posx>1460</posx>
                             <posy>5</posy>
                             <control type="image">
+                                <posx>0</posx>
+                                <posy>0</posy>
+                                <width>200</width>
+                                <height>80</height>
+                                <texture>script-hdhomerun-view-white_square.png</texture>
+                                <colordiffuse>FF404040</colordiffuse>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="image">
+                                <visible>Control.HasFocus(201)</visible>
                                 <posx>0</posx>
                                 <posy>0</posy>
                                 <width>200</width>

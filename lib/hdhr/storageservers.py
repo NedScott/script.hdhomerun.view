@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import time
 import requests
 import urllib
 import guide
@@ -128,6 +127,9 @@ class StorageServers(object):
     @property
     def rules(self):
         return self._rules
+
+    def updateRules(self):
+        self._getRules()
 
     def deleteRule(self,rule):
         if not rule in self._rules: return False

@@ -8,11 +8,13 @@ import util
 
 class RecordDialog(kodigui.BaseDialog):
     EPISODE_LIST = 201
+    RECORD_BUTTON = 203
     def __init__(self,*args,**kwargs):
         kodigui.BaseDialog.__init__(self,*args,**kwargs)
         self.seriesID = kwargs.get('series_id')
         self.storageServer = kwargs.get('storage_server')
         self.results = kwargs.get('results')
+        self.ruleAdded = False
 
     def onFirstInit(self):
         self.episodeList = kodigui.ManagedControlList(self,self.EPISODE_LIST,20)
@@ -26,7 +28,7 @@ class RecordDialog(kodigui.BaseDialog):
         kodigui.BaseDialog.onAction(self,action)
 
     def onClick(self,controlID):
-        if controlID == self.EPISODE_LIST:
+        if controlID == self.RECORD_BUTTON:
             self.add()
 
     def fillEpisodeList(self):
@@ -45,21 +47,22 @@ class RecordDialog(kodigui.BaseDialog):
             items.append(item)
 
         self.episodeList.addItems(items)
-        self.setFocusId(self.EPISODE_LIST)
 
     def add(self):
         item = self.episodeList.getSelectedItem()
         if not item: return
-        options = ['Record Series','Cancel']
-        idx = xbmcgui.Dialog().select('Options',options)
-        if idx < 0 : return
-        if idx == 0:
-            self.storageServer.addRule(item.dataSource)
+        self.storageServer.addRule(item.dataSource)
+        xbmcgui.Dialog().ok('Done','Recording rule added for:','',item.dataSource.seriesTitle)
+        self.ruleAdded = True
+        self.doClose()
 
 class DVRWindow(kodigui.BaseDialog):
     RECORDING_LIST_ID = 101
     SEARCH_PANEL_ID = 201
     RULE_LIST_ID = 301
+    WATCH_BUTTON = 103
+    SEARCH_BUTTON = 203
+    RULES_BUTTON = 303
 
     def __init__(self,*args,**kwargs):
         kodigui.BaseDialog.__init__(self,*args,**kwargs)
@@ -73,7 +76,9 @@ class DVRWindow(kodigui.BaseDialog):
         self.devices = kwargs.get('devices')
         self.storageServer = hdhr.storageservers.StorageServers(self.devices)
         self.lineUp = kwargs.get('lineup')
-        util.setGlobalProperty('DVR_MODE','FILES')
+        self.mode = 'WATCH'
+        util.setGlobalProperty('NO_RESULTS','NO SEARCH RESULTS')
+        util.setGlobalProperty('NO_RECORDINGS','NO RECORDINGS')
 
     @property
     def mode(self):
@@ -87,35 +92,41 @@ class DVRWindow(kodigui.BaseDialog):
         if self.recordingList:
             self.recordingList.reInit(self,self.RECORDING_LIST_ID)
         else:
-            self.recordingList = kodigui.ManagedControlList(self,self.RECORDING_LIST_ID,20)
+            self.recordingList = kodigui.ManagedControlList(self,self.RECORDING_LIST_ID,10)
             self.fillRecordings()
 
-        self.searchPanel = kodigui.ManagedControlList(self,self.SEARCH_PANEL_ID,20)
+        self.searchPanel = kodigui.ManagedControlList(self,self.SEARCH_PANEL_ID,6)
         self.fillSearchPanel()
 
-        self.ruleList = kodigui.ManagedControlList(self,self.RULE_LIST_ID,20)
+        self.ruleList = kodigui.ManagedControlList(self,self.RULE_LIST_ID,10)
         self.fillRules()
+
+        if self.recordingList.size():
+            self.setFocusId(self.RECORDING_LIST_ID)
+        else:
+            self.setMode('SEARCH')
 
     def onAction(self,action):
         if action == xbmcgui.ACTION_GESTURE_SWIPE_LEFT:
             if self.mode == 'SEARCH':
-                self.setMode('RULES')
-            elif self.mode == 'FILES':
-                self.setMode('SEARCH')
+                return self.setMode('RULES')
+            elif self.mode == 'WATCH':
+                return self.setMode('SEARCH')
         elif action == xbmcgui.ACTION_GESTURE_SWIPE_RIGHT:
             if self.mode == 'SEARCH':
-                self.setMode('FILES')
+                return self.setMode('WATCH')
             elif self.mode == 'RULES':
-                self.setMode('SEARCH')
+                return self.setMode('SEARCH')
         elif action == xbmcgui.ACTION_CONTEXT_MENU:
             if self.getFocusId() == self.RULE_LIST_ID:
-                self.doRuleContext()
-            elif self.getFocusId() == self.SEARCH_PANEL_ID:
-                self.setSearch()
+                return self.doRuleContext()
+            elif xbmc.getCondVisibility('ControlGroup(200).HasFocus(0)'):
+                return self.setSearch()
 
         kodigui.BaseDialog.onAction(self,action)
 
     def onClick(self,controlID):
+        print 'Click: %s' % controlID
         if controlID == self.RECORDING_LIST_ID:
             item = self.recordingList.getSelectedItem()
             self.play = item.dataSource.playURL
@@ -124,23 +135,35 @@ class DVRWindow(kodigui.BaseDialog):
             self.openRecordDialog()
         elif controlID == self.RULE_LIST_ID:
             self.doRuleContext()
+        elif controlID == self.WATCH_BUTTON:
+            self.setMode('WATCH')
+        elif controlID == self.SEARCH_BUTTON:
+            if self.mode == 'SEARCH':
+                self.setSearch()
+            self.setMode('SEARCH')
+        elif controlID == self.RULES_BUTTON:
+            self.setMode('RULES')
 
     def onFocus(self,controlID):
+        print controlID
         if xbmc.getCondVisibility('ControlGroup(100).HasFocus(0)'):
-            self.mode = 'FILES'
+            print 'TEST1'
+            self.mode = 'WATCH'
         elif xbmc.getCondVisibility('ControlGroup(200).HasFocus(0)'):
+            print 'TEST2'
             self.mode = 'SEARCH'
         elif xbmc.getCondVisibility('ControlGroup(300).HasFocus(0)'):
+            print 'TEST3'
             self.mode = 'RULES'
 
     def setMode(self,mode):
         self.mode == mode
-        if mode == 'FILES':
+        if mode == 'WATCH':
             self.setFocusId(100)
         elif mode == 'SEARCH':
             self.setFocusId(200)
         elif mode == 'RULES':
-            self.setFocusId(300)
+            self.setFocusId(301)
 
 
     def fillRecordings(self):
@@ -155,13 +178,15 @@ class DVRWindow(kodigui.BaseDialog):
             item.setProperty('air.time',r.displayTime())
             items.append(item)
 
+        util.setGlobalProperty('NO_RECORDINGS',not items and 'NO RECORDINGS' or '')
         self.recordingList.addItems(items)
-        self.setFocusId(self.RECORDING_LIST_ID)
 
     def fillSearchPanel(self):
         items = []
         series = {}
         self.searchResults = hdhr.guide.search(self.devices.apiAuthID(),terms=self.searchTerms) or []
+        util.setGlobalProperty('NO_RESULTS',not self.searchResults and 'NO SEARCH RESULTS' or '')
+
         for r in self.searchResults:
             if r.seriesID in series:
                 series[r.seriesID][1] += 1
@@ -181,13 +206,15 @@ class DVRWindow(kodigui.BaseDialog):
         self.searchPanel.reset()
         self.searchPanel.addItems(items)
 
-    def fillRules(self):
+    def fillRules(self,update=False):
+        if update: self.storageServer.updateRules()
         items = []
         for r in self.storageServer.rules:
             item = kodigui.ManagedListItem(r.title,str(r.priority),data_source=r)
             item.setProperty('rule.recent_only',r.recentOnly and 'RECENT' or 'ALWAYS')
             items.append(item)
 
+        self.ruleList.reset()
         self.ruleList.addItems(items)
 
     def doRuleContext(self):
@@ -213,7 +240,10 @@ class DVRWindow(kodigui.BaseDialog):
         self.searchTerms = xbmcgui.Dialog().input('Enter search terms',self.searchTerms)
         self.setProperty('search.terms',self.searchTerms)
         self.fillSearchPanel()
-
+        if not self.searchResults:
+            self.setFocusId(202)
+        else:
+            self.setFocusId(201)
 
     def openRecordDialog(self):
         item = self.searchPanel.getSelectedItem()
@@ -221,5 +251,7 @@ class DVRWindow(kodigui.BaseDialog):
         path = skin.getSkinPath()
         d = RecordDialog(skin.DVR_RECORD_DIALOG,path,'Main','1080i',series_id=item.dataSource.seriesID,storage_server=self.storageServer,results=self.searchResults)
         d.doModal()
+        if d.ruleAdded:
+            self.fillRules(update=True)
         del d
 
