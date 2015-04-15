@@ -9,3 +9,7 @@ class NoDeviceAuthException(Exception): pass
 class EmptyLineupException(Exception): pass
 
 class NoGuideDataException(Exception): pass
+
+class RuleModException(Exception): pass
+
+class RuleDelException(Exception): pass

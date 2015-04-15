@@ -200,7 +200,11 @@ class DVRBase(util.CronReceiver):
             item.setProperty('air.time',r.displayTime())
             items.append(item)
 
-        util.setGlobalProperty('NO_RECORDINGS',not items and T(32803) or '')
+        if not items:
+            util.setGlobalProperty('NO_RECORDINGS',self.storageServer.getRecordingsFailed and '[COLOR 80FF0000]{0}[/COLOR]'.format(T(32829)) or T(32803))
+        else:
+            util.setGlobalProperty('NO_RECORDINGS','')
+
         self.recordingList.reset()
         self.recordingList.addItems(items)
 
@@ -209,7 +213,12 @@ class DVRBase(util.CronReceiver):
 
         items = []
         series = {}
-        self.searchResults = hdhr.guide.search(self.devices.apiAuthID(),terms=self.searchTerms) or []
+
+        try:
+            self.searchResults = hdhr.guide.search(self.devices.apiAuthID(),terms=self.searchTerms) or []
+        except:
+            e = util.ERROR()
+            util.showNotification(e,header=T(32831))
         util.setGlobalProperty('NO_RESULTS',not self.searchResults and T(32802) or '')
 
         for r in self.searchResults:
@@ -240,7 +249,10 @@ class DVRBase(util.CronReceiver):
             item.setProperty('rule.recent_only',r.recentOnly and T(32805) or T(32806))
             items.append(item)
 
-        util.setGlobalProperty('NO_RULES',not items and T(32804) or '')
+        if not items:
+            util.setGlobalProperty('NO_RULES',self.storageServer.getRulesFailed and '[COLOR 80FF0000]{0}[/COLOR]'.format(T(32830)) or T(32804))
+        else:
+            util.setGlobalProperty('NO_RULES','')
         self.ruleList.reset()
         self.ruleList.addItems(items)
 
@@ -249,17 +261,22 @@ class DVRBase(util.CronReceiver):
         options = [T(32807),T(32808),T(32809)]
         idx = xbmcgui.Dialog().select(T(32810),options)
         if idx < 0: return
-        if idx == 0:
-            item.dataSource.recentOnly = not item.dataSource.recentOnly
-        elif idx == 1:
-            priority = xbmcgui.Dialog().input(T(32811),str(item.dataSource.priority))
-            try:
-                item.dataSource.priority = int(priority)
-                #item.setLabel2(str(item.dataSource.priority))
-            except ValueError:
-                return
-        elif idx == 2:
-            self.storageServer.deleteRule(item.dataSource)
+        try:
+            if idx == 0:
+                item.dataSource.recentOnly = not item.dataSource.recentOnly
+            elif idx == 1:
+                priority = xbmcgui.Dialog().input(T(32811),str(item.dataSource.priority))
+                try:
+                    item.dataSource.priority = int(priority)
+                    #item.setLabel2(str(item.dataSource.priority))
+                except ValueError:
+                    return
+            elif idx == 2:
+                self.storageServer.deleteRule(item.dataSource)
+        except hdhr.errors.RuleModException, e:
+            util.showNotification(e.message,header=T(32827))
+        except hdhr.errors.RuleDelException, e:
+            util.showNotification(e.message,header=T(32828))
 
         self.fillRules(update=True)
 

@@ -298,3 +298,23 @@ msgctxt "#32826"
 msgid "ORIGINAL DATE"
 msgstr ""
 
+msgctxt "#32827"
+msgid "Error modifying rule"
+msgstr ""
+
+msgctxt "#32828"
+msgid "Error deleting rule"
+msgstr ""
+
+msgctxt "#32829"
+msgid "FAILED TO GET RECORDINGS"
+msgstr ""
+
+msgctxt "#32830"
+msgid "FAILED TO GET RULES"
+msgstr ""
+
+msgctxt "#32831"
+msgid "Search Error"
+msgstr ""
+

@@ -107,6 +107,7 @@
                 </control>
 
                 <control type="group">
+                    <visible>IsEmpty(Window(10000).Property(script.hdhomerun.view.NO_RECORDINGS))</visible>
                     <posx>100</posx>
                     <posy>60</posy>
                     <control type="image">

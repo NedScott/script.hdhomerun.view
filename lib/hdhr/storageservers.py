@@ -2,6 +2,7 @@
 import requests
 import urllib
 import guide
+import errors
 from lib import util
 
 MY = 'mytest'
@@ -53,8 +54,13 @@ class RecordingRule(dict):
             priority=self.priority
         )
         util.DEBUG_LOG('Modifying rule: {0}'.format(url))
-        req = requests.get(url)
-        util.DEBUG_LOG('Rule mod response: {0}'.format(repr(req.text)))
+        try:
+            req = requests.get(url)
+            util.DEBUG_LOG('Rule mod response: {0}'.format(repr(req.text)))
+        except:
+            e = util.ERROR()
+            raise errors.RuleModException(e)
+
         return self
 
     def delete(self):
@@ -67,8 +73,12 @@ class RecordingRule(dict):
             priority=''
         )
         util.DEBUG_LOG('Deleting rule: {0}'.format(url))
-        req = requests.get(url)
-        util.DEBUG_LOG('Rule delete response: {0}'.format(repr(req.text)))
+        try:
+            req = requests.get(url)
+            util.DEBUG_LOG('Rule delete response: {0}'.format(repr(req.text)))
+        except:
+            e = util.ERROR()
+            raise errors.RuleDelException(e)
         return self
 
 #"ChannelAffiliate":"CBS",
@@ -98,20 +108,37 @@ class StorageServers(object):
         self._devices = devices
         self._recordings = []
         self._rules = []
+        self.getRecordingsFailed = False
+        self.getRulesFailed = False
         self._init()
 
     def _init(self):
-        self._getRecordings()
-        self._getRules()
+        try:
+            self._getRecordings()
+        except:
+            self.getRecordingsFailed = True
+            util.ERROR()
+
+        try:
+            self._getRules()
+        except:
+            self.getRulesFailed = True
+            util.ERROR()
 
     def _getRecordings(self):
         self._recordings = []
+        err = None
         for d in self._devices.storageServers:
             try:
                 recs = d.recordings()
                 if recs: self._recordings += [Recording(r) for r in recs]
             except:
-                util.ERROR()
+                err = util.ERROR()
+
+        if self._recordings:
+            self.getRecordingsFailed = False
+        elif err:
+            self.getRecordingsFailed = True
 
     def _getRules(self):
         url = RECORDING_RULES_URL.format(self._devices.apiAuthID())
@@ -119,6 +146,7 @@ class StorageServers(object):
         #req = requests.get(url,headers={'Cache-Control':'no-cache'})
         req = requests.get(url)
         self._rules = [RecordingRule(r).init(self) for r in req.json()]
+        self.getRulesFailed = False
 
     @property
     def recordings(self):

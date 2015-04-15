@@ -144,8 +144,11 @@ class SearchResult(dict):
 def search(deviceAuth,terms=''):
     url = SEARCH_URL.format(deviceAuth,urllib.quote(terms.encode('utf-8')))
     util.DEBUG_LOG('Search URL: {0}'.format(url))
+
+    req = requests.get(url)
+
     try:
-        results = requests.get(url).json()
+        results = req.json()
         if not results: return []
         return [SearchResult(r) for r in results]
     except:
