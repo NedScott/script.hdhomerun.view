@@ -127,21 +127,34 @@ class DVRBase(util.CronReceiver):
         self.cron.registerReceiver(self)
 
     def onAction(self,action):
-        if action == xbmcgui.ACTION_GESTURE_SWIPE_LEFT:
-            if self.mode == 'SEARCH':
-                return self.setMode('RULES')
-            elif self.mode == 'WATCH':
-                return self.setMode('SEARCH')
-        elif action == xbmcgui.ACTION_GESTURE_SWIPE_RIGHT:
-            if self.mode == 'SEARCH':
-                return self.setMode('WATCH')
-            elif self.mode == 'RULES':
-                return self.setMode('SEARCH')
-        elif action == xbmcgui.ACTION_CONTEXT_MENU:
-            if self.getFocusId() == self.RULE_LIST_ID:
-                return self.doRuleContext()
-            elif xbmc.getCondVisibility('ControlGroup(200).HasFocus(0)'):
-                return self.setSearch()
+        try:
+            if action == xbmcgui.ACTION_GESTURE_SWIPE_LEFT:
+                if self.mode == 'SEARCH':
+                    return self.setMode('RULES')
+                elif self.mode == 'WATCH':
+                    return self.setMode('SEARCH')
+            elif action == xbmcgui.ACTION_GESTURE_SWIPE_RIGHT:
+                if self.mode == 'SEARCH':
+                    return self.setMode('WATCH')
+                elif self.mode == 'RULES':
+                    return self.setMode('SEARCH')
+            elif action == xbmcgui.ACTION_CONTEXT_MENU:
+                if self.getFocusId() == self.RULE_LIST_ID:
+                    return self.doRuleContext()
+                elif xbmc.getCondVisibility('ControlGroup(200).HasFocus(0)'):
+                    return self.setSearch()
+            elif action == xbmcgui.ACTION_MOVE_DOWN or action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_MOVE_LEFT:
+                if self.mode == 'WATCH':
+                    if self.getFocusId() != self.RECORDING_LIST_ID: self.setFocusId(self.RECORDING_LIST_ID)
+                elif self.mode == 'SEARCH':
+                    if self.getFocusId() != self.SEARCH_PANEL_ID: self.setFocusId(self.SEARCH_PANEL_ID)
+                elif self.mode == 'RULES':
+                    if self.getFocusId() != self.RULE_LIST_ID: self.setFocusId(self.RULE_LIST_ID)
+
+        except:
+            self._BASE.onAction(self,action)
+            raise
+            return
 
         self._BASE.onAction(self,action)
 
