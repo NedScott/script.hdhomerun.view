@@ -189,3 +189,112 @@ msgctxt "#32507"
 msgid "Default"
 msgstr ""
 
+#DVR
+msgctxt "#32800"
+msgid "Done"
+msgstr ""
+
+msgctxt "#32801"
+msgid "Recording rule added for:"
+msgstr ""
+
+msgctxt "#32802"
+msgid "NO SEARCH RESULTS"
+msgstr ""
+
+msgctxt "#32803"
+msgid "NO RECORDINGS"
+msgstr ""
+
+msgctxt "#32804"
+msgid "'NO RULES SET"
+msgstr ""
+
+msgctxt "#32805"
+msgid "RECENT"
+msgstr ""
+
+msgctxt "#32806"
+msgid "ALWAYS"
+msgstr ""
+
+msgctxt "#32807"
+msgid "Toggle Recent Only"
+msgstr ""
+
+msgctxt "#32808"
+msgid "Set Priority"
+msgstr ""
+
+msgctxt "#32809"
+msgid "Delete"
+msgstr ""
+
+msgctxt "#32810"
+msgid "Options"
+msgstr ""
+
+msgctxt "#32811"
+msgid "Enter Priority"
+msgstr ""
+
+msgctxt "#32812"
+msgid "Enter Search Terms"
+msgstr ""
+
+msgctxt "#32813"
+msgid "WATCH RECORDINGS"
+msgstr ""
+
+msgctxt "#32814"
+msgid "CHANNEL"
+msgstr ""
+
+msgctxt "#32815"
+msgid "PROGRAM NAME"
+msgstr ""
+
+msgctxt "#32816"
+msgid "EPISODE"
+msgstr ""
+
+msgctxt "#32817"
+msgid "RECORDED"
+msgstr ""
+
+msgctxt "#32818"
+msgid "Ep."
+msgstr ""
+
+msgctxt "#32819"
+msgid "GUIDE SEARCH"
+msgstr ""
+
+msgctxt "#32820"
+msgid "RECORDING RULES"
+msgstr ""
+
+msgctxt "#32821"
+msgid "TITLE"
+msgstr ""
+
+msgctxt "#32822"
+msgid "RECENT ONLY"
+msgstr ""
+
+msgctxt "#32823"
+msgid "PRIORITY"
+msgstr ""
+
+msgctxt "#32824"
+msgid "Record Series"
+msgstr ""
+
+msgctxt "#32825"
+msgid "AIR DATE"
+msgstr ""
+
+msgctxt "#32826"
+msgid "ORIGINAL DATE"
+msgstr ""
+

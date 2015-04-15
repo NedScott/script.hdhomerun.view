@@ -6,6 +6,7 @@ import hdhr
 import skin
 
 import util
+from util import T
 
 class RecordDialog(kodigui.BaseDialog):
     EPISODE_LIST = 201
@@ -54,7 +55,7 @@ class RecordDialog(kodigui.BaseDialog):
         item = self.episodeList.getSelectedItem()
         if not item: return
         self.storageServer.addRule(item.dataSource)
-        xbmcgui.Dialog().ok('Done','Recording rule added for:','',item.dataSource.seriesTitle)
+        xbmcgui.Dialog().ok(T(32800),T(32801),'',item.dataSource.seriesTitle)
         self.ruleAdded = True
         self.doClose()
 
@@ -85,9 +86,9 @@ class DVRBase(util.CronReceiver):
         self.lastRecordingsRefresh = 0
         self.lastSearchRefresh = 0
         self.mode = 'WATCH'
-        util.setGlobalProperty('NO_RESULTS','NO SEARCH RESULTS')
-        util.setGlobalProperty('NO_RECORDINGS','NO RECORDINGS')
-        util.setGlobalProperty('NO_RULES','NO RULES SET')
+        util.setGlobalProperty('NO_RESULTS',T(32802))
+        util.setGlobalProperty('NO_RECORDINGS',T(32803))
+        util.setGlobalProperty('NO_RULES',T(32804))
 
     @property
     def mode(self):
@@ -199,7 +200,7 @@ class DVRBase(util.CronReceiver):
             item.setProperty('air.time',r.displayTime())
             items.append(item)
 
-        util.setGlobalProperty('NO_RECORDINGS',not items and 'NO RECORDINGS' or '')
+        util.setGlobalProperty('NO_RECORDINGS',not items and T(32803) or '')
         self.recordingList.reset()
         self.recordingList.addItems(items)
 
@@ -209,7 +210,7 @@ class DVRBase(util.CronReceiver):
         items = []
         series = {}
         self.searchResults = hdhr.guide.search(self.devices.apiAuthID(),terms=self.searchTerms) or []
-        util.setGlobalProperty('NO_RESULTS',not self.searchResults and 'NO SEARCH RESULTS' or '')
+        util.setGlobalProperty('NO_RESULTS',not self.searchResults and T(32802) or '')
 
         for r in self.searchResults:
             if r.seriesID in series:
@@ -236,22 +237,22 @@ class DVRBase(util.CronReceiver):
         items = []
         for r in self.storageServer.rules:
             item = kodigui.ManagedListItem(r.title,str(r.priority),data_source=r)
-            item.setProperty('rule.recent_only',r.recentOnly and 'RECENT' or 'ALWAYS')
+            item.setProperty('rule.recent_only',r.recentOnly and T(32805) or T(32806))
             items.append(item)
 
-        util.setGlobalProperty('NO_RULES',not items and 'NO RULES SET' or '')
+        util.setGlobalProperty('NO_RULES',not items and T(32804) or '')
         self.ruleList.reset()
         self.ruleList.addItems(items)
 
     def doRuleContext(self):
         item = self.ruleList.getSelectedItem()
-        options = ['Toggle Recent Only','Set Priority','Delete']
-        idx = xbmcgui.Dialog().select('Options',options)
+        options = [T(32807),T(32808),T(32809)]
+        idx = xbmcgui.Dialog().select(T(32810),options)
         if idx < 0: return
         if idx == 0:
             item.dataSource.recentOnly = not item.dataSource.recentOnly
         elif idx == 1:
-            priority = xbmcgui.Dialog().input('Enter Priority',str(item.dataSource.priority))
+            priority = xbmcgui.Dialog().input(T(32811),str(item.dataSource.priority))
             try:
                 item.dataSource.priority = int(priority)
                 #item.setLabel2(str(item.dataSource.priority))
@@ -263,7 +264,7 @@ class DVRBase(util.CronReceiver):
         self.fillRules(update=True)
 
     def setSearch(self):
-        self.searchTerms = xbmcgui.Dialog().input('Enter search terms',self.searchTerms)
+        self.searchTerms = xbmcgui.Dialog().input(T(32812),self.searchTerms)
         self.setProperty('search.terms',self.searchTerms)
         self.fillSearchPanel()
         if not self.searchResults:
