@@ -54,7 +54,12 @@ class RecordDialog(kodigui.BaseDialog):
     def add(self):
         item = self.episodeList.getSelectedItem()
         if not item: return
-        self.storageServer.addRule(item.dataSource)
+        try:
+            self.storageServer.addRule(item.dataSource)
+        except hdhr.errors.RuleModException, e:
+            util.showNotification(e.message,header=T(32832))
+            return
+
         xbmcgui.Dialog().ok(T(32800),T(32801),'',item.dataSource.seriesTitle)
         self.ruleAdded = True
         self.doClose()

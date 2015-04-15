@@ -299,11 +299,11 @@ msgid "ORIGINAL DATE"
 msgstr ""
 
 msgctxt "#32827"
-msgid "Error modifying rule"
+msgid "Error modifying recording rule"
 msgstr ""
 
 msgctxt "#32828"
-msgid "Error deleting rule"
+msgid "Error deleting recording rule"
 msgstr ""
 
 msgctxt "#32829"
@@ -318,3 +318,6 @@ msgctxt "#32831"
 msgid "Search Error"
 msgstr ""
 
+msgctxt "#32832"
+msgid "Error adding recording rule"
+msgstr ""
