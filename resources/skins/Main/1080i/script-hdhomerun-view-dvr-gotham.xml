@@ -86,7 +86,7 @@
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
                         <angle>90</angle>
-                        <label>[B]WATCH RECORDINGS[/B]</label>
+                        <label>[B]$ADDON[script.hdhomerun.view 32813][/B]</label>
                     </control>
                 </control>
 
@@ -180,7 +180,7 @@
                         <align>left</align>
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
-                        <label>[B]CHANNEL[/B]</label>
+                        <label>[B]$ADDON[script.hdhomerun.view 32814][/B]</label>
                     </control>
                     <control type="label">
                         <posx>205</posx>
@@ -191,7 +191,7 @@
                         <align>left</align>
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
-                        <label>[B]PROGRAM NAME[/B]</label>
+                        <label>[B]$ADDON[script.hdhomerun.view 32815][/B]</label>
                     </control>
                     <control type="label">
                         <posx>735</posx>
@@ -202,7 +202,7 @@
                         <align>left</align>
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
-                        <label>[B]EPISODE[/B]</label>
+                        <label>[B]$ADDON[script.hdhomerun.view 32816][/B]</label>
                     </control>
                     <control type="label">
                         <posx>1005</posx>
@@ -213,7 +213,7 @@
                         <align>left</align>
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
-                        <label>[B]RECORDED[/B]</label>
+                        <label>[B]$ADDON[script.hdhomerun.view 32817][/B]</label>
                     </control>
                 </control>
 
@@ -337,7 +337,7 @@
                                     <align>left</align>
                                     <aligny>center</aligny>
                                     <textcolor>FFFFFFFF</textcolor>
-                                    <label>[B]$INFO[ListItem.Property(episode.number),Ep. ][/B]</label>
+                                    <label>[B]$INFO[ListItem.Property(episode.number),$ADDON[script.hdhomerun.view 32818] ][/B]</label>
                                 </control>
                                 <!-- <control type="label">
                                     <posx>10</posx>
@@ -499,7 +499,7 @@
                                     <align>left</align>
                                     <aligny>center</aligny>
                                     <textcolor>FFFFFFFF</textcolor>
-                                    <label>[B]$INFO[ListItem.Property(episode.number),Ep. ][/B]</label>
+                                    <label>[B]$INFO[ListItem.Property(episode.number),$ADDON[script.hdhomerun.view 32818] ][/B]</label>
                                 </control>
                                 <!-- <control type="label">
                                     <posx>10</posx>
@@ -675,7 +675,7 @@
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
                         <angle>90</angle>
-                        <label>[B]GUIDE SEARCH[UPPERCASE][COLOR FF000000]$INFO[Window.Property(search.terms),[COLOR FFFFFFFF]:[/COLOR] ][/COLOR][/UPPERCASE][/B]</label>
+                        <label>[B]$ADDON[script.hdhomerun.view 32819][UPPERCASE][COLOR FF000000]$INFO[Window.Property(search.terms),[COLOR FFFFFFFF]:[/COLOR] ][/COLOR][/UPPERCASE][/B]</label>
                     </control>
                 </control>
 
@@ -1035,7 +1035,7 @@
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
                         <angle>90</angle>
-                        <label>[B]RECORDING RULES[/B]</label>
+                        <label>[B]$ADDON[script.hdhomerun.view 32820][/B]</label>
                     </control>
                 </control>
                 <control type="button" id="302">
@@ -1065,7 +1065,7 @@
                         <align>left</align>
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
-                        <label>[B]TITLE[/B]</label>
+                        <label>[B]$ADDON[script.hdhomerun.view 32821][/B]</label>
                     </control>
                     <control type="label">
                         <posx>1215</posx>
@@ -1076,7 +1076,7 @@
                         <align>left</align>
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
-                        <label>[B]RECENT ONLY[/B]</label>
+                        <label>[B]$ADDON[script.hdhomerun.view 32822][/B]</label>
                     </control>
                     <control type="label">
                         <posx>1460</posx>
@@ -1087,7 +1087,7 @@
                         <align>left</align>
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
-                        <label>[B]PRIORITY[/B]</label>
+                        <label>[B]$ADDON[script.hdhomerun.view 32823][/B]</label>
                     </control>
                 </control>
 
