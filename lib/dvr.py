@@ -162,7 +162,7 @@ class DVRBase(util.CronReceiver):
         #print 'click: {0}'.format(controlID)
         if controlID == self.RECORDING_LIST_ID:
             item = self.recordingList.getSelectedItem()
-            self.play = item.dataSource.playURL
+            self.play = item.dataSource
             self.doClose()
         elif controlID == self.SEARCH_PANEL_ID:
             self.openRecordDialog()

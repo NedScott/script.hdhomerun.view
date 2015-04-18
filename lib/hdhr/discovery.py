@@ -82,7 +82,7 @@ class Devices(object):
     def hasStorageServers(self):
         return bool(self._storageServers)
 
-    def getDevice(self,packet,address):
+    def createDevice(self,packet,address):
         try:
 
             header = packet[:4]
@@ -136,7 +136,7 @@ class Devices(object):
         return device
 
     def add(self,packet, address):
-        device = self.getDevice(packet,address)
+        device = self.createDevice(packet,address)
 
         if not device or not device.valid:
             return None
@@ -151,6 +151,12 @@ class Devices(object):
             self._other.append(device)
 
         return True
+
+    def getDeviceByIP(self,ip):
+        for d in self.tunerDevices + self.storageServers:
+            if d.ip == ip:
+                return d
+        return None
 
     def apiAuthID(self):
         combined = ''

@@ -73,12 +73,6 @@ class LineUp(object):
             return None
         return self.channels[ [k for k in self.channels.keys()][index] ]
 
-    def getDeviceByIP(self,ip):
-        for d in self.devices.tunerDevices:
-            if d.ip == ip:
-                return d
-        return None
-
     def defaultDevice(self):
         return self.devices.defaultTunerDevice()
 

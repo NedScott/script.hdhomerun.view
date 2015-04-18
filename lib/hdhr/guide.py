@@ -132,6 +132,16 @@ class SearchResult(dict):
         return int(self.get('StartTime',0))
 
     @property
+    def endTimestamp(self):
+        return int(self.get('EndTime',0))
+
+    @property
+    def duration(self):
+        duration = self.endTimestamp - self.startTimestamp
+        if duration > 0: return duration
+        return 0
+
+    @property
     def originalTimestamp(self):
         return int(self.get('OriginalAirdate',0))
 
@@ -140,6 +150,17 @@ class SearchResult(dict):
 
     def displayTime(self,original=False):
         return time.strftime('%I:%M:%S %p',time.localtime(original and self.originalTimestamp or self.startTimestamp))
+
+    def durationString(self):
+        s = self.duration
+        hours = s // 3600
+        s = s - (hours * 3600)
+        minutes = s // 60
+        seconds = s - (minutes * 60)
+        if hours:
+            return '%d:%02d:%02d' % (hours, minutes, seconds)
+        else:
+            return '%d:%02d' % (minutes, seconds)
 
 def search(deviceAuth,terms=''):
     url = SEARCH_URL.format(deviceAuth,urllib.quote(terms.encode('utf-8')))

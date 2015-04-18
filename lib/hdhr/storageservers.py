@@ -103,6 +103,15 @@ class Recording(guide.SearchResult):
     def playURL(self):
         return self.get('PlayURL','')
 
+    @property
+    def programID(self):
+        return self.get('ProgramID')
+
+    def progress(self,sofar):
+        duration = self.duration
+        if not duration: return 0
+        return int((sofar/float(self.duration))*100)
+
 class StorageServers(object):
     def __init__(self,devices):
         self._devices = devices
@@ -155,6 +164,11 @@ class StorageServers(object):
     @property
     def rules(self):
         return self._rules
+
+    def getRecordingByPlayURL(self,play_url):
+        for r in self.recordings:
+            if play_url == r.playURL:
+                return r
 
     def updateRecordings(self):
         self._getRecordings()

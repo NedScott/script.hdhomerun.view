@@ -215,7 +215,7 @@ class GuideOverlay(util.CronReceiver):
 
     def onPlayBackStarted(self):
         util.DEBUG_LOG('ON PLAYBACK STARTED')
-        self.fallbackChannel = self.current and self.current.dataSource or None
+        self.fallbackChannel = self.currentIsLive() and self.current.dataSource or None
         self.showProgress()
 
     def onPlayBackStopped(self):
@@ -267,8 +267,10 @@ class GuideOverlay(util.CronReceiver):
     def updateProgressBars(self,force=False):
         if not force and not self.overlayVisible(): return
 
-        if self.current:
+        if self.currentIsLive():
             self.currentProgress.setPercent(self.current.dataSource.guide.currentShow().progress() or 0)
+        elif self.currentIsRecorded():
+            self.currentProgress.setPercent(self.current.progress(self.player.time))
 
         for mli in self.channelList:
             prog = mli.dataSource.guide.currentShow().progress()
@@ -278,13 +280,18 @@ class GuideOverlay(util.CronReceiver):
                 prog = int(prog - (prog % 5))
                 mli.setProperty('show.progress','progress/script-hdhomerun-view-progress_{0}.png'.format(prog))
 
-    def setCurrent(self,mli=None):
+    def setCurrent(self,mli=None,rec=None):
         if self.current:
-            self.current.setProperty('is.current','')
+            if self.currentIsLive():
+                self.current.setProperty('is.current','')
             self.current = None
-        if not mli or (self.player and not self.player.isPlayingHDHR()): return self.setWinProperties()
-        self.current = mli
-        self.current.setProperty('is.current','true')
+
+        if mli and self.player and self.player.isPlayingHDHR():
+            self.current = mli
+            self.current.setProperty('is.current','true')
+        elif rec:
+            self.current = rec
+
         self.setWinProperties()
 
     def closeHandler(self):
@@ -405,7 +412,7 @@ class GuideOverlay(util.CronReceiver):
                 util.DEBUG_LOG('Next guide update: {0} minutes'.format(int((self.nextGuideUpdate - time.time())/60)))
                 return False
 
-        guide = guide or hdhr.Guide()
+        guide = guide or hdhr.guide.Guide()
 
         self.guideFetchPreviouslyFailed = False
 
@@ -506,7 +513,7 @@ class GuideOverlay(util.CronReceiver):
         util.setGlobalProperty('DVR_ENABLED',self.devices.hasStorageServers() and 'true' or '')
         self.fillChannelList()
 
-        self.player = player.ChannelPlayer().init(self,self.lineUp,self.touchMode)
+        self.player = player.HDHRPlayer().init(self,self.devices,self.touchMode)
 
         channel = self.getStartChannel()
         if not channel:
@@ -515,11 +522,20 @@ class GuideOverlay(util.CronReceiver):
             return
 
         if self.player.isPlayingHDHR():
-            util.DEBUG_LOG('HDHR video already playing')
             self.fullscreenVideo()
             self.showProgress()
-            mli = self.channelList.getListItemByDataSource(channel)
-            self.setCurrent(mli)
+            if self.player.isPlayingRecording():
+                util.DEBUG_LOG('HDHR video already playing (recorded)')
+                try:
+                    url = self.player.url
+                    rec = hdhr.storageservers.StorageServers(self.devices).getRecordingByPlayURL(url)
+                    self.setCurrent(rec=rec)
+                except:
+                    util.ERROR()
+            else:
+                util.DEBUG_LOG('HDHR video already playing (live)')
+                mli = self.channelList.getListItemByDataSource(channel)
+                self.setCurrent(mli)
         else:
             util.DEBUG_LOG('HDHR video not currently playing. Starting channel...')
             self.playChannel(channel)
@@ -590,7 +606,9 @@ class GuideOverlay(util.CronReceiver):
         self.dvrWindow.doModal()
         self.showProgress() #Hide the progres because of re-init triggering <onload>
         if self.dvrWindow.play:
-            self.player.play(self.dvrWindow.play)
+            rec = self.dvrWindow.play
+            self.player.playRecording(rec)
+            self.setCurrent(rec=rec)
             self.dvrWindow.play = None
 
     def playChannel(self,channel):
@@ -604,6 +622,12 @@ class GuideOverlay(util.CronReceiver):
             self.playChannel(channel)
             return channel
         return None
+
+    def currentIsLive(self):
+        return self.current and isinstance(self.current,kodigui.ManagedListItem)
+
+    def currentIsRecorded(self):
+        return self.current and isinstance(self.current,hdhr.storageservers.Recording)
 
     def checkChannelEntry(self,action):
         if action.getId() >= xbmcgui.REMOTE_0 and action.getId() <= xbmcgui.REMOTE_9:
@@ -630,6 +654,7 @@ class GuideOverlay(util.CronReceiver):
         self.channelChange(-1)
 
     def channelChange(self,offset):
+        if not self.currentIsLive(): return
         currentChannel = self.current.dataSource.number
         pos = self.lineUp.index(currentChannel)
         pos += offset
@@ -643,7 +668,7 @@ class GuideOverlay(util.CronReceiver):
     def clearFilter(self):
         if not self.filter: return False
         self.filter = None
-        self.current = None
+        if not self.currentIsLive(): self.current = None
         self.fillChannelList()
         channel = self.getStartChannel()
         self.selectChannel(channel)
@@ -653,7 +678,7 @@ class GuideOverlay(util.CronReceiver):
         terms = xbmcgui.Dialog().input(util.T(32024))
         if not terms: return self.clearFilter()
         self.filter = terms.lower() or None
-        self.current = None
+        if not self.currentIsLive(): self.current = None
         self.fillChannelList()
         self.showOverlay(from_filter=True)
         self.setFocusId(201)
