@@ -528,7 +528,8 @@ class GuideOverlay(util.CronReceiver):
             self.setCurrent(mli)
         else:
             util.DEBUG_LOG('HDHR video not currently playing. Starting channel...')
-            self.playChannel(channel)
+            #self.playChannel(channel)
+            self.showProgress()
 
         self.selectChannel(channel)
 
