@@ -77,7 +77,7 @@ class HDHRPlayer(xbmc.Player):
         source = self.status.nextSource()
         if source:
             util.DEBUG_LOG('Playing from NEXT source: {0}'.format(source.ID))
-            self.play(source.url,self.item,self.touchMode,0)
+            self.play(source.url,self.status.item,self.touchMode,0)
             return True
         else:
             self.status.reset()
