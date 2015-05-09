@@ -142,7 +142,6 @@ class OptionsDialog(BaseDialog):
             if action == xbmcgui.ACTION_GESTURE_SWIPE_RIGHT or  action == xbmcgui.ACTION_MOVE_LEFT:
                 return self.doClose()
             elif action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
-                print 'TEST'
                 return self.doClose()
 
             self.main.propertyTimer.reset(self)
@@ -173,6 +172,7 @@ class GuideOverlay(util.CronReceiver):
         self.lastDiscovery = time.time()
         self.filter = None
         self.optionsDialog = None
+        self.fullscreenVideo(force=True) #Fix for inability to activate fullscreen when a dialog is open starting with 15 beta1
 
     #==========================================================================
     # EVENT HANDLERS
@@ -325,8 +325,8 @@ class GuideOverlay(util.CronReceiver):
         return True
 
 
-    def fullscreenVideo(self):
-        if not self.touchMode and util.videoIsPlaying():
+    def fullscreenVideo(self,force=False):
+        if not self.touchMode and (util.videoIsPlaying() or force):
             xbmc.executebuiltin('ActivateWindow(fullscreenvideo)')
 
     def resetNextGuideUpdate(self,interval=None):
@@ -528,8 +528,7 @@ class GuideOverlay(util.CronReceiver):
             self.setCurrent(mli)
         else:
             util.DEBUG_LOG('HDHR video not currently playing. Starting channel...')
-            #self.playChannel(channel)
-            self.showProgress()
+            self.playChannel(channel)
 
         self.selectChannel(channel)
 
