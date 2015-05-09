@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import time, random
+import os, time, random
 import xbmc, xbmcgui
 
 import hdhr
@@ -172,7 +172,7 @@ class GuideOverlay(util.CronReceiver):
         self.lastDiscovery = time.time()
         self.filter = None
         self.optionsDialog = None
-        self.fullscreenVideo(force=True) #Fix for inability to activate fullscreen when a dialog is open starting with 15 beta1
+        self.initFullscreenVideo() #Fix for inability to activate fullscreen when a dialog is open starting with 15 beta1
 
     #==========================================================================
     # EVENT HANDLERS
@@ -241,6 +241,10 @@ class GuideOverlay(util.CronReceiver):
 
     def onPlayBackStarted(self):
         util.DEBUG_LOG('ON PLAYBACK STARTED')
+        if 'dummy.mp4' in self.player.url:
+            self.fullscreenVideo()
+            self.player.stop()
+
         self.fallbackChannel = self.current and self.current.dataSource or None
         self.showProgress()
 
@@ -324,9 +328,16 @@ class GuideOverlay(util.CronReceiver):
         self.doClose()
         return True
 
+    def initFullscreenVideo(self):
+        if self.touchMode: return
+        if util.videoIsPlaying(): return self.fullscreenVideo()
+        self.player = player.ChannelPlayer()
+        dummy = os.path.join(xbmc.translatePath(util.ADDON.getAddonInfo('path')).decode('utf-8'),'resources','dummy.mp4')
+        self.player.play(dummy)
 
-    def fullscreenVideo(self,force=False):
-        if not self.touchMode and (util.videoIsPlaying() or force):
+
+    def fullscreenVideo(self):
+        if not self.touchMode and util.videoIsPlaying():
             xbmc.executebuiltin('ActivateWindow(fullscreenvideo)')
 
     def resetNextGuideUpdate(self,interval=None):
