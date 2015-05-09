@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import xbmc, xbmcgui
 import util
 
@@ -106,3 +107,28 @@ class ChannelPlayer(xbmc.Player):
         except:
             util.ERROR()
         return False
+
+class FullsceenVideoInitializer(xbmc.Player):
+    def start(self):
+        if self.isPlaying():
+            return self.finish()
+        self._finished = False
+        dummy = os.path.join(xbmc.translatePath(util.ADDON.getAddonInfo('path')).decode('utf-8'),'resources','dummy.mp4')
+        self.play(dummy)
+        while not self._finished:
+            xbmc.sleep(100)
+
+    def finish(self):
+        if self._finished: return
+        xbmc.executebuiltin('ActivateWindow(fullscreenvideo)')
+        self._finished = True
+        self.stop()
+
+    def onPlayBackStarted(self):
+        self.finish()
+
+    def onPlayBackStopped(self):
+        self.finish()
+
+    def onPlayBackEnded(self):
+        self.finish()
