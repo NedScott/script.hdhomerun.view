@@ -14,6 +14,8 @@ CHANNEL_DISPLAY = u'[COLOR FF99CCFF]{0}[/COLOR] {1}'
 GUIDE_UPDATE_INTERVAL = 3300 #55 mins
 GUIDE_UPDATE_VARIANT = 600 #10 mins
 
+MAX_TIME_INT = 31536000000
+
 class BaseWindow(xbmcgui.WindowXML):
     def __init__(self,*args,**kwargs):
         self._closing = False
@@ -168,6 +170,7 @@ class GuideOverlay(util.CronReceiver):
         self.fallbackChannel = None
         self.cron = None
         self.guideFetchPreviouslyFailed = False
+        self.nextChannelUpdate = MAX_TIME_INT
         self.resetNextGuideUpdate()
         self.lastDiscovery = time.time()
         self.filter = None
@@ -237,6 +240,7 @@ class GuideOverlay(util.CronReceiver):
             mli = self.channelList.getSelectedItem()
             channel = mli.dataSource
             self.playChannel(channel)
+            self.showOverlay(False)
 
     def onPlayBackStarted(self):
         util.DEBUG_LOG('ON PLAYBACK STARTED')
@@ -272,8 +276,12 @@ class GuideOverlay(util.CronReceiver):
             self.doClose()
             util.DEBUG_LOG('Abort requested - closing...')
             return
+
         if time.time() > self.nextGuideUpdate:
             self.resetNextGuideUpdate()
+            self.updateGuide()
+            self.updateChannels()
+        elif time.time() > self.nextChannelUpdate:
             self.updateChannels()
         else:
             self.updateProgressBars()
@@ -349,7 +357,6 @@ class GuideOverlay(util.CronReceiver):
     def updateLineup(self,quiet=False):
         try:
             self.lineUp = hdhr.LineUp()
-            return True
         except hdhr.NoCompatibleDevicesException:
             if not quiet: xbmcgui.Dialog().ok(util.T(32016),util.T(32011),'',util.T(32012))
             return False
@@ -363,6 +370,8 @@ class GuideOverlay(util.CronReceiver):
             e = util.ERROR()
             if not quiet: xbmcgui.Dialog().ok(util.T(32016),util.T(32015),e,util.T(32012))
             return False
+
+        return True
 
     def updateGuide(self):
         if self.lineUp.isOld(): #1 hour
@@ -396,10 +405,26 @@ class GuideOverlay(util.CronReceiver):
 
         self.guideFetchPreviouslyFailed = False
 
-        #Set guide data for each channel
+        #Set guide data for each channel and add new channels
+        currMLIPos = 0
         for channel in self.lineUp.channels.values():
             guideChan = guide.getChannel(channel.number)
             channel.setGuide(guideChan)
+
+            #Advance list item until it matches or is lower so we can either update an existing channel or insert a new channel
+            while self.channelList.positionIsValid(currMLIPos) and self.channelList[currMLIPos].datasource.number < channel.number:
+                currMLIPos+=1
+
+            if self.channelList.positionIsValid(currMLIPos) and self.channelList[currMLIPos].datasource.number == channel.number:
+                self.channelList[currMLIPos].datasource = channel
+            else:
+                self.channelList.insertItem(currMLIPos,self.createListItem(channel))
+
+        #check for channels that are now missing and remove
+        for i in range(self.channelList.size()):
+            channel = self.channelList[i].dataSource
+            if not channel.number in self.lineUp:
+                self.channelList.removeItem(i)
 
         self.lineUp.hasGuideData = True
 
@@ -434,30 +459,52 @@ class GuideOverlay(util.CronReceiver):
             self.currentProgress.setPercent(0)
             self.currentProgress.setVisible(False)
 
+    def createListItem(self,channel):
+        return self.updateListItem(channel,filter_=True)
+
+    def updateListItem(self,channel,mli=None,filter_=False):
+        guideChan = channel.guide
+        currentShow = guideChan.currentShow()
+
+        if filter_ and self.filter:
+            if not channel.matchesFilter(self.filter) and not currentShow.matchesFilter(self.filter):
+                return None
+
+        if not mli:
+            title = channel.name
+            if guideChan.icon: title = CHANNEL_DISPLAY.format(channel.number,title)
+            mli = kodigui.ManagedListItem(title,data_source=channel)
+            mli.setProperty('channel.icon',guideChan.icon)
+            mli.setProperty('channel.number',channel.number)
+
+        end = currentShow.end
+        if end and end < self.nextChannelUpdate:
+            self.nextChannelUpdate = end
+
+        nextShow = guideChan.nextShow()
+        thumb = currentShow.icon
+
+        mli.setThumbnailImage(thumb)
+        mli.setProperty('show.title',currentShow.title)
+        mli.setProperty('show.synopsis',currentShow.synopsis)
+        mli.setProperty('next.title',u'{0}: {1}'.format(util.T(32004),nextShow.title or util.T(32005)))
+        mli.setProperty('next.icon',nextShow.icon)
+        mli.setProperty('next.start',nextShow.start and time.strftime('%I:%M %p',time.localtime(nextShow.start)) or '')
+
+        prog = currentShow.progress()
+        if prog != None:
+            prog = int(prog - (prog % 5))
+            mli.setProperty('show.progress','progress/script-hdhomerun-view-progress_{0}.png'.format(prog))
+        return mli
+
     def updateChannels(self):
         util.DEBUG_LOG('Updating channels')
-        self.updateGuide()
+
+        self.nextChannelUpdate = MAX_TIME_INT
+
         for mli in self.channelList:
-            guideChan = mli.dataSource.guide
-            currentShow = guideChan.currentShow()
-            nextShow = guideChan.nextShow()
-            title = mli.dataSource.name
-            thumb = currentShow.icon
-            icon = guideChan.icon
-            if icon: title = CHANNEL_DISPLAY.format(mli.dataSource.number,title)
-            mli.setLabel(title)
-            mli.setThumbnailImage(thumb)
-            mli.setProperty('show.title',currentShow.title)
-            mli.setProperty('show.synopsis',currentShow.synopsis)
-            mli.setProperty('next.title',u'{0}: {1}'.format(util.T(32004),nextShow.title or util.T(32005)))
-            mli.setProperty('next.icon',nextShow.icon)
-            start = nextShow.start
-            if start:
-                mli.setProperty('next.start',time.strftime('%I:%M %p',time.localtime(start)))
-            prog = currentShow.progress()
-            if prog != None:
-                prog = int(prog - (prog % 5))
-                mli.setProperty('show.progress','progress/script-hdhomerun-view-progress_{0}.png'.format(prog))
+            self.updateListItem(mli.dataSource,mli)
+
 
     def fillChannelList(self):
         last = util.getSetting('last.channel')
@@ -466,32 +513,13 @@ class GuideOverlay(util.CronReceiver):
 
         items = []
         for channel in self.lineUp.channels.values():
-            guideChan = channel.guide
-            currentShow = guideChan.currentShow()
-            if self.filter:
-                if not channel.matchesFilter(self.filter) and not currentShow.matchesFilter(self.filter): continue
-            nextShow = guideChan.nextShow()
-            title = channel.name
-            thumb = currentShow.icon
-            icon = guideChan.icon
-            if icon: title = CHANNEL_DISPLAY.format(channel.number,title)
-            item = kodigui.ManagedListItem(title,thumbnailImage=thumb,data_source=channel)
-            item.setProperty('channel.icon',icon)
-            item.setProperty('channel.number',channel.number)
-            item.setProperty('show.title',currentShow.title)
-            item.setProperty('show.synopsis',currentShow.synopsis)
-            item.setProperty('next.title',u'{0}: {1}'.format(util.T(32004),nextShow.title or util.T(32005)))
-            item.setProperty('next.icon',nextShow.icon)
-            start = nextShow.start
-            if start:
-                item.setProperty('next.start',time.strftime('%I:%M %p',time.localtime(start)))
+            mli = self.createListItem(channel)
+            if not mli: continue
+
             if last == channel.number:
-                self.setCurrent(item)
-            prog = currentShow.progress()
-            if prog != None:
-                prog = int(prog - (prog % 5))
-                item.setProperty('show.progress','progress/script-hdhomerun-view-progress_{0}.png'.format(prog))
-            items.append(item)
+                self.setCurrent(mli)
+
+            items.append(mli)
 
         self.channelList.addItems(items)
 
