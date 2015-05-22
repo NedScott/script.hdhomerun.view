@@ -320,7 +320,8 @@ class GuideOverlay(util.CronReceiver):
         nextTitle = ''
         progress = None
         channel = ''
-        if self.current:
+
+        if self.currentIsLive():
             channel = CHANNEL_DISPLAY.format(self.current.dataSource.number,self.current.dataSource.name)
             if self.current.dataSource.guide:
                 currentShow = self.current.dataSource.guide.currentShow()
@@ -328,6 +329,13 @@ class GuideOverlay(util.CronReceiver):
                 icon = currentShow.icon
                 progress = currentShow.progress()
                 nextTitle = u'{0}: {1}'.format(util.T(32004),self.current.dataSource.guide.nextShow().title or util.T(32005))
+        elif self.currentIsRecorded():
+            rec = self.current
+            title = rec.seriesTitle
+            nextTitle = rec.episodeTitle
+            icon = rec.icon
+            channel = rec.channelName
+            progress = rec.progress(self.player.time)
 
         self.setProperty('show.title',title)
         self.setProperty('show.icon',icon)
