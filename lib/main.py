@@ -166,6 +166,7 @@ class GuideOverlay(util.CronReceiver):
         self.touchMode = False
         self.lineUp = None
         self.guide = None
+        self.player = None
         self.current = None
         self.fallbackChannel = None
         self.cron = None
@@ -311,7 +312,7 @@ class GuideOverlay(util.CronReceiver):
         if self.current:
             self.current.setProperty('is.current','')
             self.current = None
-        if not mli: return self.setWinProperties()
+        if not mli or (self.player and not self.player.isPlayingHDHR()): return self.setWinProperties()
         self.current = mli
         self.current.setProperty('is.current','true')
         self.setWinProperties()
@@ -335,6 +336,33 @@ class GuideOverlay(util.CronReceiver):
     def fullscreenVideo(self):
         if not self.touchMode and util.videoIsPlaying():
             xbmc.executebuiltin('ActivateWindow(fullscreenvideo)')
+
+    def setWinProperties(self):
+        title = ''
+        icon = ''
+        nextTitle = ''
+        progress = None
+        channel = ''
+        if self.current:
+            channel = CHANNEL_DISPLAY.format(self.current.dataSource.number,self.current.dataSource.name)
+            if self.current.dataSource.guide:
+                currentShow = self.current.dataSource.guide.currentShow()
+                title = currentShow.title
+                icon = currentShow.icon
+                progress = currentShow.progress()
+                nextTitle = u'{0}: {1}'.format(util.T(32004),self.current.dataSource.guide.nextShow().title or util.T(32005))
+
+        self.setProperty('show.title',title)
+        self.setProperty('show.icon',icon)
+        self.setProperty('next.title',nextTitle)
+        self.setProperty('channel.name',channel)
+
+        if progress != None:
+            self.currentProgress.setPercent(progress)
+            self.currentProgress.setVisible(True)
+        else:
+            self.currentProgress.setPercent(0)
+            self.currentProgress.setVisible(False)
 
     def resetNextGuideUpdate(self,interval=None):
         if not interval:
@@ -374,8 +402,13 @@ class GuideOverlay(util.CronReceiver):
         return True
 
     def updateGuide(self):
+        newLinup = False
+
         if self.lineUp.isOld(): #1 hour
-            if not self.updateLineup(quiet=True):
+            if self.updateLineup(quiet=True):
+                if self.player: self.player.init(self,self.lineUp,self.touchMode)
+                newLinup = True
+            else:
                 util.DEBUG_LOG('Discovery failed!')
                 self.resetNextGuideUpdate(300) #Discovery failed, try again in 5 mins
                 return False
@@ -405,59 +438,19 @@ class GuideOverlay(util.CronReceiver):
 
         self.guideFetchPreviouslyFailed = False
 
-        #Set guide data for each channel and add new channels
-        currMLIPos = 0
+        #Set guide data for each channel
         for channel in self.lineUp.channels.values():
             guideChan = guide.getChannel(channel.number)
             channel.setGuide(guideChan)
 
-            #Advance list item until it matches or is lower so we can either update an existing channel or insert a new channel
-            while self.channelList.positionIsValid(currMLIPos) and self.channelList[currMLIPos].datasource.number < channel.number:
-                currMLIPos+=1
-
-            if self.channelList.positionIsValid(currMLIPos) and self.channelList[currMLIPos].datasource.number == channel.number:
-                self.channelList[currMLIPos].datasource = channel
-            else:
-                self.channelList.insertItem(currMLIPos,self.createListItem(channel))
-
-        #check for channels that are now missing and remove
-        for i in range(self.channelList.size()):
-            channel = self.channelList[i].dataSource
-            if not channel.number in self.lineUp:
-                self.channelList.removeItem(i)
+        if newLinup:
+            self.fillChannelList(update=True)
 
         self.lineUp.hasGuideData = True
 
         self.setWinProperties()
         util.DEBUG_LOG('Next guide update: {0} minutes'.format(int((self.nextGuideUpdate - time.time())/60)))
         return True
-
-    def setWinProperties(self):
-        title = ''
-        icon = ''
-        nextTitle = ''
-        progress = None
-        channel = ''
-        if self.current:
-            channel = CHANNEL_DISPLAY.format(self.current.dataSource.number,self.current.dataSource.name)
-            if self.current.dataSource.guide:
-                currentShow = self.current.dataSource.guide.currentShow()
-                title = currentShow.title
-                icon = currentShow.icon
-                progress = currentShow.progress()
-                nextTitle = u'{0}: {1}'.format(util.T(32004),self.current.dataSource.guide.nextShow().title or util.T(32005))
-
-        self.setProperty('show.title',title)
-        self.setProperty('show.icon',icon)
-        self.setProperty('next.title',nextTitle)
-        self.setProperty('channel.name',channel)
-
-        if progress != None:
-            self.currentProgress.setPercent(progress)
-            self.currentProgress.setVisible(True)
-        else:
-            self.currentProgress.setPercent(0)
-            self.currentProgress.setVisible(False)
 
     def createListItem(self,channel):
         return self.updateListItem(channel,filter_=True)
@@ -506,10 +499,8 @@ class GuideOverlay(util.CronReceiver):
             self.updateListItem(mli.dataSource,mli)
 
 
-    def fillChannelList(self):
+    def fillChannelList(self,update=False):
         last = util.getSetting('last.channel')
-
-        self.channelList.reset()
 
         items = []
         for channel in self.lineUp.channels.values():
@@ -521,7 +512,11 @@ class GuideOverlay(util.CronReceiver):
 
             items.append(mli)
 
-        self.channelList.addItems(items)
+        if update:
+            self.channelList.replaceItems(items)
+        else:
+            self.channelList.reset()
+            self.channelList.addItems(items)
 
     def getStartChannel(self):
         util.DEBUG_LOG('Found {0} total channels'.format(len(self.lineUp)))
