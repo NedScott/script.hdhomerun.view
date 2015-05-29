@@ -131,6 +131,8 @@ class HDHRPlayer(xbmc.Player):
         except:
             util.ERROR()
         return False
+
+
 class FullsceenVideoInitializer(xbmc.Player):
     def start(self):
         util.DEBUG_LOG('FS video initializer: STARTED')
@@ -151,7 +153,7 @@ class FullsceenVideoInitializer(xbmc.Player):
     def finish(self):
         if self._finished: return
         util.DEBUG_LOG('WORKAROUND: Activating fullscreen')
-        while xbmc.getCondVisibility('Window.IsActive(fullscreenvideo)'):
+        while self.isPlaying():
             xbmc.sleep(100)
         xbmc.sleep(500)
         xbmc.executebuiltin('ActivateWindow(fullscreenvideo)')
