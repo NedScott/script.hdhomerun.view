@@ -55,6 +55,7 @@ else:
     DVR_WINDOW = "script-hdhomerun-view-dvr.xml"
 
 DVR_RECORD_DIALOG = "script-hdhomerun-view-dvr_record_dialog.xml"
+DVR_EPISODES_DIALOG = "script-hdhomerun-view-dvr_episodes_dialog.xml"
 OPTIONS_DIALOG = "script-hdhomerun-view-options.xml"
 
 

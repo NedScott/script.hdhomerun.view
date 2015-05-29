@@ -137,7 +137,6 @@ class FullsceenVideoInitializer(xbmc.Player):
     def start(self):
         util.DEBUG_LOG('FS video initializer: STARTED')
         ver = util.kodiSimpleVersion()
-        print ver
         if ver and ver < 15:
             util.DEBUG_LOG('FS video initializer: FINISHED (Not needed)')
             return

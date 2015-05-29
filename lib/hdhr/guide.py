@@ -96,6 +96,10 @@ class SearchResult(dict):
         return self.get('Title','')
 
     @property
+    def seriesSynopsis(self):
+        return self.get('SeriesSynopsis','')
+
+    @property
     def seriesID(self):
         return self.get('SeriesID')
 

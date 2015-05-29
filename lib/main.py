@@ -280,13 +280,13 @@ class GuideOverlay(util.CronReceiver):
                 prog = int(prog - (prog % 5))
                 mli.setProperty('show.progress','progress/script-hdhomerun-view-progress_{0}.png'.format(prog))
 
-    def setCurrent(self,mli=None,rec=None):
+    def setCurrent(self,mli=None,rec=None,force=False):
         if self.current:
             if self.currentIsLive():
                 self.current.setProperty('is.current','')
             self.current = None
 
-        if mli and self.player and self.player.isPlayingHDHR():
+        if mli and self.player and (self.player.isPlayingHDHR() or force):
             self.current = mli
             self.current.setProperty('is.current','true')
         elif rec:
@@ -570,7 +570,7 @@ class GuideOverlay(util.CronReceiver):
             self.showOverlay()
             self.setFocusId(201)
             return True
-        elif not self.getFocusId() == 201:
+        elif not self.getFocusId() in (201,251):
             self.showOverlay(False)
             return True
         return False
@@ -620,7 +620,7 @@ class GuideOverlay(util.CronReceiver):
             self.dvrWindow.play = None
 
     def playChannel(self,channel):
-        self.setCurrent(self.channelList.getListItemByDataSource(channel))
+        self.setCurrent(self.channelList.getListItemByDataSource(channel),force=True)
         self.player.playChannel(channel)
         self.fullscreenVideo()
 

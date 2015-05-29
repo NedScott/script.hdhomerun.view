@@ -64,8 +64,47 @@ class RecordDialog(kodigui.BaseDialog):
         self.ruleAdded = True
         self.doClose()
 
-class DVRBase(util.CronReceiver):
+class EpisodesDialog(kodigui.BaseDialog):
     RECORDING_LIST_ID = 101
+
+    def __init__(self,*args,**kwargs):
+        kodigui.BaseDialog.__init__(self,*args,**kwargs)
+        self.seriesID = kwargs.get('series_id')
+        self.storageServer = kwargs.get('storage_server')
+        self.play = None
+
+    def onFirstInit(self):
+        self.recordingList = kodigui.ManagedControlList(self,self.RECORDING_LIST_ID,20)
+        self.fillRecordings()
+
+    def onClick(self,controlID):
+        if controlID == self.RECORDING_LIST_ID:
+            self.done()
+
+    def fillRecordings(self):
+        items = []
+        for r in self.storageServer.recordings:
+            if not r.seriesID == self.seriesID: continue
+            item = kodigui.ManagedListItem(r.episodeTitle,r.synopsis,thumbnailImage=r.icon,data_source=r)
+            item.setProperty('series.title',r.seriesTitle)
+            item.setProperty('episode.number',r.episodeNumber)
+            item.setProperty('channel.number',r.channelNumber)
+            item.setProperty('channel.name',r.channelName)
+            item.setProperty('air.date',r.displayDate())
+            item.setProperty('air.time',r.displayTime())
+            items.append(item)
+
+        self.recordingList.reset()
+        self.recordingList.addItems(items)
+        self.setFocusId(self.RECORDING_LIST_ID)
+
+    def done(self):
+        item = self.recordingList.getSelectedItem()
+        self.play = item.dataSource
+        self.doClose()
+
+class DVRBase(util.CronReceiver):
+    SHOW_LIST_ID = 101
     SEARCH_PANEL_ID = 201
     RULE_LIST_ID = 301
     WATCH_BUTTON = 103
@@ -78,7 +117,7 @@ class DVRBase(util.CronReceiver):
     def __init__(self,*args,**kwargs):
         self._BASE.__init__(self,*args,**kwargs)
         self.started = False
-        self.recordingList = None
+        self.showList = None
         self.searchPanel = None
         self.ruleList = None
         self.searchTerms = ''
@@ -107,11 +146,11 @@ class DVRBase(util.CronReceiver):
                 self.fillSearchPanel()
 
     def onFirstInit(self):
-        if self.recordingList:
-            self.recordingList.reInit(self,self.RECORDING_LIST_ID)
+        if self.showList:
+            self.showList.reInit(self,self.SHOW_LIST_ID)
         else:
-            self.recordingList = kodigui.ManagedControlList(self,self.RECORDING_LIST_ID,10)
-            self.fillRecordings()
+            self.showList = kodigui.ManagedControlList(self,self.SHOW_LIST_ID,10)
+            self.fillShows()
 
         self.searchPanel = kodigui.ManagedControlList(self,self.SEARCH_PANEL_ID,6)
         self.fillSearchPanel()
@@ -119,8 +158,8 @@ class DVRBase(util.CronReceiver):
         self.ruleList = kodigui.ManagedControlList(self,self.RULE_LIST_ID,10)
         self.fillRules()
 
-        if self.recordingList.size():
-            self.setFocusId(self.RECORDING_LIST_ID)
+        if self.showList.size():
+            self.setFocusId(self.SHOW_LIST_ID)
         else:
             self.setMode('SEARCH')
 
@@ -145,7 +184,7 @@ class DVRBase(util.CronReceiver):
                     return self.setSearch()
             elif action == xbmcgui.ACTION_MOVE_DOWN or action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_MOVE_LEFT:
                 if self.mode == 'WATCH':
-                    if self.getFocusId() != self.RECORDING_LIST_ID: self.setFocusId(self.RECORDING_LIST_ID)
+                    if self.getFocusId() != self.SHOW_LIST_ID: self.setFocusId(self.SHOW_LIST_ID)
                 elif self.mode == 'SEARCH':
                     if self.getFocusId() != self.SEARCH_PANEL_ID: self.setFocusId(self.SEARCH_PANEL_ID)
                 elif self.mode == 'RULES':
@@ -160,10 +199,8 @@ class DVRBase(util.CronReceiver):
 
     def onClick(self,controlID):
         #print 'click: {0}'.format(controlID)
-        if controlID == self.RECORDING_LIST_ID:
-            item = self.recordingList.getSelectedItem()
-            self.play = item.dataSource
-            self.doClose()
+        if controlID == self.SHOW_LIST_ID:
+            self.openEpisodeDialog()
         elif controlID == self.SEARCH_PANEL_ID:
             self.openRecordDialog()
         elif controlID == self.RULE_LIST_ID:
@@ -204,27 +241,31 @@ class DVRBase(util.CronReceiver):
         self.storageServer.updateRecordings()
         self.fillRecordings()
 
-    def fillRecordings(self):
+    def fillShows(self):
         self.lastRecordingsRefresh = time.time()
 
         items = []
+        shows = {}
         for r in self.storageServer.recordings:
-            item = kodigui.ManagedListItem(r.episodeTitle,r.synopsis,thumbnailImage=r.icon,data_source=r)
-            item.setProperty('series.title',r.seriesTitle)
-            item.setProperty('episode.number',r.episodeNumber)
-            item.setProperty('channel.number',r.channelNumber)
-            item.setProperty('channel.name',r.channelName)
-            item.setProperty('air.date',r.displayDate())
-            item.setProperty('air.time',r.displayTime())
-            items.append(item)
+            if r.seriesID in shows:
+                item = shows[r.seriesID]
+                ct = int(item.getProperty('show.count'))
+                ct += 1
+                item.setProperty('show.count',str(ct))
+            else:
+                item = kodigui.ManagedListItem(r.seriesTitle,r.seriesSynopsis,thumbnailImage=r.icon,data_source=r)
+                item.setProperty('show.count','1')
+                item.setProperty('seriesID',r.seriesID)
+                shows[r.seriesID] = item
+                items.append(item)
 
         if not items:
             util.setGlobalProperty('NO_RECORDINGS',self.storageServer.getRecordingsFailed and '[COLOR 80FF0000]{0}[/COLOR]'.format(T(32829)) or T(32803))
         else:
             util.setGlobalProperty('NO_RECORDINGS','')
 
-        self.recordingList.reset()
-        self.recordingList.addItems(items)
+        self.showList.reset()
+        self.showList.addItems(items)
 
     def fillSearchPanel(self):
         self.lastSearchRefresh = time.time()
@@ -316,6 +357,17 @@ class DVRBase(util.CronReceiver):
         if d.ruleAdded:
             self.fillRules(update=True)
         del d
+
+    def openEpisodeDialog(self):
+        item = self.showList.getSelectedItem()
+        if not item: return
+        path = skin.getSkinPath()
+        d = EpisodesDialog(skin.DVR_EPISODES_DIALOG,path,'Main','1080i',series_id=item.dataSource.seriesID,storage_server=self.storageServer)
+        d.doModal()
+        self.play = d.play
+        del d
+        if self.play:
+            self.doClose()
 
 class DVRWindow(DVRBase,kodigui.BaseWindow):
     _BASE = kodigui.BaseWindow
