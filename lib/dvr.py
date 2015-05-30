@@ -99,6 +99,7 @@ class EpisodesDialog(kodigui.BaseDialog):
         self.setFocusId(self.RECORDING_LIST_ID)
 
     def done(self):
+        self.setProperty('staring.recording','1')
         item = self.recordingList.getSelectedItem()
         self.play = item.dataSource
         self.doClose()

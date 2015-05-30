@@ -658,6 +658,7 @@ class GuideOverlay(util.CronReceiver):
         self.dvrWindow.doModal()
         self.showProgress() #Hide the progres because of re-init triggering <onload>
         if self.dvrWindow.play:
+            self.showOverlay(False)
             rec = self.dvrWindow.play
             self.player.playRecording(rec)
             self.setCurrent(rec=rec)
