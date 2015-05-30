@@ -660,9 +660,13 @@ class GuideOverlay(util.CronReceiver):
         if self.dvrWindow.play:
             self.showOverlay(False)
             rec = self.dvrWindow.play
-            self.player.playRecording(rec)
-            self.setCurrent(rec=rec)
+            self.playRecording(rec)
             self.dvrWindow.play = None
+
+    def playRecording(self,rec):
+        self.setCurrent(rec=rec)
+        self.player.playRecording(rec)
+        self.fullscreenVideo()
 
     def playChannel(self,channel):
         self.setCurrent(self.channelList.getListItemByDataSource(channel),force=True)

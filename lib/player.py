@@ -113,7 +113,7 @@ class HDHRPlayer(xbmc.Player):
         li.setInfo('video',{'duration':str(rec.duration/60),'title':rec.episodeTitle,'tvshowtitle':rec.seriesTitle})
         li.addStreamInfo('video',{'duration':rec.duration})
         li.setIconImage(rec.icon)
-        self.play(rec.playURL,li)
+        self.play(rec.playURL,li,self.touchMode,0)
 
     def isPlayingHDHR(self):
         if not self.isPlaying(): return False
