@@ -79,7 +79,7 @@
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
                         <angle>90</angle>
-                        <label>[B]EPISODES[/B]</label>
+                        <label>[B]$ADDON[script.hdhomerun.view 32833][/B]</label>
                     </control>
                 </control>
 
@@ -148,7 +148,6 @@
                     </control>
                 </control>
                 <control type="group">
-                    <visible>IsEmpty(Window(10000).Property(script.hdhomerun.view.NO_RECORDINGS))</visible>
                     <posx>540</posx>
                     <posy>40</posy>
                     <control type="label">

@@ -177,7 +177,7 @@
                         <align>left</align>
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
-                        <label>[B]# EPISODES[/B]</label>
+                        <label>[B]$ADDON[script.hdhomerun.view 32834][/B]</label>
                     </control>
                     <control type="label">
                         <posx>205</posx>
@@ -188,7 +188,7 @@
                         <align>left</align>
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
-                        <label>[B]SHOW[/B]</label>
+                        <label>[B]$ADDON[script.hdhomerun.view 32835][/B]</label>
                     </control>
                 </control>
 

@@ -321,3 +321,15 @@ msgstr ""
 msgctxt "#32832"
 msgid "Error adding recording rule"
 msgstr ""
+
+msgctxt "#32833"
+msgid "EPISODES"
+msgstr ""
+
+msgctxt "#32834"
+msgid "# EPISODES"
+msgstr ""
+
+msgctxt "#32835"
+msgid "SHOW"
+msgstr ""

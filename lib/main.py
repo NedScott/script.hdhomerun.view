@@ -530,12 +530,13 @@ class GuideOverlay(util.CronReceiver):
         last = util.getSetting('last.channel')
 
         items = []
+        current = None
         for channel in self.lineUp.channels.values():
             mli = self.createListItem(channel)
             if not mli: continue
 
             if last == channel.number:
-                self.setCurrent(mli)
+                current = mli
 
             items.append(mli)
 
@@ -544,6 +545,8 @@ class GuideOverlay(util.CronReceiver):
         else:
             self.channelList.reset()
             self.channelList.addItems(items)
+
+        if current: self.setCurrent(current)
 
     def getStartChannel(self):
         util.DEBUG_LOG('Found {0} total channels'.format(len(self.lineUp)))
