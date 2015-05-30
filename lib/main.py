@@ -175,6 +175,9 @@ class GuideOverlay(util.CronReceiver):
         try:
             #'{"jsonrpc": "2.0", "method": "Input.ShowCodec", "id": 1}'
             if self.overlayVisible(): self.propertyTimer.reset()
+
+            if self.checkSeekActions(action): return
+
             if action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_GESTURE_SWIPE_LEFT:
                 if self.overlayVisible():
                     return self.showOptions()
@@ -184,8 +187,6 @@ class GuideOverlay(util.CronReceiver):
                 return self.showOverlay()
             elif action == xbmcgui.ACTION_CONTEXT_MENU:
                 return self.showOptions()
-#            elif action == xbmcgui.ACTION_SELECT_ITEM:
-#                if self.clickShowOverlay(): return
             elif action == xbmcgui.ACTION_MOVE_LEFT or action == xbmcgui.ACTION_GESTURE_SWIPE_RIGHT:
                 return self.showOverlay(False)
             elif action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
@@ -203,6 +204,46 @@ class GuideOverlay(util.CronReceiver):
             self._BASE.onAction(self,action)
             return
         self._BASE.onAction(self,action)
+
+    def checkSeekActions(self,action):
+        if self.getFocusId() == 251: return True
+        if self.overlayVisible() or not self.player.isPlayingRecording():
+            return False
+
+        # <f>FastForward</f> <-- ALREADY WORKS
+        # <r>Rewind</r> <-- ALREADY WORKS
+        # <quote>SmallStepBack</quote> <-- NO ACTION
+        # <opensquarebracket>BigStepForward</opensquarebracket> <-- NO ACTION
+        # <closesquarebracket>BigStepBack</closesquarebracket> <-- NO ACTION
+
+        # PlayerControl(command): Play, Stop, Forward, Rewind, Next, Previous, BigSkipForward, BigSkipBackward, SmallSkipForward, SmallSkipBackward,
+
+        if action == xbmcgui.ACTION_PAGE_UP:
+            xbmc.executebuiltin('PlayerControl(Next)')
+            return True
+        elif action == xbmcgui.ACTION_PAGE_DOWN:
+            xbmc.executebuiltin('PlayerControl(Previous)')
+            return True
+        elif action == xbmcgui.ACTION_NEXT_ITEM:
+            xbmc.executebuiltin('PlayerControl(SmallSkipBackward)')
+            return True
+        elif action == xbmcgui.ACTION_PREV_ITEM:
+            xbmc.executebuiltin('PlayerControl(SmallSkipBackward)')
+            return True
+        elif action == xbmcgui.ACTION_MOVE_LEFT:
+            xbmc.executebuiltin('PlayerControl(SmallSkipBackward)')
+            return True
+        elif action == xbmcgui.ACTION_MOVE_RIGHT:
+            xbmc.executebuiltin('PlayerControl(SmallSkipForward)')
+            return True
+        elif action == xbmcgui.ACTION_MOVE_UP:
+            xbmc.executebuiltin('PlayerControl(BigSkipForward)')
+            return True
+        elif action == xbmcgui.ACTION_MOVE_DOWN:
+            xbmc.executebuiltin('PlayerControl(BigSkipBackward)')
+            return True
+
+        return False
 
     def onClick(self,controlID):
         if self.clickShowOverlay(): return
@@ -269,8 +310,8 @@ class GuideOverlay(util.CronReceiver):
 
         if self.currentIsLive():
             self.currentProgress.setPercent(self.current.dataSource.guide.currentShow().progress() or 0)
-        elif self.currentIsRecorded():
-            self.currentProgress.setPercent(self.current.progress(self.player.time))
+        # elif self.currentIsRecorded():
+        #     self.currentProgress.setPercent(self.current.progress(self.player.time))
 
         for mli in self.channelList:
             prog = mli.dataSource.guide.currentShow().progress()
