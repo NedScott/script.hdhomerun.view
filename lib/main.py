@@ -242,6 +242,18 @@ class GuideOverlay(util.CronReceiver):
         elif action == xbmcgui.ACTION_MOVE_DOWN:
             xbmc.executebuiltin('PlayerControl(BigSkipBackward)')
             return True
+        elif action == xbmcgui.ACTION_GESTURE_SWIPE_RIGHT:
+            xbmc.executebuiltin('PlayerControl(SmallSkipForward)')
+            return True
+        elif action == xbmcgui.ACTION_GESTURE_SWIPE_LEFT:
+            xbmc.executebuiltin('PlayerControl(SmallSkipBackward)')
+            return True
+        elif action == xbmcgui.ACTION_GESTURE_SWIPE_UP:
+            xbmc.executebuiltin('PlayerControl(BigSkipForward)')
+            return True
+        elif action == xbmcgui.ACTION_GESTURE_SWIPE_DOWN:
+            xbmc.executebuiltin('PlayerControl(BigSkipBackward)')
+            return True
 
         return False
 
