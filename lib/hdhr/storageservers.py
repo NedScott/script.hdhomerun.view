@@ -60,7 +60,7 @@ class RecordingRule(dict):
         except:
             e = util.ERROR()
             raise errors.RuleModException(e)
-
+        self['STORAGE_SERVER'].pingUpdateRules()
         return self
 
     def delete(self):
@@ -180,7 +180,16 @@ class StorageServers(object):
         if not rule in self._rules: return False
 
         self._rules.pop(self._rules.index(rule.delete()))
+        self.pingUpdateRules()
         return True
 
     def addRule(self,result):
         self._rules.append(RecordingRule(result).init(self,add=True))
+        self.pingUpdateRules()
+
+    def pingUpdateRules(self):
+        for d in self._devices.storageServers:
+            try:
+                d.syncRules()
+            except:
+                util.ERROR()

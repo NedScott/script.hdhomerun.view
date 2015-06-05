@@ -26,6 +26,7 @@ DEVICE_ID = 0x02
 LINEUP_URL = 0x27
 STORAGE_URL = 0x28
 DEVICE_AUTH = 0x29
+STORAGE_SERVER_BASE_URL = 0x2A
 
 LINEUP_URL_BASE = 'http://{ip}/lineup.json'
 
@@ -128,9 +129,11 @@ class Devices(object):
             elif tag == LINEUP_URL:
                 device.lineUpURL = struct.unpack('>{0}s'.format(length),dataIO.read(length))[0]
             elif tag == STORAGE_URL:
-                device.storageURL = struct.unpack('>{0}s'.format(length),dataIO.read(length))[0]
+                device._storageURL = struct.unpack('>{0}s'.format(length),dataIO.read(length))[0]
             elif tag == DEVICE_AUTH:
                 device._deviceAuth = struct.unpack('>{0}s'.format(length),dataIO.read(length))[0]
+            elif tag == STORAGE_SERVER_BASE_URL:
+                device._baseURL = struct.unpack('>{0}s'.format(length),dataIO.read(length))[0]
             else:
                 dataIO.read(length)
         return device
@@ -248,29 +251,32 @@ class StorageServer(Device):
 
     def __eq__(self,other):
         if not isinstance(other,StorageServer): return False
-        return self.storageURL == other.storageURL
+        return self._baseURL == other._baseURL
 
     def __repr__(self):
-        return '<StorageServer url={0}>'.format(self.url or '?')
+        return '<StorageServer url={0}>'.format(self._baseURL or '?')
 
     @property
     def valid(self):
-        return hasattr(self,'storageURL')
+        return hasattr(self,'_baseURL')
 
     @property
-    def url(self):
-        return getattr(self,'storageURL','')
+    def storageURL(self):
+        return getattr(self,'_storageURL','') or self.url('recorded_files.json')
+
+    def url(self,path):
+        return getattr(self,'_baseURL','') + '/' + path
 
     def display(self):
         try:
             out = '\nDevice at {ip}:\n    Type: {dtype}\n    URL: {url}'
-            return out.format(ip=self.ip,dtype=self.typeName,url=self.url)
+            return out.format(ip=self.ip,dtype=self.typeName,url=self._baseURL)
         except:
             util.ERROR('Failed to format {0} info'.format(self.typeName),hide_tb=True)
 
     def recordings(self):
-        util.DEBUG_LOG('Getting recordings from: {0}'.format(self.url))
-        req = requests.get(self.url)
+        util.DEBUG_LOG('Getting recordings from: {0}'.format(self._baseURL))
+        req = requests.get(self.storageURL)
 
         try:
             recordings = req.json()
@@ -278,6 +284,12 @@ class StorageServer(Device):
         except:
             util.ERROR('Failed to parse recordings JSON data.',hide_tb=True)
             return None
+
+    def syncRules(self):
+        util.DEBUG_LOG('Pinging storage Server: {0}'.format(self._baseURL))
+
+        requests.post(self.url('recording.post?sync'))
+
 
 def discover(device=None):
     import netif
