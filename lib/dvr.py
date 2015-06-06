@@ -240,7 +240,7 @@ class DVRBase(util.CronReceiver):
     def updateRecordings(self):
         util.DEBUG_LOG('DVR: Refreshing recordings')
         self.storageServer.updateRecordings()
-        self.fillRecordings()
+        self.fillShows()
 
     def fillShows(self):
         self.lastRecordingsRefresh = time.time()

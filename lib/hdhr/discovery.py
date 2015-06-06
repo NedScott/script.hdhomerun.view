@@ -244,6 +244,8 @@ class TunerDevice(Device):
 
 class StorageServer(Device):
     typeName = 'StorageServer'
+    _ruleSyncURI = 'recording_events.post?sync'
+    _recordingsURI = 'recorded_files.json'
 
     def __init__(self,address):
         Device.__init__(self,address)
@@ -262,7 +264,7 @@ class StorageServer(Device):
 
     @property
     def storageURL(self):
-        return getattr(self,'_storageURL','') or self.url('recorded_files.json')
+        return getattr(self,'_storageURL','') or self.url(self._recordingsURI)
 
     def url(self,path):
         return getattr(self,'_baseURL','') + '/' + path
@@ -288,7 +290,7 @@ class StorageServer(Device):
     def syncRules(self):
         util.DEBUG_LOG('Pinging storage Server: {0}'.format(self._baseURL))
 
-        requests.post(self.url('recording.post?sync'))
+        requests.post(self.url(self._ruleSyncURI))
 
 
 def discover(device=None):
