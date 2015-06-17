@@ -111,6 +111,7 @@
                     <orientation>vertical</orientation>
                     <onright>102</onright>
                     <pagecontrol>151</pagecontrol>
+                    <preloaditems>2</preloaditems>
 
 
                     <!-- ITEM LAYOUT ########################################## -->
@@ -424,6 +425,8 @@
                     <onright>300</onright>
                     <scrolltime tween="sine" easing="out">200</scrolltime>
                     <pagecontrol>251</pagecontrol>
+                    <preloaditems>2</preloaditems>
+
                     <hitrect x="65" y="0" w="1725" h="1080" />
                     <itemlayout width="563" height="430">
                         <control type="image">

@@ -48,60 +48,47 @@
                 <texturenofocus>-</texturenofocus>
             </control>
 
-            <control type="group">
+            <control type="grouplist" id="250">
                 <left>10</left>
                 <top>50</top>
-                <height>390</height>
+                <height>550</height>
+                <itemgap>30</itemgap>
+                <onup>245</onup>
+                <ondown>244</ondown>
                 <control type="button" id="241">
-                    <left>0</left>
-                    <top>0</top>
                     <width>110</width>
                     <height>110</height>
                     <label>31356</label>
                     <font>-</font>
                     <texturefocus>script-hdhomerun-view-search_icon_focus.png</texturefocus>
                     <texturenofocus>script-hdhomerun-view-search_icon.png</texturenofocus>
-                    <onup>245</onup>
-                    <ondown>242</ondown>
-                </control>
-                <control type="button" id="242">
-                    <left>0</left>
-                    <top>140</top>
-                    <width>110</width>
-                    <height>110</height>
-                    <label>13395</label>
-                    <font>-</font>
-                    <texturefocus>script-hdhomerun-view-video_icon_focus.png</texturefocus>
-                    <texturenofocus>script-hdhomerun-view-video_icon.png</texturenofocus>
-                    <onup>241</onup>
-                    <ondown>243</ondown>
-                    <onclick>ActivateWindow(OSDVideoSettings)</onclick>
-                </control>
-                <control type="button" id="243">
-                    <left>0</left>
-                    <top>280</top>
-                    <width>110</width>
-                    <height>110</height>
-                    <label>13396</label>
-                    <font>-</font>
-                    <texturefocus>script-hdhomerun-view-audio_icon_focus.png</texturefocus>
-                    <texturenofocus>script-hdhomerun-view-audio_icon.png</texturenofocus>
-                    <onup>242</onup>
-                    <ondown>246</ondown>
-                    <onclick>ActivateWindow(OSDAudioSettings)</onclick>
                 </control>
                 <control type="button" id="246">
                     <visible>!IsEmpty(Window(10000).Property(script.hdhomerun.view.DVR_ENABLED))</visible>
-                    <left>0</left>
-                    <top>420</top>
                     <width>110</width>
                     <height>110</height>
                     <label>13396</label>
                     <font>-</font>
                     <texturefocus>script-hdhomerun-view-dvr_icon_focus.png</texturefocus>
                     <texturenofocus>script-hdhomerun-view-dvr_icon.png</texturenofocus>
-                    <onup>243</onup>
-                    <ondown>244</ondown>
+                </control>
+                <control type="button" id="242">
+                    <width>110</width>
+                    <height>110</height>
+                    <label>13395</label>
+                    <font>-</font>
+                    <texturefocus>script-hdhomerun-view-video_icon_focus.png</texturefocus>
+                    <texturenofocus>script-hdhomerun-view-video_icon.png</texturenofocus>
+                    <onclick>ActivateWindow(OSDVideoSettings)</onclick>
+                </control>
+                <control type="button" id="243">
+                    <width>110</width>
+                    <height>110</height>
+                    <label>13396</label>
+                    <font>-</font>
+                    <texturefocus>script-hdhomerun-view-audio_icon_focus.png</texturefocus>
+                    <texturenofocus>script-hdhomerun-view-audio_icon.png</texturenofocus>
+                    <onclick>ActivateWindow(OSDAudioSettings)</onclick>
                 </control>
             </control>
 
@@ -114,7 +101,7 @@
                 <font>-</font>
                 <texturefocus>script-hdhomerun-view-volume_up_icon.png</texturefocus>
                 <texturenofocus colordiffuse="FFA0A0A0">script-hdhomerun-view-volume_up_icon.png</texturenofocus>
-                <onup>246</onup>
+                <onup>243</onup>
                 <ondown>245</ondown>
                 <onclick>VolumeUp</onclick>
             </control>

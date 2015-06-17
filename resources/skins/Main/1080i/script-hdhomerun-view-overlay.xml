@@ -56,6 +56,7 @@
                 <onup>200</onup>
                 <ondown>200</ondown>
                 <orientation>vertical</orientation>
+                <preloaditems>2</preloaditems>
 
                 <!-- ITEM LAYOUT ########################################## -->
                 <itemlayout height="270">
