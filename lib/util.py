@@ -104,6 +104,9 @@ def kodiSimpleVersion():
     except:
         return 0
 
+def sortTitle(title):
+    return title.startswith('The ') and title[4:] or title
+
 class TextBox:
     # constants
     WINDOW = 10147

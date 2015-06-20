@@ -181,7 +181,7 @@ class ManagedControlList(object):
         self.window = window
         self.control = window.getControl(control_id)
         self.items = []
-        self.sort = None
+        self._sortKey = None
         self._idCounter = 0
         self._maxViewIndex = max_view_index
 
@@ -216,8 +216,8 @@ class ManagedControlList(object):
         self.control = window.getControl(control_id)
         self.control.addItems([i._takeListItem(self,self._nextID()) for i in self.items])
 
-    def setSort(self,sort):
-        self._sortKey = sort
+    def setSort(self,key):
+        self._sortKey = key
 
     def addItem(self,managed_item):
         self.items.append(managed_item)
@@ -344,12 +344,12 @@ class ManagedControlList(object):
     def positionIsValid(self,pos):
         return 0 <= pos < self.size()
 
-    def sort(self,sort=None):
-        sort = sort or self._sortKey
+    def sort(self,key=None,reverse=False):
+        self._sortKey = key or self._sortKey
 
-        self.items.sort(key=self._sortKey)
+        self.items.sort(key=self._sortKey,reverse=reverse)
 
-        self._updateItems(0,self.size)
+        self._updateItems(0,self.size())
 
     def getManagedItemPosition(self,mli):
         return self.items.index(mli)

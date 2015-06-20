@@ -182,6 +182,7 @@
                                     <label>[B]$INFO[ListItem.Label][/B]</label>
                                 </control>
                                 <control type="label">
+                                    <visible>!IsEmpty(ListItem.Property(show.count))</visible>
                                     <posx>272</posx>
                                     <posy>60</posy>
                                     <width>1358</width>
@@ -264,6 +265,7 @@
                                     <label>[B]$INFO[ListItem.Label][/B]</label>
                                 </control>
                                 <control type="label">
+                                    <visible>!IsEmpty(ListItem.Property(show.count))</visible>
                                     <posx>272</posx>
                                     <posy>60</posy>
                                     <width>1358</width>
@@ -336,7 +338,7 @@
             <control type="group" id="200">
                 <posx>0</posx>
                 <posy>0</posy>
-                <defaultcontrol>201</defaultcontrol>
+                <defaultcontrol always="true">204</defaultcontrol>
 
                 <control type="image">
                     <posx>0</posx>
@@ -412,22 +414,23 @@
                     <texturenofocus>-</texturenofocus>
                     <onright>300</onright>
                     <onleft>100</onleft>
-                    <onup>201</onup>
-                    <ondown>201</ondown>
+                    <onup>204</onup>
+                    <ondown>204</ondown>
                 </control>
 
                 <control type="panel" id="201">
                     <posx>90</posx>
-                    <posy>0</posy>
+                    <posy>70</posy>
                     <width>1800</width>
-                    <height>1080</height>
+                    <height>1030</height>
+                    <onup>204</onup>
                     <onleft>100</onleft>
                     <onright>300</onright>
                     <scrolltime tween="sine" easing="out">200</scrolltime>
                     <pagecontrol>251</pagecontrol>
                     <preloaditems>2</preloaditems>
 
-                    <hitrect x="65" y="0" w="1725" h="1080" />
+                    <hitrect x="65" y="70" w="1725" h="1030" />
                     <itemlayout width="563" height="430">
                         <control type="image">
                             <posx>10</posx>
@@ -493,31 +496,6 @@
                             <aligny>center</aligny>
                             <textcolor>FFFFFFFF</textcolor>
                             <label>$INFO[ListItem.Label]</label>
-                        </control>
-                        <control type="group">
-                            <visible>!IsEmpty(ListItem.Property(episode.count))</visible>
-                            <posx>481</posx>
-                            <posy>30</posy>
-                            <control type="image">
-                                <posx>6</posx>
-                                <posy>0</posy>
-                                <width>40</width>
-                                <height>40</height>
-                                <texture>script-hdhomerun-view-40px_circle.png</texture>
-                                <colordiffuse>A0000000</colordiffuse>
-                                <aspectratio>stretch</aspectratio>
-                            </control>
-                            <control type="label">
-                                <posx>0</posx><!-- GOTHAM 26 -->
-                                <posy>0</posy>
-                                <width>52</width>
-                                <height>40</height>
-                                <font>font10</font>
-                                <align>center</align>
-                                <aligny>center</aligny>
-                                <textcolor>FFFFFFFF</textcolor>
-                                <label>[B]$INFO[ListItem.Property(episode.count)][/B]</label>
-                            </control>
                         </control>
                     </itemlayout>
                     <focusedlayout width="563" height="430">
@@ -613,31 +591,6 @@
                             <textcolor>FFFFFFFF</textcolor>
                             <label>$INFO[ListItem.Label]</label>
                         </control>
-                        <control type="group">
-                            <visible>!IsEmpty(ListItem.Property(episode.count))</visible>
-                            <posx>481</posx>
-                            <posy>30</posy>
-                            <control type="image">
-                                <posx>6</posx>
-                                <posy>0</posy>
-                                <width>40</width>
-                                <height>40</height>
-                                <texture>script-hdhomerun-view-40px_circle.png</texture>
-                                <colordiffuse>A0000000</colordiffuse>
-                                <aspectratio>stretch</aspectratio>
-                            </control>
-                            <control type="label">
-                                <posx>0</posx><!-- GOTHAM 26 -->
-                                <posy>0</posy>
-                                <width>52</width>
-                                <height>40</height>
-                                <font>font10</font>
-                                <align>center</align>
-                                <aligny>center</aligny>
-                                <textcolor>FFFFFFFF</textcolor>
-                                <label>[B]$INFO[ListItem.Property(episode.count)][/B]</label>
-                            </control>
-                        </control>
                     </focusedlayout>
                 </control>
 
@@ -675,6 +628,86 @@
                     <label>[B]$INFO[Window(10000).Property(script.hdhomerun.view.NO_RESULTS)][/B]</label>
                 </control>
 
+            </control>
+            <control type="group" id="550">
+                <animation effect="slide" end="0,-50" time="100" condition="!ControlGroup(550).HasFocus(0)">Conditional</animation>
+                <posx>65</posx>
+                <posy>0</posy>
+                <control type="image">
+                    <posx>0</posx>
+                    <posy>0</posy>
+                    <width>1725</width>
+                    <height>100</height>
+                    <texture>script-hdhomerun-view-white_square.png</texture>
+                    <colordiffuse>FF303030</colordiffuse>
+                    <aspectratio>stretch</aspectratio>
+                </control>
+                <!-- <control type="edit" id="204">
+                    <visible allowhiddenfocus="true">ControlGroup(550).HasFocus(0)</visible>
+                    <description>Search Edit</description>
+                    <posx>100</posx>
+                    <posy>20</posy>
+                    <height>60</height>
+                    <width>1525</width>
+                    <hitrect x="0" y="0" w="1725" h="100" />
+                    <ondown>501</ondown>
+                    <onleft>100</onleft>
+                    <onright>300</onright>
+                    <aligny>center</aligny>
+                    <label></label>
+                    <hinttext> </hinttext>
+                    <font>font14</font>
+                    <textoffsetx>20</textoffsetx>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <disabledcolor>FF606060</disabledcolor>
+                    <invalidcolor>FFFFFFFF</invalidcolor>
+                    <texturefocus colordiffuse="FF000000">script-hdhomerun-view-white_square.png</texturefocus>
+                    <texturenofocus colordiffuse="80000000">script-hdhomerun-view-white_square.png</texturenofocus>
+                    <pulseonselect>no</pulseonselect>
+                </control> -->
+                <control type="button">
+                    <posx>0</posx>
+                    <posy>0</posy>
+                    <width>1725</width>
+                    <height>100</height>
+                    <ondown>201</ondown>
+                    <onleft>100</onleft>
+                    <onright>300</onright>
+                    <texturefocus>-</texturefocus>
+                    <texturenofocus>-</texturenofocus>
+                </control>
+
+                <control type="group">
+                    <animation effect="slide" end="0,-20" time="100" condition="ControlGroup(550).HasFocus(0)">Conditional</animation>
+                    <posx>495</posx>
+                    <posy>45</posy>
+                    <control type="image">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>735</width>
+                        <height>50</height>
+                        <texture>script-hdhomerun-view-white_square.png</texture>
+                        <colordiffuse>FF202020</colordiffuse>
+                        <aspectratio>stretch</aspectratio>
+                    </control>
+                    <control type="button" id="204">
+                        <posx>5</posx>
+                        <posy>5</posy>
+                        <width>725</width>
+                        <height>40</height>
+                        <hitrect x="0" y="-50" w="725" h="90" />
+                        <ondown>201</ondown>
+                        <onleft>100</onleft>
+                        <onright>300</onright>
+                        <font>font12</font>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <label>[B]SEARCH[/B]</label>
+                        <texturefocus colordiffuse="FF006000">script-hdhomerun-view-white_square.png</texturefocus>
+                        <texturenofocus colordiffuse="FF404040">script-hdhomerun-view-white_square.png</texturenofocus>
+                    </control>
+                </control>
             </control>
         </control>
 
@@ -1038,10 +1071,10 @@
                     <textureslidernibfocus>-</textureslidernibfocus>
                     <orientation>vertical</orientation>
                     <showonepage>false</showonepage>
-                    <onup>201</onup>
-                    <ondown>201</ondown>
-                    <onleft>201</onleft>
-                    <onright>201</onright>
+                    <onup>301</onup>
+                    <ondown>301</ondown>
+                    <onleft>301</onleft>
+                    <onright>301</onright>
                 </control>
             </control>
         </control>

@@ -71,28 +71,71 @@ class EpisodesDialog(kodigui.BaseDialog):
         kodigui.BaseDialog.__init__(self,*args,**kwargs)
         self.seriesID = kwargs.get('series_id')
         self.storageServer = kwargs.get('storage_server')
+        self.sortMode = util.getSetting('episodes.sort.mode','AIRDATE')
+        self.sortASC = util.getSetting('episodes.sort.asc',True)
         self.play = None
 
     def onFirstInit(self):
+        self.setWindowProperties()
         self.recordingList = kodigui.ManagedControlList(self,self.RECORDING_LIST_ID,20)
         self.fillRecordings()
 
     def onClick(self,controlID):
         if controlID == self.RECORDING_LIST_ID:
             self.done()
+        elif controlID == 301:
+            self.sort('NAME')
+        elif controlID == 302:
+            self.sort('ORIGINAL')
+        elif controlID == 303:
+            self.sort('AIRDATE')
+
+    def setWindowProperties(self):
+        self.setProperty('sort.mode',self.sortMode)
+        self.setProperty('sort.asc',self.sortASC and '1' or '')
+
+    def sort(self,key):
+        if self.sortMode == key:
+            self.sortASC = not self.sortASC
+        else:
+            self.sortASC = True
+
+        self.sortMode = key
+
+        util.setSetting('episodes.sort.mode',key)
+        util.setSetting('episodes.sort.asc',self.sortASC)
+
+        self.setWindowProperties()
+
+        self.sortItems(self.recordingList)
+
+    def sortItems(self,items):
+        if self.sortMode == 'NAME':
+            if self.seriesID:
+                items.sort(key=lambda x: util.sortTitle(x.dataSource.episodeTitle), reverse=not self.sortASC)
+            else:
+                items.sort(key=lambda x: util.sortTitle(x.dataSource.seriesTitle), reverse=not self.sortASC)
+        elif self.sortMode == 'ORIGINAL':
+            items.sort(key=lambda x: x.dataSource.originalTimestamp, reverse=self.sortASC)
+        else:
+            items.sort(key=lambda x: x.dataSource.startTimestamp, reverse=self.sortASC)
+
 
     def fillRecordings(self):
         items = []
         for r in self.storageServer.recordings:
-            if not r.seriesID == self.seriesID: continue
+            if self.seriesID and not r.seriesID == self.seriesID: continue
             item = kodigui.ManagedListItem(r.episodeTitle,r.synopsis,thumbnailImage=r.icon,data_source=r)
             item.setProperty('series.title',r.seriesTitle)
             item.setProperty('episode.number',r.episodeNumber)
-            item.setProperty('channel.number',r.channelNumber)
-            item.setProperty('channel.name',r.channelName)
+            #item.setProperty('channel.number',r.channelNumber)
+            #item.setProperty('channel.name',r.channelName)
             item.setProperty('air.date',r.displayDate())
             item.setProperty('air.time',r.displayTime())
+            item.setProperty('original.date',r.displayDate(original=True))
             items.append(item)
+
+        self.sortItems(items)
 
         self.recordingList.reset()
         self.recordingList.addItems(items)
@@ -107,6 +150,8 @@ class EpisodesDialog(kodigui.BaseDialog):
 class DVRBase(util.CronReceiver):
     SHOW_LIST_ID = 101
     SEARCH_PANEL_ID = 201
+    SEARCH_EDIT_ID = 204
+    SEARCH_EDIT_BUTTON_ID = 204
     RULE_LIST_ID = 301
     WATCH_BUTTON = 103
     SEARCH_BUTTON = 203
@@ -181,13 +226,15 @@ class DVRBase(util.CronReceiver):
             elif action == xbmcgui.ACTION_CONTEXT_MENU:
                 if self.getFocusId() == self.RULE_LIST_ID:
                     return self.doRuleContext()
-                elif xbmc.getCondVisibility('ControlGroup(200).HasFocus(0)'):
-                    return self.setSearch()
+                # elif xbmc.getCondVisibility('ControlGroup(200).HasFocus(0)'):
+                #     return self.setSearch()
             elif action == xbmcgui.ACTION_MOVE_DOWN or action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_MOVE_LEFT:
                 if self.mode == 'WATCH':
                     if self.getFocusId() != self.SHOW_LIST_ID: self.setFocusId(self.SHOW_LIST_ID)
                 elif self.mode == 'SEARCH':
-                    if self.getFocusId() != self.SEARCH_PANEL_ID: self.setFocusId(self.SEARCH_PANEL_ID)
+                    if not xbmc.getCondVisibility('ControlGroup(550).HasFocus(0)') and self.getFocusId() != self.SEARCH_PANEL_ID:
+                        #self.searchEdit.setText('')
+                        self.setFocusId(self.SEARCH_EDIT_ID)
                 elif self.mode == 'RULES':
                     if self.getFocusId() != self.RULE_LIST_ID: self.setFocusId(self.RULE_LIST_ID)
 
@@ -214,6 +261,8 @@ class DVRBase(util.CronReceiver):
             self.setMode('SEARCH')
         elif controlID == self.RULES_BUTTON:
             self.setMode('RULES')
+        elif controlID == self.SEARCH_EDIT_BUTTON_ID:
+            self.setSearch()
 
     def onFocus(self,controlID):
         #print 'focus: {0}'.format(controlID)
@@ -265,6 +314,11 @@ class DVRBase(util.CronReceiver):
         else:
             util.setGlobalProperty('NO_RECORDINGS','')
 
+        items.sort(key=lambda x: x.dataSource.seriesTitle.startswith('The ') and x.dataSource.seriesTitle[4:] or x.dataSource.seriesTitle)
+
+        allItem = kodigui.ManagedListItem('ALL RECORDINGS', thumbnailImage='script-hdhomerun-view-dvr_all.png')
+        items.insert(0,allItem)
+
         self.showList.reset()
         self.showList.addItems(items)
 
@@ -283,9 +337,9 @@ class DVRBase(util.CronReceiver):
 
         for r in self.searchResults:
             if r.seriesID in series:
-                series[r.seriesID][1] += 1
-                ct = series[r.seriesID][1]
-                series[r.seriesID][0].setProperty('episode.count',ct < 100 and str(ct) or '+')
+                #series[r.seriesID][1] += 1
+                #ct = series[r.seriesID][1]
+                #series[r.seriesID][0].setProperty('episode.count',ct < 100 and str(ct) or '+')
                 continue
             item = kodigui.ManagedListItem(r.episodeTitle,r.synopsis,thumbnailImage=r.icon,data_source=r)
             series[r.seriesID] = [item,1]
@@ -341,6 +395,7 @@ class DVRBase(util.CronReceiver):
         self.fillRules(update=True)
 
     def setSearch(self):
+        #self.searchTerms = self.getControl(self.SEARCH_EDIT_ID).getText() or ''
         self.searchTerms = xbmcgui.Dialog().input(T(32812),self.searchTerms)
         self.setProperty('search.terms',self.searchTerms)
         self.fillSearchPanel()
@@ -363,7 +418,8 @@ class DVRBase(util.CronReceiver):
         item = self.showList.getSelectedItem()
         if not item: return
         path = skin.getSkinPath()
-        d = EpisodesDialog(skin.DVR_EPISODES_DIALOG,path,'Main','1080i',series_id=item.dataSource.seriesID,storage_server=self.storageServer)
+        seriesID = item.dataSource and item.dataSource.seriesID or None
+        d = EpisodesDialog(skin.DVR_EPISODES_DIALOG,path,'Main','1080i',series_id=seriesID,storage_server=self.storageServer)
         d.doModal()
         self.play = d.play
         del d
