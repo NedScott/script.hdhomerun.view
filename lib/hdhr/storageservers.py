@@ -187,6 +187,9 @@ class StorageServers(object):
         self._rules.append(RecordingRule(result).init(self,add=True))
         self.pingUpdateRules()
 
+    def deleteRecording(self,recording):
+        util.LOG('delteRecording() - NOT IMPLEMENTED')
+
     def pingUpdateRules(self):
         for d in self._devices.storageServers:
             try:

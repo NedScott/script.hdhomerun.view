@@ -107,6 +107,15 @@ def kodiSimpleVersion():
 def sortTitle(title):
     return title.startswith('The ') and title[4:] or title
 
+def busyDialog(func):
+    def inner(*args,**kwargs):
+        try:
+            xbmc.executebuiltin("ActivateWindow(10138)")
+            func(*args,**kwargs)
+        finally:
+            xbmc.executebuiltin("Dialog.Close(10138)")
+    return inner
+
 class TextBox:
     # constants
     WINDOW = 10147

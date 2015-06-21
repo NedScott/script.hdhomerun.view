@@ -149,6 +149,17 @@ msgctxt "#32034"
 msgid "No channels found on any device"
 msgstr ""
 
+msgctxt "#32035"
+msgid "Confirm"
+msgstr ""
+
+msgctxt "#32036"
+msgid "Are you sure you want to delete this recording?"
+msgstr ""
+
+msgctxt "#32037"
+msgid "Are you sure you want to delete this rule?"
+msgstr ""
 
 #First run text
 msgctxt "#32100"
@@ -332,4 +343,8 @@ msgstr ""
 
 msgctxt "#32835"
 msgid "SHOW"
+msgstr ""
+
+msgctxt "#32836"
+msgid "SEARCH"
 msgstr ""

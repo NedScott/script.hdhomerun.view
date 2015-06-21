@@ -146,6 +146,7 @@ class GuideOverlay(util.CronReceiver):
         self.dvrWindow = None
         self.propertyTimer = None
         self.currentDetailsTimer = None
+        self.seekBarTimer = None
 
         self.devices = None
 
@@ -162,6 +163,7 @@ class GuideOverlay(util.CronReceiver):
 
         self.propertyTimer = kodigui.PropertyTimer(self._winID,util.getSetting('overlay.timeout',0),'show.overlay','')
         self.currentDetailsTimer = kodigui.PropertyTimer(self._winID,5,'show.current','')
+        self.seekBarTimer = kodigui.PropertyTimer(self._winID,5,'show.seekbar','')
 
         self.channelList = kodigui.ManagedControlList(self,201,3)
         self.currentProgress = self.getControl(250)
@@ -176,7 +178,13 @@ class GuideOverlay(util.CronReceiver):
             #'{"jsonrpc": "2.0", "method": "Input.ShowCodec", "id": 1}'
             if self.overlayVisible(): self.propertyTimer.reset()
 
-            if self.checkSeekActions(action): return
+
+            if action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
+                if self.closeHandler(): return
+
+            if self.checkSeekActions(action):
+                self.showSeekBar()
+                return
 
             if action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_GESTURE_SWIPE_LEFT:
                 if self.overlayVisible():
@@ -189,8 +197,6 @@ class GuideOverlay(util.CronReceiver):
                 return self.showOptions()
             elif action == xbmcgui.ACTION_MOVE_LEFT or action == xbmcgui.ACTION_GESTURE_SWIPE_RIGHT:
                 return self.showOverlay(False)
-            elif action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
-                if self.closeHandler(): return
             elif action == xbmcgui.ACTION_BUILT_IN_FUNCTION:
                 if self.clickShowOverlay(): return
             elif self.checkChannelEntry(action):
@@ -206,8 +212,7 @@ class GuideOverlay(util.CronReceiver):
         self._BASE.onAction(self,action)
 
     def checkSeekActions(self,action):
-        if self.getFocusId() == 251: return True
-        if self.overlayVisible() or not self.player.isPlayingRecording():
+        if not self.player.isPlayingRecording():
             return False
 
         # <f>FastForward</f> <-- ALREADY WORKS
@@ -225,16 +230,16 @@ class GuideOverlay(util.CronReceiver):
             xbmc.executebuiltin('PlayerControl(Previous)')
             return True
         elif action == xbmcgui.ACTION_NEXT_ITEM:
-            xbmc.executebuiltin('PlayerControl(SmallSkipBackward)')
+            self.seekBackSmall()
             return True
         elif action == xbmcgui.ACTION_PREV_ITEM:
-            xbmc.executebuiltin('PlayerControl(SmallSkipBackward)')
+            self.seekBackSmall()
             return True
         elif action == xbmcgui.ACTION_MOVE_LEFT:
-            xbmc.executebuiltin('PlayerControl(SmallSkipBackward)')
+            self.seekBackSmall()
             return True
         elif action == xbmcgui.ACTION_MOVE_RIGHT:
-            xbmc.executebuiltin('PlayerControl(SmallSkipForward)')
+            self.seekForwardSmall()
             return True
         elif action == xbmcgui.ACTION_MOVE_UP:
             xbmc.executebuiltin('PlayerControl(BigSkipForward)')
@@ -243,10 +248,10 @@ class GuideOverlay(util.CronReceiver):
             xbmc.executebuiltin('PlayerControl(BigSkipBackward)')
             return True
         elif action == xbmcgui.ACTION_GESTURE_SWIPE_RIGHT:
-            xbmc.executebuiltin('PlayerControl(SmallSkipForward)')
+            self.seekForwardSmall()
             return True
         elif action == xbmcgui.ACTION_GESTURE_SWIPE_LEFT:
-            xbmc.executebuiltin('PlayerControl(SmallSkipBackward)')
+            self.seekBackSmall()
             return True
         elif action == xbmcgui.ACTION_GESTURE_SWIPE_UP:
             xbmc.executebuiltin('PlayerControl(BigSkipForward)')
@@ -254,8 +259,20 @@ class GuideOverlay(util.CronReceiver):
         elif action == xbmcgui.ACTION_GESTURE_SWIPE_DOWN:
             xbmc.executebuiltin('PlayerControl(BigSkipBackward)')
             return True
+        elif self.getFocusId() == 251:
+            return True
 
         return False
+
+    def seekBackSmall(self):
+        seek = self.player.getTime() - 6
+        if seek < 0:
+            seek = 0
+        self.player.seekTime(seek)
+        #xbmc.executebuiltin('PlayerControl(SmallSkipBackward)')
+
+    def seekForwardSmall(self):
+        xbmc.executebuiltin('PlayerControl(SmallSkipForward)')
 
     def onClick(self,controlID):
         if self.clickShowOverlay(): return
@@ -276,11 +293,13 @@ class GuideOverlay(util.CronReceiver):
         util.DEBUG_LOG('ON PLAYBACK STOPPED')
         self.showProgress() #In case we failed to play video on startup
         self.showOverlay()
+        self.showSeekBar(hide=True)
 
     def onPlayBackFailed(self):
         self.setCurrent()
         util.DEBUG_LOG('ON PLAYBACK FAILED')
         self.showProgress() #In case we failed to play video on startup
+        self.showSeekBar(hide=True)
         if self.fallbackChannel:
             channel = self.fallbackChannel
             self.fallbackChannel = None
@@ -348,10 +367,17 @@ class GuideOverlay(util.CronReceiver):
         self.setWinProperties()
 
     def closeHandler(self):
+        if self.hasDVR():
+            self.openDVRWindow()
+            return True
+
         if self.overlayVisible():
             if not self.player.isPlaying():
                 return self.handleExit()
             self.showOverlay(False)
+            return True
+        elif self.seekBarVisible():
+            self.showSeekBar(hide=True)
             return True
         else:
             return self.handleExit()
@@ -361,7 +387,6 @@ class GuideOverlay(util.CronReceiver):
             if not xbmcgui.Dialog().yesno(util.T(32006),'',util.T(32007),''): return True
         self.doClose()
         return True
-
 
     def fullscreenVideo(self):
         if not self.touchMode and util.videoIsPlaying():
@@ -569,12 +594,15 @@ class GuideOverlay(util.CronReceiver):
             return self.lineUp.indexed(0)
         return None
 
+    def hasDVR(self):
+        return self.devices.hasStorageServers()
+
     def start(self):
         if not self.getLineUpAndGuide(): #If we fail to get lineUp, just exit
             self.doClose()
             return
 
-        util.setGlobalProperty('DVR_ENABLED',self.devices.hasStorageServers() and 'true' or '')
+        util.setGlobalProperty('DVR_ENABLED',self.hasDVR() and 'true' or '')
         self.fillChannelList()
 
         self.player = player.HDHRPlayer().init(self,self.devices,self.touchMode)
@@ -621,15 +649,31 @@ class GuideOverlay(util.CronReceiver):
         self.setProperty('loading.progress',str(progress))
         self.setProperty('loading.status',message)
 
+    def seekBarVisible(self):
+        return self.getProperty('show.seekbar')
+
+    def showSeekBar(self,hide=False):
+        if hide:
+            self.setProperty('show.seekbar','')
+            self.seekBarTimer.stop()
+        else:
+            self.setProperty('show.seekbar','1')
+            self.seekBarTimer.reset()
+
     def clickShowOverlay(self):
-        if not self.overlayVisible():
-            self.showOverlay()
-            self.setFocusId(201)
-            return True
-        elif not self.getFocusId() in (201,251):
-            self.showOverlay(False)
-            return True
-        return False
+        if self.player.isPlayingRecording():
+            if self.overlayVisible():
+                self.showOverlay(False)
+            self.showSeekBar(hide=self.seekBarVisible())
+        else:
+            if not self.overlayVisible():
+                self.showOverlay()
+                self.setFocusId(201)
+                return True
+            elif not self.getFocusId() in (201,251):
+                self.showOverlay(False)
+                return True
+            return False
 
     def showOverlay(self,show=True,from_filter=False):
         if not self.overlayVisible():
@@ -666,10 +710,13 @@ class GuideOverlay(util.CronReceiver):
                 self.dvrWindow = dvr.DVRWindow(skin.DVR_WINDOW,path,'Main','1080i',devices=self.devices,lineup=self.lineUp,cron=self.cron)
             else:
                 self.dvrWindow = dvr.DVRDialog(skin.DVR_WINDOW,path,'Main','1080i',devices=self.devices,lineup=self.lineUp,cron=self.cron)
-
+        self.dvrWindow.exit = True
         self.dvrWindow.doModal()
         self.showProgress() #Hide the progres because of re-init triggering <onload>
-        if self.dvrWindow.play:
+
+        if self.dvrWindow.exit:
+            self.handleExit()
+        elif self.dvrWindow.play:
             self.showOverlay(False)
             rec = self.dvrWindow.play
             self.playRecording(rec)

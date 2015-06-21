@@ -588,50 +588,6 @@
                 <texture>script-hdhomerun-view-white_square.png</texture>
                 <colordiffuse>E0000000</colordiffuse>
             </control>
-            <control type="group">
-                <visible>SubString(Player.Filenameandpath,/play?)</visible>
-                <control type="progress">
-                    <posx>200</posx>
-                    <posy>135</posy>
-                    <width>890</width>
-                    <height>15</height>
-                    <visible>true</visible>
-                    <reveal>false</reveal>
-                    <info>Player.ProgressCache</info>
-                    <texturebg colordiffuse="DD000000">script-hdhomerun-view-white_square.png</texturebg>
-                    <lefttexture>-</lefttexture>
-                    <midtexture colordiffuse="FF202020">script-hdhomerun-view-white_square.png</midtexture>
-                    <righttexture>-</righttexture>
-                    <overlaytexture>-</overlaytexture>
-                </control>
-                <control type="progress">
-                    <posx>200</posx>
-                    <posy>135</posy>
-                    <width>890</width>
-                    <height>15</height>
-                    <visible>true</visible>
-                    <reveal>false</reveal>
-                    <info>Player.Progress</info>
-                    <texturebg colordiffuse="01000000">script-hdhomerun-view-white_square.png</texturebg>
-                    <lefttexture>-</lefttexture>
-                    <midtexture colordiffuse="9000FF00">script-hdhomerun-view-white_square.png</midtexture>
-                    <righttexture>-</righttexture>
-                    <overlaytexture>-</overlaytexture>
-                </control>
-                <control type="slider" id="251">
-                    <description>Seek Slider</description>
-                    <posx>200</posx>
-                    <posy>100</posy>
-                    <width>890</width>
-                    <height>50</height>
-                    <onup>201</onup>
-                    <ondown>201</ondown>
-                    <action>seek</action>
-                    <texturesliderbar colordiffuse="00FFFFFF">script-hdhomerun-view-white_square.png</texturesliderbar>
-                    <textureslidernib colordiffuse="FF004000">script-hdhomerun-view-white_nib.png</textureslidernib>
-                    <textureslidernibfocus colordiffuse="FF008000">script-hdhomerun-view-white_nib.png</textureslidernibfocus>
-                </control>
-            </control>
             <control type="image">
                 <posx>0</posx>
                 <posy>0</posy>
@@ -671,7 +627,6 @@
                 <label>[B]$INFO[Window.Property(next.title)][/B]</label>
             </control>
             <control type="progress" id="250">
-                <visible>!SubString(Player.Filenameandpath,/play?)</visible>
                 <posx>200</posx>
                 <posy>135</posy>
                 <width>890</width>
@@ -711,6 +666,62 @@
                 <width>64</width>
                 <height>48</height>
                 <texture>audio/$INFO[VideoPlayer.AudioChannels].png</texture>
+            </control>
+        </control>
+
+        <control type="group">
+            <description>Seek bar for DVR</description>
+            <visible>!IsEmpty(Window.Property(show.seekbar)) + Player.HasVideo()</visible>
+            <posx>40</posx>
+            <posy>960</posy>
+            <control type="image">
+                <posx>0</posx>
+                <posy>0</posy>
+                <width>1840</width>
+                <height>60</height>
+                <texture>script-hdhomerun-view-white_square.png</texture>
+                <colordiffuse>DD000000</colordiffuse>
+            </control>
+            <control type="group">
+                <control type="progress">
+                    <posx>20</posx>
+                    <posy>20</posy>
+                    <width>1800</width>
+                    <height>20</height>
+                    <visible>true</visible>
+                    <reveal>false</reveal>
+                    <info>Player.ProgressCache</info>
+                    <texturebg colordiffuse="DD404040">script-hdhomerun-view-white_square.png</texturebg>
+                    <lefttexture>-</lefttexture>
+                    <midtexture colordiffuse="FF606060">script-hdhomerun-view-white_square.png</midtexture>
+                    <righttexture>-</righttexture>
+                    <overlaytexture>-</overlaytexture>
+                </control>
+                <control type="progress">
+                    <posx>20</posx>
+                    <posy>20</posy>
+                    <width>1800</width>
+                    <height>20</height>
+                    <visible>true</visible>
+                    <reveal>false</reveal>
+                    <info>Player.Progress</info>
+                    <texturebg colordiffuse="01000000">script-hdhomerun-view-white_square.png</texturebg>
+                    <lefttexture>-</lefttexture>
+                    <midtexture colordiffuse="9000FF00">script-hdhomerun-view-white_square.png</midtexture>
+                    <righttexture>-</righttexture>
+                    <overlaytexture>-</overlaytexture>
+                </control>
+                <control type="slider" id="251">
+                    <description>Seek Slider</description>
+                    <posx>20</posx>
+                    <posy>0</posy>
+                    <width>1800</width>
+                    <height>60</height>
+                    <action>seek</action>
+                    <texturesliderbar colordiffuse="00FFFFFF">script-hdhomerun-view-white_square.png</texturesliderbar>
+                    <textureslidernib colordiffuse="FF004000">script-hdhomerun-view-white_nib.png</textureslidernib>
+                    <textureslidernibfocus colordiffuse="FF008000">script-hdhomerun-view-white_nib.png</textureslidernibfocus>
+                </control>
             </control>
         </control>
 
