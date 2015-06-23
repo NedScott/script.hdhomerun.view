@@ -110,10 +110,10 @@ def sortTitle(title):
 def busyDialog(func):
     def inner(*args,**kwargs):
         try:
-            xbmc.executebuiltin("ActivateWindow(10138)")
+            setGlobalProperty('busy','1')
             func(*args,**kwargs)
         finally:
-            xbmc.executebuiltin("Dialog.Close(10138)")
+            setGlobalProperty('busy','')
     return inner
 
 class TextBox:

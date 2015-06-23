@@ -9,6 +9,7 @@ MY = 'mytest'
 #RECORDING_RULES_URL = 'http://%s.hdhomerun.com/api/recording_rules?DeviceAuth={0}&random={1}' % MY
 RECORDING_RULES_URL = 'http://%s.hdhomerun.com/api/recording_rules?DeviceAuth={0}' % MY
 MODIFY_RULE_URL = 'http://%s.hdhomerun.com/api/recording_rules?DeviceAuth={deviceAuth}&Cmd={cmd}&SeriesID={seriesID}&Title={title}&RecentOnly={recentOnly}&Priority={priority}' % MY
+HIDE_SERIES_URL = 'http://%s.hdhomerun.com/api/search_hide?DeviceAuth={deviceAuth}&SeriesID={seriesID}' % MY
 
 class RecordingRule(dict):
     @property
@@ -186,6 +187,14 @@ class StorageServers(object):
     def addRule(self,result):
         self._rules.append(RecordingRule(result).init(self,add=True))
         self.pingUpdateRules()
+
+    def hideSeries(self,seriesID):
+        try:
+            req = requests.get(HIDE_SERIES_URL.format(deviceAuth=self._devices.apiAuthID(),seriesID=seriesID))
+            util.DEBUG_LOG('Series hide response: {0}'.format(repr(req.text)))
+        except:
+            e = util.ERROR()
+            raise errors.SeriesHideException(e)
 
     def deleteRecording(self,recording):
         util.LOG('delteRecording() - NOT IMPLEMENTED')

@@ -684,9 +684,9 @@
             </control>
             <control type="group">
                 <control type="progress">
-                    <posx>20</posx>
+                    <posx>120</posx>
                     <posy>20</posy>
-                    <width>1800</width>
+                    <width>1600</width>
                     <height>20</height>
                     <visible>true</visible>
                     <reveal>false</reveal>
@@ -698,9 +698,9 @@
                     <overlaytexture>-</overlaytexture>
                 </control>
                 <control type="progress">
-                    <posx>20</posx>
+                    <posx>120</posx>
                     <posy>20</posy>
-                    <width>1800</width>
+                    <width>1600</width>
                     <height>20</height>
                     <visible>true</visible>
                     <reveal>false</reveal>
@@ -713,15 +713,39 @@
                 </control>
                 <control type="slider" id="251">
                     <description>Seek Slider</description>
-                    <posx>20</posx>
+                    <posx>120</posx>
                     <posy>0</posy>
-                    <width>1800</width>
+                    <width>1600</width>
                     <height>60</height>
                     <action>seek</action>
                     <texturesliderbar colordiffuse="00FFFFFF">script-hdhomerun-view-white_square.png</texturesliderbar>
                     <textureslidernib colordiffuse="FF004000">script-hdhomerun-view-white_nib.png</textureslidernib>
                     <textureslidernibfocus colordiffuse="FF008000">script-hdhomerun-view-white_nib.png</textureslidernibfocus>
                 </control>
+
+                <control type="label">
+                    <posx>20</posx>
+                    <posy>20</posy>
+                    <width>200</width>
+                    <height>20</height>
+                    <font>font10</font>
+                    <align>left</align>
+                    <aligny>center</aligny>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <label>$INFO[Player.Time(hh:mm:ss)]</label>
+                </control>
+                <control type="label">
+                    <posx>1820</posx>
+                    <posy>20</posy>
+                    <width>200</width>
+                    <height>20</height>
+                    <font>font10</font>
+                    <align>right</align>
+                    <aligny>center</aligny>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <label>$INFO[Player.Duration(hh:mm:ss)]</label>
+                </control>
+
             </control>
         </control>
 
@@ -795,5 +819,33 @@
             </control>
 
         </control>
+
+        <control type="group">
+            <visible>!IsEmpty(Window(10000).Property(script.hdhomerun.view.busy))</visible>
+            <posx>1700</posx>
+            <posy>860</posy>
+
+            <control type="image">
+                <posx>0</posx>
+                <posy>0</posy>
+                <width>170</width>
+                <height>170</height>
+                <texture>script-hdhomerun-view-loading_bg.png</texture>
+                <colordiffuse>80FFFFFF</colordiffuse>
+                <aspectratio>stretch</aspectratio>
+            </control>
+
+            <control type="image">
+                <posx>21</posx>
+                <posy>21</posy>
+                <width>128</width>
+                <height>128</height>
+                <texture>script-hdhomerun-view-loading.gif</texture>
+                <colordiffuse>80FFFFFF</colordiffuse>
+                <aspectratio>stretch</aspectratio>
+            </control>
+
+        </control>
+
     </controls>
 </window>

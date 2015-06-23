@@ -13,7 +13,7 @@ from lib import util
 import errors
 
 GUIDE_URL = 'http://my.hdhomerun.com/api/guide.php?DeviceAuth={0}'
-SEARCH_URL = 'http://my.hdhomerun.com/api/search?DeviceAuth={0}&Search={1}'
+SEARCH_URL = 'http://my.hdhomerun.com/api/search?DeviceAuth={deviceAuth}&Category={category}&Search={search}'
 
 class Show(dict):
     @property
@@ -166,8 +166,8 @@ class SearchResult(dict):
         else:
             return '%d:%02d' % (minutes, seconds)
 
-def search(deviceAuth,terms=''):
-    url = SEARCH_URL.format(deviceAuth,urllib.quote(terms.encode('utf-8')))
+def search(deviceAuth,category='',terms=''):
+    url = SEARCH_URL.format(deviceAuth=deviceAuth,category=category,search=urllib.quote(terms.encode('utf-8')))
     util.DEBUG_LOG('Search URL: {0}'.format(url))
 
     req = requests.get(url)
