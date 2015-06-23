@@ -298,7 +298,7 @@ msgid "PRIORITY"
 msgstr ""
 
 msgctxt "#32824"
-msgid "RECORD SERIES"
+msgid "RECORD"
 msgstr ""
 
 msgctxt "#32825"
@@ -358,7 +358,7 @@ msgid "Error hiding series"
 msgstr ""
 
 msgctxt "#32839"
-msgid "Series hidden from results"
+msgid "Hide this show?"
 msgstr ""
 
 msgctxt "#32840"

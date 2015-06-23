@@ -355,19 +355,8 @@
                                 <align>left</align>
                                 <aligny>center</aligny>
                                 <textcolor>FFFFFFFF</textcolor>
-                                <label>[B]$INFO[ListItem.Property(episode.number),$ADDON[script.hdhomerun.view 32818] ][/B]</label>
+                                <label>[B]$INFO[ListItem.Property(episode.number)][/B]</label>
                             </control>
-                            <!-- <control type="label">
-                                <posx>10</posx>
-                                <posy>45</posy>
-                                <width>240</width>
-                                <height>30</height>
-                                <font>font10</font>
-                                <align>left</align>
-                                <aligny>center</aligny>
-                                <textcolor>FFCCCCCC</textcolor>
-                                <label>$INFO[ListItem.Property(episode.number),Ep. ]</label>
-                            </control> -->
                         </control>
 
                         <control type="group">
@@ -583,19 +572,8 @@
                                 <align>left</align>
                                 <aligny>center</aligny>
                                 <textcolor>FFFFFFFF</textcolor>
-                                <label>[B]$INFO[ListItem.Property(episode.number),$ADDON[script.hdhomerun.view 32818] ][/B]</label>
+                                <label>[B]$INFO[ListItem.Property(episode.number)][/B]</label>
                             </control>
-                            <!-- <control type="label">
-                                <posx>10</posx>
-                                <posy>45</posy>
-                                <width>240</width>
-                                <height>30</height>
-                                <font>font10</font>
-                                <align>left</align>
-                                <aligny>center</aligny>
-                                <textcolor>FFCCCCCC</textcolor>
-                                <label>$INFO[ListItem.Property(episode.number),Ep. ]</label>
-                            </control> -->
                         </control>
 
                         <control type="group">

@@ -70,7 +70,6 @@ class RecordDialog(kodigui.BaseDialog):
             util.showNotification(e.message,header=T(32838))
             return
 
-        xbmcgui.Dialog().ok(T(32800),'',T(32839),'')
         self.seriesHidden = True
         self.doClose()
 
@@ -311,8 +310,11 @@ class DVRBase(util.CronReceiver):
             elif action == xbmcgui.ACTION_MOUSE_MOVE and self.getFocusId() == self.RULE_LIST_ID:
                 if self.movingRule:
                     self.moveRule(True)
-            elif action.getButtonCode() in (61575, 61486) and self.getFocusId() == self.RULE_LIST_ID:
-                return self.deleteRule()
+            elif action.getButtonCode() in (61575, 61486):
+                if self.getFocusId() == self.RULE_LIST_ID:
+                    return self.deleteRule()
+                elif self.getFocusId() == self.SEARCH_PANEL_ID:
+                    return self.removeSeries()
 
         except:
             self._BASE.onAction(self,action)
@@ -402,11 +404,14 @@ class DVRBase(util.CronReceiver):
         self.showList.addItems(items)
 
     @util.busyDialog
-    def fillSearchPanel(self,category=''):
+    def fillSearchPanel(self,category='Series'):
         self.lastSearchRefresh = time.time()
 
         items = []
         series = {}
+
+        if self.searchTerms:
+            category = ''
 
         try:
             self.searchResults = hdhr.guide.search(self.devices.apiAuthID(),category=category,terms=self.searchTerms) or []
@@ -530,7 +535,7 @@ class DVRBase(util.CronReceiver):
         #self.searchTerms = self.getControl(self.SEARCH_EDIT_ID).getText() or ''
         if category:
             self.searchTerms = ''
-            catDisplay = {'series':'Series','movie':'Movies','sport':'Sports'}
+            catDisplay = {'series':'Shows','movie':'Movies','sport':'Sports'}
             util.setGlobalProperty('search.terms',catDisplay[category])
             self.fillSearchPanel(category=category)
         else:
@@ -579,12 +584,21 @@ class DVRBase(util.CronReceiver):
             util.setGlobalProperty('window.animations','')
             self.doClose()
 
-    def removeSeries(self, seriesID):
+    def removeSeries(self, seriesID=None):
+        if not seriesID:
+            mli = self.searchPanel.getSelectedItem()
+            if not mli: return
+            seriesID = mli.dataSource.seriesID
+            if not xbmcgui.Dialog().yesno(T(32035),mli.dataSource.seriesTitle,'',T(32839)):
+                return
+            util.busyDialog(self.storageServer.hideSeries)(seriesID)
+
         new = []
         for r in self.searchResults:
             if r.seriesID != seriesID:
                 new.append(r)
         self.searchResults = new
+
         for (i, mli) in enumerate(self.searchPanel):
             if mli.dataSource.seriesID == seriesID:
                 self.searchPanel.removeItem(i)
