@@ -277,7 +277,7 @@ class StorageServer(Device):
             util.ERROR('Failed to format {0} info'.format(self.typeName),hide_tb=True)
 
     def recordings(self):
-        util.DEBUG_LOG('Getting recordings from: {0}'.format(self._baseURL))
+        util.DEBUG_LOG('Getting recordings from: {0}'.format(self.storageURL))
         req = requests.get(self.storageURL)
 
         try:
