@@ -99,7 +99,7 @@ class RecordingRule(dict):
 #"PlayURL":"http://192.168.1.24:40172/play?id=1a7249c1"
 
 
-class Recording(guide.SearchResult):
+class Recording(guide.Episode):
     @property
     def playURL(self):
         return self.get('PlayURL','')
@@ -107,6 +107,30 @@ class Recording(guide.SearchResult):
     @property
     def programID(self):
         return self.get('ProgramID')
+
+    @property
+    def seriesTitle(self):
+        return self.get('Title','')
+
+    @property
+    def seriesSynopsis(self):
+        return self.get('SeriesSynopsis','')
+
+    @property
+    def seriesID(self):
+        return self.get('SeriesID')
+
+    @property
+    def episodeTitle(self):
+        return self.get('EpisodeTitle','')
+
+    @property
+    def episodeynopsis(self):
+        return self.get('Synopsis','')
+
+    @property
+    def episodeNumber(self):
+        return self.get('EpisodeNumber','')
 
     def progress(self,sofar):
         duration = self.duration
@@ -186,6 +210,7 @@ class StorageServers(object):
 
     def addRule(self,result):
         self._rules.append(RecordingRule(result).init(self,add=True))
+        result['RecordingRule'] = 1
         self.pingUpdateRules()
 
     def hideSeries(self,seriesID):

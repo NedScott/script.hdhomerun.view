@@ -499,6 +499,15 @@
                             <textcolor>FFFFFFFF</textcolor>
                             <label>$INFO[ListItem.Label]</label>
                         </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(has.rule))</visible>
+                            <posx>508</posx>
+                            <posy>375</posy>
+                            <width>24</width>
+                            <height>24</height>
+                            <texture>script-hdhomerun-view-rule_indicator.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
                     </itemlayout>
                     <focusedlayout width="563" height="430">
                         <control type="image">
@@ -592,6 +601,15 @@
                             <aligny>center</aligny>
                             <textcolor>FFFFFFFF</textcolor>
                             <label>$INFO[ListItem.Label]</label>
+                        </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(has.rule))</visible>
+                            <posx>508</posx>
+                            <posy>375</posy>
+                            <width>24</width>
+                            <height>24</height>
+                            <texture>script-hdhomerun-view-rule_indicator.png</texture>
+                            <aspectratio>stretch</aspectratio>
                         </control>
                     </focusedlayout>
                 </control>
@@ -1151,21 +1169,31 @@
 
         <control type="group">
             <visible>!IsEmpty(Window(10000).Property(script.hdhomerun.view.busy))</visible>
-            <posx>1700</posx>
+            <posx>1367</posx>
             <posy>860</posy>
 
             <control type="image">
                 <posx>0</posx>
                 <posy>0</posy>
-                <width>170</width>
+                <width>503</width>
                 <height>170</height>
                 <texture>script-hdhomerun-view-loading_bg.png</texture>
                 <colordiffuse>80FFFFFF</colordiffuse>
                 <aspectratio>stretch</aspectratio>
             </control>
-
-            <control type="image">
+            <control type="label">
                 <posx>21</posx>
+                <posy>44</posy>
+                <width>307</width>
+                <height>106</height>
+                <font>font13</font>
+                <align>center</align>
+                <aligny>center</aligny>
+                <textcolor>FF000000</textcolor>
+                <label>[B]$INFO[Window(10000).Property(script.hdhomerun.view.busy)][/B]</label>
+            </control>
+            <control type="image">
+                <posx>354</posx>
                 <posy>21</posy>
                 <width>128</width>
                 <height>128</height>

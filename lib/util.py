@@ -107,14 +107,19 @@ def kodiSimpleVersion():
 def sortTitle(title):
     return title.startswith('The ') and title[4:] or title
 
-def busyDialog(func):
-    def inner(*args,**kwargs):
-        try:
-            setGlobalProperty('busy','1')
-            func(*args,**kwargs)
-        finally:
-            setGlobalProperty('busy','')
-    return inner
+def busyDialog(msg='LOADING'):
+    def methodWrap(func):
+        def inner(*args,**kwargs):
+            try:
+                setGlobalProperty('busy',msg)
+                func(*args,**kwargs)
+            finally:
+                setGlobalProperty('busy','')
+        return inner
+    return methodWrap
+
+def withBusyDialog(method,msg,*args,**kwargs):
+    return busyDialog(msg or 'LOADING')(method)(*args,**kwargs)
 
 class TextBox:
     # constants

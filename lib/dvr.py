@@ -15,7 +15,7 @@ class RecordDialog(kodigui.BaseDialog):
 
     def __init__(self,*args,**kwargs):
         kodigui.BaseDialog.__init__(self,*args,**kwargs)
-        self.seriesID = kwargs.get('series_id')
+        self.series = kwargs.get('series')
         self.storageServer = kwargs.get('storage_server')
         self.results = kwargs.get('results')
         self.showHide = kwargs.get('show_hide')
@@ -25,6 +25,7 @@ class RecordDialog(kodigui.BaseDialog):
     def onFirstInit(self):
         self.episodeList = kodigui.ManagedControlList(self,self.EPISODE_LIST,20)
         self.setProperty('show.hide',self.showHide and '1' or '')
+        self.setProperty('hide.record',self.series.hasRule and '1' or '')
         self.fillEpisodeList()
 
     def onClick(self,controlID):
@@ -33,13 +34,13 @@ class RecordDialog(kodigui.BaseDialog):
         elif controlID == self.HIDE_BUTTON:
             self.hide()
 
+    @util.busyDialog('GETTING INFO')
     def fillEpisodeList(self):
         items = []
-        for r in self.results:
-            if not r.seriesID == self.seriesID: continue
-            item = kodigui.ManagedListItem(r.episodeTitle,r.synopsis,thumbnailImage=r.icon,data_source=r)
-            item.setProperty('series.title',r.seriesTitle)
-            item.setProperty('episode.number',r.episodeNumber)
+        for r in self.series.episodes(self.storageServer._devices.apiAuthID()):
+            item = kodigui.ManagedListItem(r.title,r.synopsis,thumbnailImage=r.icon,data_source=r)
+            item.setProperty('series.title',self.series.title)
+            item.setProperty('episode.number',r.number)
             item.setProperty('channel.number',r.channelNumber)
             item.setProperty('channel.name',r.channelName)
             item.setProperty('air.date',r.displayDate())
@@ -51,21 +52,19 @@ class RecordDialog(kodigui.BaseDialog):
         self.episodeList.addItems(items)
 
     def add(self):
-        item = self.episodeList.getSelectedItem()
-        if not item: return
         try:
-            self.storageServer.addRule(item.dataSource)
+            self.storageServer.addRule(self.series)
         except hdhr.errors.RuleModException, e:
             util.showNotification(e.message,header=T(32832))
             return
 
-        xbmcgui.Dialog().ok(T(32800),T(32801),'',item.dataSource.seriesTitle)
+        xbmcgui.Dialog().ok(T(32800),T(32801),'',self.series.title)
         self.ruleAdded = True
         self.doClose()
 
     def hide(self):
         try:
-            util.busyDialog(self.storageServer.hideSeries)(self.seriesID)
+            util.withBusyDialog(self.storageServer.hideSeries,'HIDING',self.series.ID)
         except hdhr.errors.SeriesHideException, e:
             util.showNotification(e.message,header=T(32838))
             return
@@ -224,7 +223,7 @@ class DVRBase(util.CronReceiver):
     def onFirstInit(self):
         self.start()
 
-    @util.busyDialog
+    @util.busyDialog('LOADING DVR')
     def init(self):
         self.started = False
         self.showList = None
@@ -232,7 +231,6 @@ class DVRBase(util.CronReceiver):
         self.ruleList = None
         self.searchTerms = ''
         self.play = None
-        self.searchResults = []
         self.devices = self.main.devices
         self.storageServer = hdhr.storageservers.StorageServers(self.devices)
         self.lineUp = self.main.lineUp
@@ -245,7 +243,6 @@ class DVRBase(util.CronReceiver):
         util.setGlobalProperty('NO_RECORDINGS',T(32803))
         util.setGlobalProperty('NO_RULES',T(32804))
 
-    @util.busyDialog
     def start(self):
         if self.showList:
             self.showList.reInit(self,self.SHOW_LIST_ID)
@@ -283,6 +280,8 @@ class DVRBase(util.CronReceiver):
             elif action == xbmcgui.ACTION_CONTEXT_MENU:
                 if self.getFocusId() == self.RULE_LIST_ID:
                     return self.doRuleContext()
+                elif self.getFocusId() == self.SEARCH_PANEL_ID:
+                    return self.setFocusId(self.SEARCH_EDIT_BUTTON_ID)
             elif action == xbmcgui.ACTION_MOVE_DOWN or action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_MOVE_LEFT:
                 if self.mode == 'WATCH':
                     if self.getFocusId() != self.SHOW_LIST_ID: self.setFocusId(self.SHOW_LIST_ID)
@@ -372,6 +371,7 @@ class DVRBase(util.CronReceiver):
         self.storageServer.updateRecordings()
         self.fillShows()
 
+    @util.busyDialog('LOADING SHOWS')
     def fillShows(self):
         self.lastRecordingsRefresh = time.time()
 
@@ -403,42 +403,36 @@ class DVRBase(util.CronReceiver):
         self.showList.reset()
         self.showList.addItems(items)
 
-    @util.busyDialog
+    @util.busyDialog('LOADING GUIDE')
     def fillSearchPanel(self,category='Series'):
         self.lastSearchRefresh = time.time()
 
         items = []
-        series = {}
 
         if self.searchTerms:
             category = ''
 
         try:
-            self.searchResults = hdhr.guide.search(self.devices.apiAuthID(),category=category,terms=self.searchTerms) or []
+            searchResults = hdhr.guide.search(self.devices.apiAuthID(),category=category,terms=self.searchTerms) or []
         except:
             e = util.ERROR()
             util.showNotification(e,header=T(32831))
 
-        util.setGlobalProperty('NO_RESULTS',not self.searchResults and T(32802) or '')
+        util.setGlobalProperty('NO_RESULTS',not searchResults and T(32802) or '')
 
-        for r in self.searchResults:
-            if r.seriesID in series:
-                continue
-
-            item = kodigui.ManagedListItem(r.episodeTitle,r.synopsis,thumbnailImage=r.icon,data_source=r)
-            series[r.seriesID] = [item,1]
-            item.setProperty('series.title',r.seriesTitle)
-            item.setProperty('episode.number',r.episodeNumber)
+        for r in searchResults:
+            item = kodigui.ManagedListItem(r.title,r.synopsis,thumbnailImage=r.icon,data_source=r)
+            item.setProperty('series.title',r.title)
             item.setProperty('channel.number',r.channelNumber)
             item.setProperty('channel.name',r.channelName)
             item.setProperty('channel.icon',r.channelIcon)
-            item.setProperty('air.date',r.displayDate())
-            item.setProperty('air.time',r.displayTime())
+            item.setProperty('has.rule',r.hasRule and '1' or '')
             items.append(item)
 
         self.searchPanel.reset()
         self.searchPanel.addItems(items)
 
+    @util.busyDialog('LOADING RULES')
     def fillRules(self,update=False):
         if update: self.storageServer.updateRules()
         items = []
@@ -481,7 +475,7 @@ class DVRBase(util.CronReceiver):
         except hdhr.errors.RuleDelException, e:
             util.showNotification(e.message,header=T(32828))
 
-    @util.busyDialog
+    @util.busyDialog('UPDATING')
     def toggleRuleRecent(self):
         item = self.ruleList.getSelectedItem()
         if not item:
@@ -499,7 +493,11 @@ class DVRBase(util.CronReceiver):
         if not yes:
             return
 
-        util.busyDialog(self.storageServer.deleteRule)(item.dataSource)
+        util.withBusyDialog(self.storageServer.deleteRule,'DELETING',item.dataSource)
+        for sitem in self.searchPanel:
+            if item.dataSource.seriesID == sitem.dataSource.ID:
+                sitem.setProperty('has.rule','')
+
         self.fillRules(update=True)
 
     def moveRule(self,move=False):
@@ -520,7 +518,7 @@ class DVRBase(util.CronReceiver):
             pos = self.ruleList.getSelectedPosition()
             self.ruleList.moveItem(self.movingRule,pos)
 
-    @util.busyDialog
+    @util.busyDialog('UPDATING')
     def updateRulePriorities(self):
         for i, item in enumerate(self.ruleList):
             try:
@@ -543,7 +541,7 @@ class DVRBase(util.CronReceiver):
             util.setGlobalProperty('search.terms',self.searchTerms)
             self.fillSearchPanel()
 
-        if not self.searchResults:
+        if util.getGlobalProperty('NO_RESULTS'):
             self.setFocusId(202)
         else:
             self.setFocusId(201)
@@ -557,9 +555,8 @@ class DVRBase(util.CronReceiver):
             path,
             'Main',
             '1080i',
-            series_id=item.dataSource.seriesID,
+            series=item.dataSource,
             storage_server=self.storageServer,
-            results=self.searchResults,
             show_hide=not self.searchTerms
         )
 
@@ -567,8 +564,9 @@ class DVRBase(util.CronReceiver):
 
         if d.ruleAdded:
             self.fillRules(update=True)
+            item.setProperty('has.rule','1')
         elif d.seriesHidden:
-            self.removeSeries(d.seriesID)
+            self.removeSeries(d.series.ID)
         del d
 
     def openEpisodeDialog(self):
@@ -588,19 +586,13 @@ class DVRBase(util.CronReceiver):
         if not seriesID:
             mli = self.searchPanel.getSelectedItem()
             if not mli: return
-            seriesID = mli.dataSource.seriesID
-            if not xbmcgui.Dialog().yesno(T(32035),mli.dataSource.seriesTitle,'',T(32839)):
-                return
-            util.busyDialog(self.storageServer.hideSeries)(seriesID)
-
-        new = []
-        for r in self.searchResults:
-            if r.seriesID != seriesID:
-                new.append(r)
-        self.searchResults = new
+            seriesID = mli.dataSource.ID
+            # if not xbmcgui.Dialog().yesno(T(32035),mli.dataSource.title,'',T(32839)):
+            #     return
+            util.withBusyDialog(self.storageServer.hideSeries,'HIDING',seriesID)
 
         for (i, mli) in enumerate(self.searchPanel):
-            if mli.dataSource.seriesID == seriesID:
+            if mli.dataSource.ID == seriesID:
                 self.searchPanel.removeItem(i)
                 break
         #self.fillSearchPanel(update=True)

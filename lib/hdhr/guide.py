@@ -13,7 +13,8 @@ from lib import util
 import errors
 
 GUIDE_URL = 'http://my.hdhomerun.com/api/guide.php?DeviceAuth={0}'
-SEARCH_URL = 'http://my.hdhomerun.com/api/search?DeviceAuth={deviceAuth}&Category={category}&Search={search}'
+SEARCH_URL = 'http://mytest.hdhomerun.com/api/search?DeviceAuth={deviceAuth}&Category={category}&Search={search}'
+EPISODES_URL = 'http://mytest.hdhomerun.com/api/episodes?DeviceAuth={deviceAuth}&SeriesID={seriesID}'
 
 class Show(dict):
     @property
@@ -90,21 +91,79 @@ class GuideChannel(dict):
 
         return Show()
 
-class SearchResult(dict):
+'''
+{
+        "SeriesID": "11942433",
+        "Title": "Zoo",
+        "Synopsis": "A rebel biologist joins a race to determine the mystery behind a wave of brutal animal attacks against human beings from all across the globe before humanity is left without any hope of salvation, as the raids begin to grow increasingly calculated.",
+        "ImageURL": "http://usca-my.hdhomerun.com/fyimediaservices/v_3_3_6_1/Program.svc/96/1942433/Primary",
+        "OriginalAirdate": 1435622400,
+        "ChannelNumber": "7.1",
+        "ChannelName": "KIRO-DT",
+        "ChannelImageURL": "http://usca-my.hdhomerun.com/fyimediaservices/v_3_3_6_1/Station.svc/2/765/Logo/120x120"
+    },
+'''
+
+class Series(dict):
     @property
-    def seriesTitle(self):
+    def title(self):
         return self.get('Title','')
 
     @property
-    def seriesSynopsis(self):
+    def synopsis(self):
         return self.get('SeriesSynopsis','')
 
     @property
-    def seriesID(self):
+    def ID(self):
         return self.get('SeriesID')
 
     @property
-    def episodeTitle(self):
+    def icon(self):
+        return self.get('ImageURL','')
+
+    @property
+    def channelNumber(self):
+        return self.get('ChannelNumber','')
+
+    @property
+    def channelName(self):
+        return self.get('ChannelName','')
+
+    @property
+    def channelIcon(self):
+        return self.get('ChannelImageURL','')
+
+    @property
+    def originalTimestamp(self):
+        return int(self.get('OriginalAirdate',0))
+
+    @property
+    def hasRule(self):
+        return bool(self.get('RecordingRule'))
+
+    def episodes(self,device_auth):
+        url = EPISODES_URL.format(deviceAuth=device_auth,seriesID=self.ID)
+        util.DEBUG_LOG('Episodes URL: {0}'.format(url))
+
+        req = requests.get(url)
+
+        try:
+            results = req.json()
+            if not results: return []
+            return [Episode(r) for r in results]
+        except:
+            util.ERROR()
+
+        return None
+
+
+class Episode(dict):
+    @property
+    def ID(self):
+        return self.get('ProgramID')
+
+    @property
+    def title(self):
         return self.get('EpisodeTitle','')
 
     @property
@@ -112,7 +171,7 @@ class SearchResult(dict):
         return self.get('Synopsis','')
 
     @property
-    def episodeNumber(self):
+    def number(self):
         return self.get('EpisodeNumber','')
 
     @property
@@ -175,7 +234,7 @@ def search(deviceAuth,category='',terms=''):
     try:
         results = req.json()
         if not results: return []
-        return [SearchResult(r) for r in results]
+        return [Series(r) for r in results]
     except:
         util.ERROR()
 
