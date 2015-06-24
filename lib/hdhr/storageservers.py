@@ -125,7 +125,7 @@ class Recording(guide.Episode):
         return self.get('EpisodeTitle','')
 
     @property
-    def episodeynopsis(self):
+    def episodeSynopsis(self):
         return self.get('Synopsis','')
 
     @property

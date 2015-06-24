@@ -97,7 +97,7 @@
                 <font>font13</font>
                 <align>left</align>
                 <textcolor>FFFFFFFF</textcolor>
-                <label>[B]$INFO[Container(201).ListItem.Property(series.title)][/B]</label>
+                <label>[B]$INFO[Window.Property(series.title)][/B]</label>
             </control>
             <control type="label">
                 <posx>450</posx>
@@ -107,7 +107,7 @@
                 <font>font13</font>
                 <align>left</align>
                 <textcolor>FFFFFFFF</textcolor>
-                <label>[B]$INFO[Container(201).ListItem.Label][/B]</label>
+                <label>[B]$INFO[Window.Property(synopsis.title)][/B]</label>
             </control>
             <control type="textbox">
                 <posx>450</posx>
@@ -117,7 +117,7 @@
                 <font>font13</font>
                 <align>left</align>
                 <textcolor>FFCCCCCC</textcolor>
-                <label>$INFO[Container(201).ListItem.Label2]</label>
+                <label>$INFO[Window.Property(synopsis)]</label>
             </control>
 
             <control type="group">

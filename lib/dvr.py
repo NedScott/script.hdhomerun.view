@@ -26,6 +26,9 @@ class RecordDialog(kodigui.BaseDialog):
         self.episodeList = kodigui.ManagedControlList(self,self.EPISODE_LIST,20)
         self.setProperty('show.hide',self.showHide and '1' or '')
         self.setProperty('hide.record',self.series.hasRule and '1' or '')
+        self.setProperty('series.title',self.series.title)
+        self.setProperty('synopsis.title','Synopsis')
+        self.setProperty('synopsis',self.series.synopsis)
         self.fillEpisodeList()
 
     def onClick(self,controlID):
@@ -33,6 +36,10 @@ class RecordDialog(kodigui.BaseDialog):
             self.add()
         elif controlID == self.HIDE_BUTTON:
             self.hide()
+        elif controlID == self.EPISODE_LIST:
+            item = self.episodeList.getSelectedItem()
+            self.setProperty('synopsis.title',item.dataSource.title)
+            self.setProperty('synopsis',item.dataSource.synopsis)
 
     @util.busyDialog('GETTING INFO')
     def fillEpisodeList(self):

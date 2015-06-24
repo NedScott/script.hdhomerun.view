@@ -111,7 +111,7 @@ class Series(dict):
 
     @property
     def synopsis(self):
-        return self.get('SeriesSynopsis','')
+        return self.get('Synopsis','')
 
     @property
     def ID(self):
