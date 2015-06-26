@@ -13,8 +13,10 @@ from lib import util
 import errors
 
 GUIDE_URL = 'http://my.hdhomerun.com/api/guide.php?DeviceAuth={0}'
-SEARCH_URL = 'http://mytest.hdhomerun.com/api/search?DeviceAuth={deviceAuth}&Category={category}&Search={search}'
+SEARCH_URL = 'http://mytest.hdhomerun.com/api/search?DeviceAuth={deviceAuth}&Search={search}'
 EPISODES_URL = 'http://mytest.hdhomerun.com/api/episodes?DeviceAuth={deviceAuth}&SeriesID={seriesID}'
+SUGGEST_URL = 'http://mytest.hdhomerun.com/api/suggest?DeviceAuth={deviceAuth}&Category={category}'
+
 
 class Show(dict):
     @property
@@ -139,7 +141,11 @@ class Series(dict):
 
     @property
     def hasRule(self):
-        return bool(self.get('RecordingRule'))
+        return self.get('RecordingRule') == 1
+
+    @property
+    def hidden(self):
+        return self.get('SuggestHide') == 1
 
     def episodes(self,device_auth):
         url = EPISODES_URL.format(deviceAuth=device_auth,seriesID=self.ID)
@@ -226,7 +232,11 @@ class Episode(dict):
             return '%d:%02d' % (minutes, seconds)
 
 def search(deviceAuth,category='',terms=''):
-    url = SEARCH_URL.format(deviceAuth=deviceAuth,category=category,search=urllib.quote(terms.encode('utf-8')))
+    if terms:
+        url = SEARCH_URL.format(deviceAuth=deviceAuth,search=urllib.quote(terms.encode('utf-8')))
+    elif category:
+        url = SUGGEST_URL.format(deviceAuth=deviceAuth,category=category)
+
     util.DEBUG_LOG('Search URL: {0}'.format(url))
 
     req = requests.get(url)
@@ -264,7 +274,10 @@ class Guide(object):
             if second: util.LOG('Failed to get guide data on first try - retrying...')
             try:
                 util.DEBUG_LOG('Fetching guide from: {0}'.format(url))
-                raw = requests.get(url).text
+                r = requests.get(url)
+                if not r.ok:
+                    raise Exception('Server Error ({0})'.format(r.status_code))
+                raw = r.text
                 util.DEBUG_LOG('Guide data received.'.format(url))
             except:
                 util.ERROR()
@@ -272,7 +285,6 @@ class Guide(object):
                 time.sleep(0.2)
                 continue
             if not raw: continue
-
             data = json.loads(raw)
             if data: return data
         return None

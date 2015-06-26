@@ -100,6 +100,7 @@
                 <label>[B]$INFO[Window.Property(series.title)][/B]</label>
             </control>
             <control type="label">
+                <visible>!Control.HasFocus(201)</visible>
                 <posx>450</posx>
                 <posy>88</posy>
                 <width>1205</width>
@@ -109,7 +110,19 @@
                 <textcolor>FFFFFFFF</textcolor>
                 <label>[B]$INFO[Window.Property(synopsis.title)][/B]</label>
             </control>
+            <control type="label">
+                <visible>Control.HasFocus(201)</visible>
+                <posx>450</posx>
+                <posy>88</posy>
+                <width>1205</width>
+                <height>40</height>
+                <font>font13</font>
+                <align>left</align>
+                <textcolor>FFFFFFFF</textcolor>
+                <label>[B]$INFO[Container(201).ListItem.Property(episode.title)][/B]</label>
+            </control>
             <control type="textbox">
+                <visible>!Control.HasFocus(201)</visible>
                 <posx>450</posx>
                 <posy>130</posy>
                 <width>1205</width>
@@ -118,6 +131,17 @@
                 <align>left</align>
                 <textcolor>FFCCCCCC</textcolor>
                 <label>$INFO[Window.Property(synopsis)]</label>
+            </control>
+            <control type="textbox">
+                <visible>Control.HasFocus(201)</visible>
+                <posx>450</posx>
+                <posy>130</posy>
+                <width>1205</width>
+                <height>145</height>
+                <font>font13</font>
+                <align>left</align>
+                <textcolor>FFCCCCCC</textcolor>
+                <label>$INFO[Container(201).ListItem.Property(episode.synopsis)]</label>
             </control>
 
             <control type="group">
@@ -162,7 +186,7 @@
                     <top>345</top>
                     <width>250</width>
                     <height>60</height>
-                    <label>[B]$ADDON[script.hdhomerun.view 32840][/B]</label>
+                    <label>[B]$INFO[Window.Property(show.hide)][/B]</label>
                     <font>font13</font>
                     <align>center</align>
                     <texturefocus colordiffuse="FF006000">script-hdhomerun-view-white_square.png</texturefocus>

@@ -2,8 +2,29 @@
 import xbmc, xbmcgui
 import time, threading
 
-class BaseWindow(xbmcgui.WindowXML):
+class BaseFunctions:
+    xmlFile = ''
+    path = ''
+    theme = ''
+    res = '720p'
+
+    def __init__(self):
+        self.open = True
+
+    @classmethod
+    def open(cls,**kwargs):
+        window = cls(cls.xmlFile, cls.path, cls.theme, cls.res)
+        window.modal()
+        return window
+
+    def modal(self):
+        self.open = True
+        self.doModal()
+        self.open = False
+
+class BaseWindow(xbmcgui.WindowXML,BaseFunctions):
     def __init__(self,*args,**kwargs):
+        BaseFunctions.__init__(self)
         self._closing = False
         self._winID = ''
         self.started = False
@@ -32,8 +53,9 @@ class BaseWindow(xbmcgui.WindowXML):
 
     def onClosed(self): pass
 
-class BaseDialog(xbmcgui.WindowXMLDialog):
+class BaseDialog(xbmcgui.WindowXMLDialog,BaseFunctions):
     def __init__(self,*args,**kwargs):
+        BaseFunctions.__init__(self)
         self._closing = False
         self._winID = ''
         self.started = False

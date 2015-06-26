@@ -94,15 +94,11 @@ class OptionsDialog(kodigui.BaseDialog):
     def __init__(self,*args,**kwargs):
         kodigui.BaseDialog.__init__(self,*args,**kwargs)
         self.option = None
-        self.fromDVR = False
 
     def onInit(self):
         kodigui.BaseDialog.onInit(self)
         self.setFocusId(252)
         self.option = None
-        if self.fromDVR:
-            self.fromDVR.doClose()
-        self.fromDVR = False
 
     def onAction(self,action):
         try:
@@ -151,6 +147,7 @@ class GuideOverlay(util.CronReceiver):
         self.propertyTimer = None
         self.currentDetailsTimer = None
         self.seekBarTimer = None
+        self.inLoop = False
 
         self.devices = None
 
@@ -295,8 +292,9 @@ class GuideOverlay(util.CronReceiver):
         self.setCurrent()
         util.DEBUG_LOG('ON PLAYBACK STOPPED')
         self.showProgress() #In case we failed to play video on startup
-        self.showOverlay()
+        self.showOverlay(False)
         self.showSeekBar(hide=True)
+        self.windowLoop()
 
     def onPlayBackFailed(self):
         self.setCurrent()
@@ -308,10 +306,13 @@ class GuideOverlay(util.CronReceiver):
             self.fallbackChannel = None
             self.playChannel(channel)
         util.showNotification(util.T(32023),time_ms=5000,header=util.T(32022))
+        self.windowLoop()
 
     def onPlayBackEnded(self):
         self.setCurrent()
         util.DEBUG_LOG('ON PLAYBACK ENDED')
+        self.windowLoop()
+
     # END - EVENT HANDLERS ####################################################
 
     def setProperty(self,key,val):
@@ -371,24 +372,21 @@ class GuideOverlay(util.CronReceiver):
 
     def closeHandler(self):
         if self.hasDVR():
-            self.openDVRWindow()
+            if self.player.isPlayingRecording():
+                self.player.stop()
+            else:
+                self.windowLoop()
             return True
 
         if self.overlayVisible():
             if not self.player.isPlaying():
-                return self.handleExit()
+                self.windowLoop()
+                return True
             self.showOverlay(False)
-            return True
         elif self.seekBarVisible():
             self.showSeekBar(hide=True)
-            return True
         else:
-            return self.handleExit()
-
-    def handleExit(self):
-        if util.getSetting('confirm.exit',True):
-            if not xbmcgui.Dialog().yesno(util.T(32006),'',util.T(32007),''): return True
-        self.doClose()
+            self.windowLoop()
         return True
 
     def fullscreenVideo(self):
@@ -700,35 +698,59 @@ class GuideOverlay(util.CronReceiver):
     def overlayVisible(self):
         return bool(self.getProperty('show.overlay'))
 
-    def showOptions(self,from_dvr=False):
-        path = util.ADDON.getAddonInfo('path')
+    def windowLoop(self):
+        if self.inLoop: return
+        self.inLoop = True
+        while not xbmc.abortRequested and not self._closing:
+            if self.openDVRWindow():
+                break
+            if self.showOptions():
+                break
+            if self.player.isPlaying():
+                break
+        self.inLoop = False
+
+    def showOptions(self):
         if not self.optionsDialog:
+            path = util.ADDON.getAddonInfo('path')
             self.optionsDialog = OptionsDialog(skin.OPTIONS_DIALOG,path,'Main','1080i')
-        self.optionsDialog.fromDVR = from_dvr and self.dvrWindow or False
-        self.optionsDialog.doModal()
+
+        self.optionsDialog.modal()
+
         option = self.optionsDialog.option
         self.optionsDialog.option = None
 
         if option == 'SEARCH':
             self.setFilter()
+            return True
         elif option == 'LIVETV':
             channel = self.getStartChannel()
             if channel:
                 self.playChannel(channel)
             else:
                 self.player.stop()
+            return True
         elif option == 'EXIT':
             self.doClose()
+            return True
+
 
     def openDVRWindow(self):
-        path = skin.getSkinPath()
+        if not self.hasDVR():
+            return
+
+        if (self.dvrWindow and self.dvrWindow.open) or (self.optionsDialog and self.optionsDialog.open):
+            return
+
         if not self.dvrWindow:
+            path = skin.getSkinPath()
             if util.getSetting('touch.mode',False):
                 self.dvrWindow = dvr.DVRWindow(skin.DVR_WINDOW,path,'Main','1080i',main=self)
             else:
                 self.dvrWindow = dvr.DVRDialog(skin.DVR_WINDOW,path,'Main','1080i',main=self)
 
-        self.dvrWindow.doModal()
+        self.dvrWindow.modal()
+
         self.showProgress() #Hide the progress because of re-init triggering <onload>
 
 
@@ -739,6 +761,9 @@ class GuideOverlay(util.CronReceiver):
             self.dvrWindow.play = None
             util.setGlobalProperty('window.animations',util.getSetting('window.animations',True) and '1' or '')
             util.setGlobalProperty('playing.dvr','1')
+            return True
+
+        return False
 
     def playRecording(self,rec):
         self.setCurrent(rec=rec)

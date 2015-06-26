@@ -18,13 +18,13 @@ class RecordDialog(kodigui.BaseDialog):
         self.series = kwargs.get('series')
         self.storageServer = kwargs.get('storage_server')
         self.results = kwargs.get('results')
-        self.showHide = kwargs.get('show_hide')
+        self.showHide = kwargs.get('show_hide') or self.series.hidden
         self.ruleAdded = False
-        self.seriesHidden = False
 
     def onFirstInit(self):
         self.episodeList = kodigui.ManagedControlList(self,self.EPISODE_LIST,20)
-        self.setProperty('show.hide',self.showHide and '1' or '')
+        hideText = self.series.hidden and T(32841) or T(32840)
+        self.setProperty('show.hide',self.showHide and hideText or '')
         self.setProperty('hide.record',self.series.hasRule and '1' or '')
         self.setProperty('series.title',self.series.title)
         self.setProperty('synopsis.title','Synopsis')
@@ -36,10 +36,6 @@ class RecordDialog(kodigui.BaseDialog):
             self.add()
         elif controlID == self.HIDE_BUTTON:
             self.hide()
-        elif controlID == self.EPISODE_LIST:
-            item = self.episodeList.getSelectedItem()
-            self.setProperty('synopsis.title',item.dataSource.title)
-            self.setProperty('synopsis',item.dataSource.synopsis)
 
     @util.busyDialog('GETTING INFO')
     def fillEpisodeList(self):
@@ -47,6 +43,8 @@ class RecordDialog(kodigui.BaseDialog):
         for r in self.series.episodes(self.storageServer._devices.apiAuthID()):
             item = kodigui.ManagedListItem(r.title,r.synopsis,thumbnailImage=r.icon,data_source=r)
             item.setProperty('series.title',self.series.title)
+            item.setProperty('episode.title',r.title)
+            item.setProperty('episode.synopsis',r.synopsis)
             item.setProperty('episode.number',r.number)
             item.setProperty('channel.number',r.channelNumber)
             item.setProperty('channel.name',r.channelName)
@@ -71,12 +69,11 @@ class RecordDialog(kodigui.BaseDialog):
 
     def hide(self):
         try:
-            util.withBusyDialog(self.storageServer.hideSeries,'HIDING',self.series.ID)
+            util.withBusyDialog(self.storageServer.hideSeries,'HIDING',self.series)
         except hdhr.errors.SeriesHideException, e:
             util.showNotification(e.message,header=T(32838))
             return
 
-        self.seriesHidden = True
         self.doClose()
 
 
@@ -238,6 +235,7 @@ class DVRBase(util.CronReceiver):
         self.ruleList = None
         self.searchTerms = ''
         self.play = None
+        self.options = None
         self.devices = self.main.devices
         self.storageServer = hdhr.storageservers.StorageServers(self.devices)
         self.lineUp = self.main.lineUp
@@ -305,7 +303,8 @@ class DVRBase(util.CronReceiver):
                 self.moveRule()
             elif action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
                 util.setGlobalProperty('dvr.active','')
-                self.main.showOptions(from_dvr=True)
+                self.options = True
+                #self.main.showOptions(from_dvr=True)
                 self.doClose()
             elif action == xbmcgui.ACTION_MOUSE_LEFT_CLICK:
                 if self.getFocusId() == self.RULE_LIST_ID:
@@ -434,6 +433,7 @@ class DVRBase(util.CronReceiver):
             item.setProperty('channel.name',r.channelName)
             item.setProperty('channel.icon',r.channelIcon)
             item.setProperty('has.rule',r.hasRule and '1' or '')
+            item.setProperty('hidden',r.hidden and '1' or '')
             items.append(item)
 
         self.searchPanel.reset()
@@ -557,12 +557,13 @@ class DVRBase(util.CronReceiver):
         item = self.searchPanel.getSelectedItem()
         if not item: return
         path = skin.getSkinPath()
+        series = item.dataSource
         d = RecordDialog(
             skin.DVR_RECORD_DIALOG,
             path,
             'Main',
             '1080i',
-            series=item.dataSource,
+            series=series,
             storage_server=self.storageServer,
             show_hide=not self.searchTerms
         )
@@ -572,8 +573,9 @@ class DVRBase(util.CronReceiver):
         if d.ruleAdded:
             self.fillRules(update=True)
             item.setProperty('has.rule','1')
-        elif d.seriesHidden:
-            self.removeSeries(d.series.ID)
+
+        self.removeSeries(series)
+
         del d
 
     def openEpisodeDialog(self):
@@ -589,18 +591,21 @@ class DVRBase(util.CronReceiver):
             util.setGlobalProperty('window.animations','')
             self.doClose()
 
-    def removeSeries(self, seriesID=None):
-        if not seriesID:
+    def removeSeries(self, series=None):
+        if not series:
             mli = self.searchPanel.getSelectedItem()
             if not mli: return
-            seriesID = mli.dataSource.ID
+            series = mli.dataSource
             # if not xbmcgui.Dialog().yesno(T(32035),mli.dataSource.title,'',T(32839)):
             #     return
-            util.withBusyDialog(self.storageServer.hideSeries,'HIDING',seriesID)
+            util.withBusyDialog(self.storageServer.hideSeries,'HIDING',series)
 
         for (i, mli) in enumerate(self.searchPanel):
-            if mli.dataSource.ID == seriesID:
-                self.searchPanel.removeItem(i)
+            if mli.dataSource.ID == series.ID:
+                if series.hidden:
+                    self.searchPanel.removeItem(i)
+                else:
+                    mli.setProperty('hidden','')
                 break
         #self.fillSearchPanel(update=True)
 

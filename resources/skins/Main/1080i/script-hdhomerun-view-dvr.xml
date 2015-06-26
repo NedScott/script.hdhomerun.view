@@ -508,6 +508,16 @@
                             <texture>script-hdhomerun-view-rule_indicator.png</texture>
                             <aspectratio>stretch</aspectratio>
                         </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(hidden))</visible>
+                            <posx>10</posx>
+                            <posy>10</posy>
+                            <width>533</width>
+                            <height>400</height>
+                            <texture>script-hdhomerun-view-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                            <colordiffuse>A0000000</colordiffuse>
+                        </control>
                     </itemlayout>
                     <focusedlayout width="563" height="430">
                         <control type="image">
@@ -535,6 +545,16 @@
                             <height>400</height>
                             <texture fallback="script-hdhomerun-view-no_image.png">$INFO[ListItem.Thumb]</texture>
                             <aspectratio aligny="top">scale</aspectratio>
+                        </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(hidden))</visible>
+                            <posx>10</posx>
+                            <posy>10</posy>
+                            <width>533</width>
+                            <height>400</height>
+                            <texture>script-hdhomerun-view-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                            <colordiffuse>A0000000</colordiffuse>
                         </control>
                         <control type="image">
                             <posx>0</posx>

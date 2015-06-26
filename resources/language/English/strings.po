@@ -364,3 +364,7 @@ msgstr ""
 msgctxt "#32840"
 msgid "HIDE"
 msgstr ""
+
+msgctxt "#32841"
+msgid "UNHIDE"
+msgstr ""
