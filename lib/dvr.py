@@ -82,7 +82,7 @@ class EpisodesDialog(kodigui.BaseDialog):
 
     def __init__(self,*args,**kwargs):
         kodigui.BaseDialog.__init__(self,*args,**kwargs)
-        self.seriesID = kwargs.get('series_id')
+        self.groupID = kwargs.get('group_id')
         self.storageServer = kwargs.get('storage_server')
         self.sortMode = util.getSetting('episodes.sort.mode','AIRDATE')
         self.sortASC = util.getSetting('episodes.sort.asc',True)
@@ -168,7 +168,7 @@ class EpisodesDialog(kodigui.BaseDialog):
     def fillRecordings(self):
         items = []
         for r in self.storageServer.recordings:
-            if self.seriesID and not r.seriesID == self.seriesID: continue
+            if self.groupID and not r.displayGroupID == self.groupID: continue
             item = kodigui.ManagedListItem(r.episodeTitle,r.synopsis,thumbnailImage=r.icon,data_source=r)
             item.setProperty('series.title',r.seriesTitle)
             item.setProperty('episode.number',r.episodeNumber)
@@ -381,27 +381,36 @@ class DVRBase(util.CronReceiver):
     def fillShows(self):
         self.lastRecordingsRefresh = time.time()
 
-        items = []
-        shows = {}
+        groupItems = []
+        seriesItems = []
+        groups = {}
+
         for r in self.storageServer.recordings:
-            if r.seriesID in shows:
-                item = shows[r.seriesID]
+            if r.displayGroupID in groups:
+                item = groups[r.displayGroupID]
                 ct = int(item.getProperty('show.count'))
                 ct += 1
                 item.setProperty('show.count',str(ct))
             else:
-                item = kodigui.ManagedListItem(r.seriesTitle,r.seriesSynopsis,thumbnailImage=r.icon,data_source=r)
+                item = kodigui.ManagedListItem(r.displayGroupTitle,r.seriesSynopsis,thumbnailImage=r.icon,data_source=r)
                 item.setProperty('show.count','1')
-                item.setProperty('seriesID',r.seriesID)
-                shows[r.seriesID] = item
-                items.append(item)
+                item.setProperty('groupID',r.displayGroupID)
+                groups[r.displayGroupID] = item
+                if r.groupIsSeries:
+                    seriesItems.append(item)
+                else:
+                    groupItems.append(item)
+
+
+        groupItems.sort(key=lambda x: util.sortTitle(x.dataSource.displayGroupTitle))
+        seriesItems.sort(key=lambda x: util.sortTitle(x.dataSource.displayGroupTitle))
+
+        items = groupItems + seriesItems
 
         if not items:
             util.setGlobalProperty('NO_RECORDINGS',self.storageServer.getRecordingsFailed and '[COLOR 80FF0000]{0}[/COLOR]'.format(T(32829)) or T(32803))
         else:
             util.setGlobalProperty('NO_RECORDINGS','')
-
-        items.sort(key=lambda x: x.dataSource.seriesTitle.startswith('The ') and x.dataSource.seriesTitle[4:] or x.dataSource.seriesTitle)
 
         allItem = kodigui.ManagedListItem('ALL RECORDINGS', thumbnailImage='script-hdhomerun-view-dvr_all.png')
         items.insert(0,allItem)
@@ -582,8 +591,8 @@ class DVRBase(util.CronReceiver):
         item = self.showList.getSelectedItem()
         if not item: return
         path = skin.getSkinPath()
-        seriesID = item.dataSource and item.dataSource.seriesID or None
-        d = EpisodesDialog(skin.DVR_EPISODES_DIALOG,path,'Main','1080i',series_id=seriesID,storage_server=self.storageServer)
+        groupID = item.dataSource and item.dataSource.displayGroupID or None
+        d = EpisodesDialog(skin.DVR_EPISODES_DIALOG,path,'Main','1080i',group_id=groupID,storage_server=self.storageServer)
         d.doModal()
         self.play = d.play
         del d

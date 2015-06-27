@@ -84,10 +84,6 @@ class HDHRPlayer(xbmc.Player):
             self.owner.onPlayBackFailed()
             return True
 
-    @property
-    def url(self):
-        return xbmc.getInfoLabel('Player.Filenameandpath') or ''
-
     def getArgs(self):
         transcode = TRANSCODE_PROFILES[util.getSetting('transcode',0)]
         if not transcode: return ''

@@ -297,6 +297,7 @@ class GuideOverlay(util.CronReceiver):
         self.windowLoop()
 
     def onPlayBackFailed(self):
+        util.setGlobalProperty('playing.dvr','')
         self.setCurrent()
         util.DEBUG_LOG('ON PLAYBACK FAILED')
         self.showProgress() #In case we failed to play video on startup
@@ -309,6 +310,7 @@ class GuideOverlay(util.CronReceiver):
         self.windowLoop()
 
     def onPlayBackEnded(self):
+        util.setGlobalProperty('playing.dvr','')
         self.setCurrent()
         util.DEBUG_LOG('ON PLAYBACK ENDED')
         self.windowLoop()

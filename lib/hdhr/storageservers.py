@@ -104,7 +104,7 @@ class RecordingRule(dict):
 class Recording(guide.Episode):
     @property
     def playURL(self):
-        return self.get('PlayURL','')
+        return self.get('PlayURL', '')
 
     @property
     def programID(self):
@@ -112,11 +112,11 @@ class Recording(guide.Episode):
 
     @property
     def seriesTitle(self):
-        return self.get('Title','')
+        return self.get('Title', '')
 
     @property
     def seriesSynopsis(self):
-        return self.get('SeriesSynopsis','')
+        return self.get('SeriesSynopsis', '')
 
     @property
     def seriesID(self):
@@ -124,15 +124,27 @@ class Recording(guide.Episode):
 
     @property
     def episodeTitle(self):
-        return self.get('EpisodeTitle','')
+        return self.get('EpisodeTitle', '')
 
     @property
     def episodeSynopsis(self):
-        return self.get('Synopsis','')
+        return self.get('Synopsis', '')
 
     @property
     def episodeNumber(self):
-        return self.get('EpisodeNumber','')
+        return self.get('EpisodeNumber', '')
+
+    @property
+    def displayGroupID(self):
+        return self.get('DisplayGroupID')
+
+    @property
+    def displayGroupTitle(self):
+        return self.get('DisplayGroupTitle', '')
+
+    @property
+    def groupIsSeries(self):
+        return self.get('DisplayGroupID') == self.get('SeriesID')
 
     def progress(self,sofar):
         duration = self.duration

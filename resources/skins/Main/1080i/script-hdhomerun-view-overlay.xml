@@ -671,7 +671,7 @@
 
         <control type="group">
             <description>Seek bar for DVR</description>
-            <visible>!IsEmpty(Window.Property(show.seekbar)) + Player.HasVideo()</visible>
+            <visible>[!IsEmpty(Window.Property(show.seekbar)) + Player.HasVideo()] | [!IsEmpty(Window(10000).Property(script.hdhomerun.view.playing.dvr)) + [Player.Paused | Player.Seeking | Player.DisplayAfterSeek | Player.Forwarding | Player.Rewinding]]</visible>
             <posx>40</posx>
             <posy>960</posy>
             <control type="image">
