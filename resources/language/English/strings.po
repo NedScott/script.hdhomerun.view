@@ -218,7 +218,7 @@ msgid "NO RECORDINGS"
 msgstr ""
 
 msgctxt "#32804"
-msgid "'NO RULES SET"
+msgid "NO RULES SET"
 msgstr ""
 
 msgctxt "#32805"

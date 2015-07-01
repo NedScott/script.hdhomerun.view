@@ -296,7 +296,8 @@ class DVRBase(util.CronReceiver):
                         self.setFocusId(self.SEARCH_EDIT_ID)
                 elif self.mode == 'RULES':
                     if self.getFocusId() != self.RULE_LIST_ID:
-                        self.setFocusId(self.RULE_LIST_ID)
+                        if self.ruleList.size():
+                            self.setFocusId(self.RULE_LIST_ID)
                     if self.movingRule and action == xbmcgui.ACTION_MOVE_DOWN or action == xbmcgui.ACTION_MOVE_UP:
                         self.moveRule(True)
             elif action == xbmcgui.ACTION_SELECT_ITEM and self.getFocusId() == self.RULE_LIST_ID:
@@ -375,10 +376,13 @@ class DVRBase(util.CronReceiver):
     def updateRecordings(self):
         util.DEBUG_LOG('DVR: Refreshing recordings')
         self.storageServer.updateRecordings()
-        self.fillShows()
+        self.fillShows(update=True)
+
+    def delayedUpdateRecordings(self):
+        self.lastRecordingsRefresh = (time.time() - self.RECORDINGS_REFRESH_INTERVAL) + 5
 
     @util.busyDialog('LOADING SHOWS')
-    def fillShows(self):
+    def fillShows(self, update=False):
         self.lastRecordingsRefresh = time.time()
 
         groupItems = []
@@ -415,8 +419,11 @@ class DVRBase(util.CronReceiver):
         allItem = kodigui.ManagedListItem('ALL RECORDINGS', thumbnailImage='script-hdhomerun-view-dvr_all.png')
         items.insert(0,allItem)
 
-        self.showList.reset()
-        self.showList.addItems(items)
+        if update:
+            self.showList.replaceItems(items)
+        else:
+            self.showList.reset()
+            self.showList.addItems(items)
 
     @util.busyDialog('LOADING GUIDE')
     def fillSearchPanel(self,category='Series'):
@@ -582,6 +589,7 @@ class DVRBase(util.CronReceiver):
         if d.ruleAdded:
             self.fillRules(update=True)
             item.setProperty('has.rule','1')
+            self.delayedUpdateRecordings()
 
         self.removeSeries(series)
 

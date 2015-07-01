@@ -38,7 +38,7 @@ class RecordingRule(dict):
 
     @priority.setter
     def priority(self,val):
-        if self.get('Priority') == val: return
+        if self.get('Priority',0) == val: return
         self['Priority'] = val
         self.modify()
 
@@ -52,7 +52,7 @@ class RecordingRule(dict):
             deviceAuth=self['STORAGE_SERVER']._devices.apiAuthID(),
             cmd='add',
             seriesID=self.seriesID,
-            title=urllib.quote(self.title),
+            title=urllib.quote(self.title.encode('utf-8')),
             recentOnly=self.get('RecentOnly') or 0,
             priority=self.priority
         )
@@ -193,7 +193,10 @@ class StorageServers(object):
         util.DEBUG_LOG('Getting recording rules: {0}'.format(url))
         #req = requests.get(url,headers={'Cache-Control':'no-cache'})
         req = requests.get(url)
-        self._rules = [RecordingRule(r).init(self) for r in req.json()]
+        data = req.json()
+        if not data:
+            return []
+        self._rules = [RecordingRule(r).init(self) for r in data]
         self.getRulesFailed = False
 
     @property

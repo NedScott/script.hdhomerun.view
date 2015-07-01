@@ -271,7 +271,11 @@ class GuideOverlay(util.CronReceiver):
         #xbmc.executebuiltin('PlayerControl(SmallSkipBackward)')
 
     def seekForwardSmall(self):
-        xbmc.executebuiltin('PlayerControl(SmallSkipForward)')
+        seek = self.player.getTime() + 30
+        if seek > self.player.getTotalTime():
+            seek = self.player.getTotalTime()
+        self.player.seekTime(seek)
+        #xbmc.executebuiltin('PlayerControl(SmallSkipForward)')
 
     def onClick(self,controlID):
         if self.clickShowOverlay(controlID): return
