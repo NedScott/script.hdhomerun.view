@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="script.hdhomerun.view"
        name="HDHomeRun"
-       version="2015.7.3a1"
+       version="2015.7.3a2"
        provider-name="SiliconDust">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
@@ -12,7 +12,7 @@
     </extension>
     <extension point="xbmc.addon.metadata">
         <summary lang="en">HDHomeRun LiveTV and DVR</summary>
-        <description lang="en">HDHomeRun on Kodi the easy way. Automatically finds all the compatible HDHomeRun devices on your network, collects available channels, and starts showing TV. Pressing select or right brings up the episode guide, where you can see what's on, and what's coming next. DVR provides a simple intuitive interface to record and watch your favorite shows when you want to.</description>
+        <description lang="en">HDHomeRun on Kodi the easy way. Automatically finds all the compatible HDHomeRun devices on your network, collects available channels, and starts showing TV. Pressing select or right brings up the episode guide, where you can see what's on, and what's coming next. Pressing back brings up DVR and Options. DVR provides a simple intuitive interface to record and watch your favorite shows when you want to.</description>
         <disclaimer lang="en">Requires a compatible HDHomeRun device. DVR requires a running DVR server</disclaimer>
         <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
         <forum>https://www.silicondust.com/forum/viewforum.php?f=87</forum>
