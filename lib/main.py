@@ -9,7 +9,7 @@ import player
 import skin
 import dvr
 
-API_LEVEL = 1
+API_LEVEL = 2
 
 CHANNEL_DISPLAY = u'[COLOR FF99CCFF]{0}[/COLOR] {1}'
 GUIDE_UPDATE_INTERVAL = 3300 #55 mins
@@ -861,11 +861,13 @@ class GuideOverlay(util.CronReceiver):
         util.DEBUG_LOG('Details timer done')
 
     def checkIfUpdated(self):
-        lastAPILevel = util.getSetting('API.LEVEL')
+        lastAPILevel = util.getSetting('API.LEVEL',0)
         util.setSetting('API.LEVEL',API_LEVEL)
 
         if not lastAPILevel:
             return self.firstRun()
+        elif lastAPILevel < 2:
+            util.showTextDialog('Info',util.T(32100))
 
     def firstRun(self):
         util.showTextDialog('Info',util.T(32100))
