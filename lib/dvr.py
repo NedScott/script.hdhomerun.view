@@ -203,7 +203,9 @@ class DVRBase(util.CronReceiver):
     RULES_BUTTON = 303
 
     RECORDINGS_REFRESH_INTERVAL = 600
-    SEARCH_REFRESH_INTERVAL = 600
+    SEARCH_NAV_REFRESH_INTERVAL = 601
+    SEARCH_REFRESH_INTERVAL = 3600
+    RULES_REFRESH_INTERVAL = 3660
 
     def __init__(self,*args,**kwargs):
         self._BASE.__init__(self,*args,**kwargs)
@@ -222,7 +224,7 @@ class DVRBase(util.CronReceiver):
         util.setGlobalProperty('DVR_MODE',val)
 
         if val == 'SEARCH':
-            if time.time() - self.lastSearchRefresh > self.SEARCH_REFRESH_INTERVAL:
+            if time.time() - self.lastSearchRefresh > self.SEARCH_NAV_REFRESH_INTERVAL:
                 self.fillSearchPanel()
 
     def onFirstInit(self):
@@ -235,6 +237,7 @@ class DVRBase(util.CronReceiver):
         self.searchPanel = None
         self.ruleList = None
         self.searchTerms = ''
+        self.category = 'series'
         self.play = None
         self.options = None
         self.devices = self.main.devices
@@ -243,6 +246,7 @@ class DVRBase(util.CronReceiver):
         self.cron = self.main.cron
         self.lastRecordingsRefresh = 0
         self.lastSearchRefresh = 0
+        self.lastRulesRefresh = 0
         self.movingRule = None
         self.mode = 'WATCH'
         util.setGlobalProperty('NO_RESULTS',T(32802))
@@ -362,8 +366,13 @@ class DVRBase(util.CronReceiver):
             self.mode = 'RULES'
 
     def tick(self):
-        if time.time() - self.lastRecordingsRefresh > self.RECORDINGS_REFRESH_INTERVAL:
+        now = time.time()
+        if now - self.lastRecordingsRefresh > self.RECORDINGS_REFRESH_INTERVAL:
             self.updateRecordings()
+        if now - self.lastSearchRefresh > self.SEARCH_REFRESH_INTERVAL:
+            self.fillSearchPanel()
+        if now - self.lastRulesRefresh > self.RULES_REFRESH_INTERVAL:
+            self.fillRules(update=True)
 
     def setMode(self,mode):
         self.mode = mode
@@ -427,16 +436,13 @@ class DVRBase(util.CronReceiver):
             self.showList.addItems(items)
 
     @util.busyDialog('LOADING GUIDE')
-    def fillSearchPanel(self,category='Series'):
+    def fillSearchPanel(self):
         self.lastSearchRefresh = time.time()
 
         items = []
 
-        if self.searchTerms:
-            category = ''
-
         try:
-            searchResults = hdhr.guide.search(self.devices.apiAuthID(),category=category,terms=self.searchTerms) or []
+            searchResults = hdhr.guide.search(self.devices.apiAuthID(),category=self.category,terms=self.searchTerms) or []
         except:
             e = util.ERROR()
             util.showNotification(e,header=T(32831))
@@ -458,7 +464,9 @@ class DVRBase(util.CronReceiver):
 
     @util.busyDialog('LOADING RULES')
     def fillRules(self,update=False):
+        self.lastRulesRefresh = time.time()
         if update: self.storageServer.updateRules()
+
         items = []
         for r in self.storageServer.rules:
             item = kodigui.ManagedListItem(r.title,data_source=r)
@@ -557,10 +565,12 @@ class DVRBase(util.CronReceiver):
         #self.searchTerms = self.getControl(self.SEARCH_EDIT_ID).getText() or ''
         if category:
             self.searchTerms = ''
+            self.category = category
             catDisplay = {'series':'Shows','movie':'Movies','sport':'Sports'}
             util.setGlobalProperty('search.terms',catDisplay[category])
-            self.fillSearchPanel(category=category)
+            self.fillSearchPanel()
         else:
+            self.category = ''
             self.searchTerms = xbmcgui.Dialog().input(T(32812),self.searchTerms)
             util.setGlobalProperty('search.terms',self.searchTerms)
             self.fillSearchPanel()
