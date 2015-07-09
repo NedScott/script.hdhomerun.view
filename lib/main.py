@@ -455,7 +455,11 @@ class GuideOverlay(util.CronReceiver):
 
     def updateLineup(self,quiet=False):
         try:
-            self.devices = hdhr.discovery.discover()
+            if not self.devices:
+                self.devices = hdhr.discovery.Devices()
+            else:
+                self.devices.reDiscover()
+
             self.lineUp = hdhr.tuners.LineUp(self.devices)
             return True
         except hdhr.errors.NoCompatibleDevicesException:

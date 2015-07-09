@@ -1,3 +1,8 @@
+** 2015.7.8 **
+
+Fix for DVR search failure when addon is left open for extended periods
+Remove un-implemented context menu delete on recordings window
+
 ** 2015.7.3 **
 
 Change name to HDHomeRun

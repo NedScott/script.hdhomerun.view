@@ -117,6 +117,7 @@ class EpisodesDialog(kodigui.BaseDialog):
             self.sort('AIRDATE')
 
     def doContextMenu(self):
+        return
         items = [('delete', T(32809))]
         idx = xbmcgui.Dialog().select(T(32810),[i[1] for i in items])
         if idx < 0:
@@ -365,7 +366,7 @@ class DVRBase(util.CronReceiver):
             self.updateRecordings()
 
     def setMode(self,mode):
-        self.mode == mode
+        self.mode = mode
         if mode == 'WATCH':
             self.setFocusId(100)
         elif mode == 'SEARCH':
