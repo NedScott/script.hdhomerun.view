@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import time, random
+import time, random, threading
 import xbmc, xbmcgui
 
 import hdhr
@@ -124,6 +124,39 @@ class OptionsDialog(kodigui.BaseDialog):
             util.setGlobalProperty('window.animations','')
         self.doClose()
 
+class ActionHandler(object):
+    def __init__(self,callback):
+        self.callback = callback
+        self.action = None
+        self.event = threading.Event()
+        self.event.clear()
+        self.timer = None
+        self.delay = 0.1
+
+    def onAction(self,action):
+        self.action = action
+        if self.event.isSet(): return
+        self.event.set()
+        self.timer = threading.Timer(self.delay,self.doAction,args=[action])
+        self.timer.start()
+
+    def doAction(self,action):
+
+        try:
+            if not self.callback(self.action):
+                self.timer = threading.Timer(0.05,self.doAction,args=[self.action])
+                self.timer.start()
+                return
+
+            self.action = None
+        finally:
+            self.event.clear()
+        self.timer = None
+
+    def clear(self):
+        if self.timer: self.timer.cancel()
+        return self.event.isSet()
+
 
 class GuideOverlay(util.CronReceiver):
     _BASE = None
@@ -147,6 +180,8 @@ class GuideOverlay(util.CronReceiver):
         self.propertyTimer = None
         self.currentDetailsTimer = None
         self.seekBarTimer = None
+        self.lastSeek = 0
+        self.seekHandler = ActionHandler(self.seekCallback)
         self.inLoop = False
 
         self.devices = None
@@ -184,6 +219,7 @@ class GuideOverlay(util.CronReceiver):
                 if self.closeHandler(): return
 
             if self.checkSeekActions(action):
+                self._BASE.onAction(self, action)
                 self.showSeekBar()
                 return
 
@@ -222,11 +258,15 @@ class GuideOverlay(util.CronReceiver):
 
         # PlayerControl(command): Play, Stop, Forward, Rewind, Next, Previous, BigSkipForward, BigSkipBackward, SmallSkipForward, SmallSkipBackward,
 
+        if action in [xbmcgui.ACTION_MOVE_LEFT, xbmcgui.ACTION_MOVE_RIGHT, xbmcgui.ACTION_MOVE_UP, xbmcgui.ACTION_MOVE_DOWN]:
+            self.seekHandler.onAction(action)
+            return True
+
         if action == xbmcgui.ACTION_PAGE_UP:
-            xbmc.executebuiltin('PlayerControl(Next)')
+            self.seekAction('PlayerControl(Next)')
             return True
         elif action == xbmcgui.ACTION_PAGE_DOWN:
-            xbmc.executebuiltin('PlayerControl(Previous)')
+            self.seekAction('PlayerControl(Previous)')
             return True
         elif action == xbmcgui.ACTION_NEXT_ITEM:
             self.seekBackSmall()
@@ -241,10 +281,10 @@ class GuideOverlay(util.CronReceiver):
             self.seekForwardSmall()
             return True
         elif action == xbmcgui.ACTION_MOVE_UP:
-            xbmc.executebuiltin('PlayerControl(BigSkipForward)')
+            self.seekAction('PlayerControl(BigSkipForward)')
             return True
         elif action == xbmcgui.ACTION_MOVE_DOWN:
-            xbmc.executebuiltin('PlayerControl(BigSkipBackward)')
+            self.seekAction('PlayerControl(BigSkipBackward)')
             return True
         elif action == xbmcgui.ACTION_GESTURE_SWIPE_RIGHT:
             self.seekForwardSmall()
@@ -253,29 +293,45 @@ class GuideOverlay(util.CronReceiver):
             self.seekBackSmall()
             return True
         elif action == xbmcgui.ACTION_GESTURE_SWIPE_UP:
-            xbmc.executebuiltin('PlayerControl(BigSkipForward)')
+            self.seekAction('PlayerControl(BigSkipForward)')
             return True
         elif action == xbmcgui.ACTION_GESTURE_SWIPE_DOWN:
-            xbmc.executebuiltin('PlayerControl(BigSkipBackward)')
+            self.seekAction('PlayerControl(BigSkipBackward)')
             return True
         # elif self.getFocusId() == 251 and action == xbmcgui.ACTION_MOUSE_DRAG:
         #     return True
 
         return False
 
+    def seekCallback(self, action):
+        if xbmc.getCondVisibility('Player.Seeking') or xbmc.getCondVisibility('Player.Caching'):
+            return False
+
+        if action == xbmcgui.ACTION_MOVE_LEFT:
+            self.seekBackSmall()
+        elif action == xbmcgui.ACTION_MOVE_RIGHT:
+            self.seekForwardSmall()
+        elif action == xbmcgui.ACTION_MOVE_UP:
+            self.seekAction('PlayerControl(BigSkipForward)')
+        elif action == xbmcgui.ACTION_MOVE_DOWN:
+            self.seekAction('PlayerControl(BigSkipBackward)')
+
+        return True
+
     def seekBackSmall(self):
         seek = self.player.getTime() - 6
         if seek < 0:
             seek = 0
         self.player.seekTime(seek)
-        #xbmc.executebuiltin('PlayerControl(SmallSkipBackward)')
 
     def seekForwardSmall(self):
         seek = self.player.getTime() + 30
         if seek > self.player.getTotalTime():
             seek = self.player.getTotalTime()
         self.player.seekTime(seek)
-        #xbmc.executebuiltin('PlayerControl(SmallSkipForward)')
+
+    def seekAction(self, action):
+        xbmc.executebuiltin(action)
 
     def onClick(self,controlID):
         if self.clickShowOverlay(controlID): return
@@ -318,6 +374,9 @@ class GuideOverlay(util.CronReceiver):
         self.setCurrent()
         util.DEBUG_LOG('ON PLAYBACK ENDED')
         self.windowLoop()
+
+    def onPlayBackSeek(self, seek_time, seek_offset):
+        self.lastSeek = time.time()
 
     # END - EVENT HANDLERS ####################################################
 

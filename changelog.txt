@@ -1,8 +1,9 @@
-** 2015.7.8 **
+** 2015.7.12 **
 
 Fix for DVR search failure when addon is left open for extended periods
 Remove un-implemented context menu delete on recordings window
 Refresh rules and improve search refresh when addon remains open
+Fix seek not stopping after key release
 
 ** 2015.7.3 **
 

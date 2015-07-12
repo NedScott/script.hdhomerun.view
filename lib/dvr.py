@@ -203,7 +203,6 @@ class DVRBase(util.CronReceiver):
     RULES_BUTTON = 303
 
     RECORDINGS_REFRESH_INTERVAL = 600
-    SEARCH_NAV_REFRESH_INTERVAL = 601
     SEARCH_REFRESH_INTERVAL = 3600
     RULES_REFRESH_INTERVAL = 3660
 
@@ -222,10 +221,6 @@ class DVRBase(util.CronReceiver):
             self.moveRule(None)
 
         util.setGlobalProperty('DVR_MODE',val)
-
-        if val == 'SEARCH':
-            if time.time() - self.lastSearchRefresh > self.SEARCH_NAV_REFRESH_INTERVAL:
-                self.fillSearchPanel()
 
     def onFirstInit(self):
         self.start()
@@ -370,7 +365,7 @@ class DVRBase(util.CronReceiver):
         if now - self.lastRecordingsRefresh > self.RECORDINGS_REFRESH_INTERVAL:
             self.updateRecordings()
         if now - self.lastSearchRefresh > self.SEARCH_REFRESH_INTERVAL:
-            self.fillSearchPanel()
+            self.fillSearchPanel(update=True)
         if now - self.lastRulesRefresh > self.RULES_REFRESH_INTERVAL:
             self.fillRules(update=True)
 
@@ -436,7 +431,7 @@ class DVRBase(util.CronReceiver):
             self.showList.addItems(items)
 
     @util.busyDialog('LOADING GUIDE')
-    def fillSearchPanel(self):
+    def fillSearchPanel(self, update=False):
         self.lastSearchRefresh = time.time()
 
         items = []
@@ -458,9 +453,11 @@ class DVRBase(util.CronReceiver):
             item.setProperty('has.rule',r.hasRule and '1' or '')
             item.setProperty('hidden',r.hidden and '1' or '')
             items.append(item)
-
-        self.searchPanel.reset()
-        self.searchPanel.addItems(items)
+        if update:
+            self.searchPanel.replaceItems(items)
+        else:
+            self.searchPanel.reset()
+            self.searchPanel.addItems(items)
 
     @util.busyDialog('LOADING RULES')
     def fillRules(self,update=False):
