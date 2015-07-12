@@ -124,9 +124,10 @@ class OptionsDialog(kodigui.BaseDialog):
             util.setGlobalProperty('window.animations','')
         self.doClose()
 
-class ActionHandler(object):
+class SeekActionHandler(object):
     def __init__(self,callback):
         self.callback = callback
+        self.initiallyPaused = False
         self.action = None
         self.event = threading.Event()
         self.event.clear()
@@ -135,22 +136,43 @@ class ActionHandler(object):
 
     def onAction(self,action):
         self.action = action
-        if self.event.isSet(): return
+        if self.event.isSet():
+            return
+        self.startTimer(action)
+
+    def startTimer(self, action):
+        self.action = action
         self.event.set()
-        self.timer = threading.Timer(self.delay,self.doAction,args=[action])
+        if self.timer: self.timer.cancel()
+        if action != xbmcgui.ACTION_PLAY:
+            self.initiallyPaused = xbmc.getCondVisibility('Player.Paused')
+            if not self.initiallyPaused:
+                xbmc.executebuiltin('PlayerControl(play)')
+
+        self.timer = threading.Timer(self.delay,self.doAction)
         self.timer.start()
 
-    def doAction(self,action):
-
+    def doAction(self):
+        action = self.action
         try:
-            if not self.callback(self.action):
-                self.timer = threading.Timer(0.05,self.doAction,args=[self.action])
+            if self.callback(action):
+                if action != xbmcgui.ACTION_PLAY and not self.initiallyPaused:
+                    self.startTimer(xbmcgui.ACTION_PLAY)
+                    return
+
+                self.initiallyPaused = False
+                self.event.clear()
+            else:
+                if self.timer: self.timer.cancel()
+                self.timer = threading.Timer(0.05,self.doAction)
                 self.timer.start()
                 return
 
             self.action = None
-        finally:
+        except:
+            util.ERROR()
             self.event.clear()
+
         self.timer = None
 
     def clear(self):
@@ -181,7 +203,7 @@ class GuideOverlay(util.CronReceiver):
         self.currentDetailsTimer = None
         self.seekBarTimer = None
         self.lastSeek = 0
-        self.seekHandler = ActionHandler(self.seekCallback)
+        self.seekHandler = SeekActionHandler(self.seekCallback)
         self.inLoop = False
 
         self.devices = None
@@ -259,7 +281,7 @@ class GuideOverlay(util.CronReceiver):
         # PlayerControl(command): Play, Stop, Forward, Rewind, Next, Previous, BigSkipForward, BigSkipBackward, SmallSkipForward, SmallSkipBackward,
 
         if action in [xbmcgui.ACTION_MOVE_LEFT, xbmcgui.ACTION_MOVE_RIGHT, xbmcgui.ACTION_MOVE_UP, xbmcgui.ACTION_MOVE_DOWN]:
-            self.seekHandler.onAction(action)
+            self.seekHandler.onAction(action.getId())
             return True
 
         if action == xbmcgui.ACTION_PAGE_UP:
@@ -305,7 +327,7 @@ class GuideOverlay(util.CronReceiver):
 
     def seekCallback(self, action):
         if xbmc.getCondVisibility('Player.Seeking') or xbmc.getCondVisibility('Player.Caching'):
-            return False
+           return False
 
         if action == xbmcgui.ACTION_MOVE_LEFT:
             self.seekBackSmall()
@@ -315,6 +337,14 @@ class GuideOverlay(util.CronReceiver):
             self.seekAction('PlayerControl(BigSkipForward)')
         elif action == xbmcgui.ACTION_MOVE_DOWN:
             self.seekAction('PlayerControl(BigSkipBackward)')
+        elif action == xbmcgui.ACTION_PLAY:
+            if xbmc.getCondVisibility('Player.Paused'):
+                self.player.pause()
+            ct = 0
+            # Wait till player is actually unpaused before we return, so that initial paused stat var doesn't get confused
+            while xbmc.getCondVisibility('Player.Paused') and ct < 20: # Only do this 20 times (2 secs) in case this isn't as safe as I thought :)
+                xbmc.sleep(100)
+                ct += 1
 
         return True
 
