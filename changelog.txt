@@ -5,6 +5,7 @@ Remove un-implemented context menu delete on recordings window
 Refresh rules and improve search refresh when addon remains open
 Fix seek not stopping after key release
 Fix guide search update resetting focus to first item
+Fix for busy spinner appearing during video playback
 
 ** 2015.7.3 **
 
