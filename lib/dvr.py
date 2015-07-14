@@ -475,7 +475,7 @@ class DVRBase(util.CronReceiver):
         else:
             util.setGlobalProperty('NO_RULES','')
 
-        items.sort(key=lambda x: x.dataSource.priority)
+        items.sort(key=lambda x: x.dataSource.priority, reverse=True)
 
         self.ruleList.reset()
         self.ruleList.addItems(items)
@@ -549,7 +549,7 @@ class DVRBase(util.CronReceiver):
 
     @util.busyDialog('UPDATING')
     def updateRulePriorities(self):
-        for i, item in enumerate(self.ruleList):
+        for i, item in enumerate(reversed(self.ruleList)):
             try:
                 item.dataSource.priority = i
             except ValueError:
