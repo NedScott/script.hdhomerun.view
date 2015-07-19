@@ -16,6 +16,8 @@ GUIDE_URL = 'http://my.hdhomerun.com/api/guide.php?DeviceAuth={0}'
 SEARCH_URL = 'http://mytest.hdhomerun.com/api/search?DeviceAuth={deviceAuth}&Search={search}'
 EPISODES_URL = 'http://mytest.hdhomerun.com/api/episodes?DeviceAuth={deviceAuth}&SeriesID={seriesID}'
 SUGGEST_URL = 'http://mytest.hdhomerun.com/api/suggest?DeviceAuth={deviceAuth}&Category={category}'
+NOW_SHOWING_URL = 'http://mytest.hdhomerun.com/api/up_next?DeviceAuth={deviceAuth}'
+UP_NEXT_URL = 'http://mytest.hdhomerun.com/api/up_next?DeviceAuth={deviceAuth}&Timeslot={utcUnixtime}'
 
 
 class Show(dict):
@@ -238,6 +240,25 @@ def search(deviceAuth,category='',terms=''):
         url = SUGGEST_URL.format(deviceAuth=urllib.quote(deviceAuth,''),category=category)
 
     util.DEBUG_LOG('Search URL: {0}'.format(url))
+
+    req = requests.get(url)
+
+    try:
+        results = req.json()
+        if not results: return []
+        return [Series(r) for r in results]
+    except:
+        util.ERROR()
+
+    return None
+
+def nowShowing(deviceAuth, utcUnixtime=None):
+    if utcUnixtime:
+        url = UP_NEXT_URL.format(deviceAuth=urllib.quote(deviceAuth,''),utcUnixtime=utcUnixtime)
+    else:
+        url = NOW_SHOWING_URL.format(deviceAuth=urllib.quote(deviceAuth,''))
+
+    util.DEBUG_LOG('Now Showing URL: {0}'.format(url))
 
     req = requests.get(url)
 

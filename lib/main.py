@@ -743,7 +743,7 @@ class GuideOverlay(util.CronReceiver):
 
         self.checkIfUpdated()
 
-    def selectChannel(self,channel):
+    def selectChannel(self, channel):
         pos = self.lineUp.index(channel.number)
         if pos > -1:
             self.channelList.selectItem(pos)
@@ -862,7 +862,7 @@ class GuideOverlay(util.CronReceiver):
             util.setGlobalProperty('playing.dvr','1')
             return True
 
-        return False
+        return not self.dvrWindow.options
 
     def playRecording(self,rec):
         self.setCurrent(rec=rec)
@@ -878,6 +878,7 @@ class GuideOverlay(util.CronReceiver):
         if number in self.lineUp:
             channel = self.lineUp[number]
             self.playChannel(channel)
+            self.selectChannel(channel)
             return channel
         return None
 

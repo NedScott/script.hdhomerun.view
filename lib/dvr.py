@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import time
+import time, datetime
 import xbmc, xbmcgui
 import kodigui
 import hdhr
@@ -234,7 +234,7 @@ class DVRBase(util.CronReceiver):
         self.searchTerms = ''
         self.category = 'series'
         self.play = None
-        self.options = None
+        self.options = True
         self.devices = self.main.devices
         self.storageServer = hdhr.storageservers.StorageServers(self.devices)
         self.lineUp = self.main.lineUp
@@ -243,6 +243,8 @@ class DVRBase(util.CronReceiver):
         self.lastSearchRefresh = 0
         self.lastRulesRefresh = 0
         self.movingRule = None
+        self.nowShowingOffset = 0
+        self.lastNPScrollItem = None
         self.mode = 'WATCH'
         util.setGlobalProperty('NO_RESULTS',T(32802))
         util.setGlobalProperty('NO_RECORDINGS',T(32803))
@@ -294,12 +296,27 @@ class DVRBase(util.CronReceiver):
                     if not xbmc.getCondVisibility('ControlGroup(550).HasFocus(0)') and self.getFocusId() != self.SEARCH_PANEL_ID:
                         #self.searchEdit.setText('')
                         self.setFocusId(self.SEARCH_EDIT_ID)
+                    elif self.getFocusId() == self.SEARCH_PANEL_ID:
+                        self.checkSearchPanelSkip(action)
                 elif self.mode == 'RULES':
                     if self.getFocusId() != self.RULE_LIST_ID:
                         if self.ruleList.size():
                             self.setFocusId(self.RULE_LIST_ID)
                     if self.movingRule and action == xbmcgui.ACTION_MOVE_DOWN or action == xbmcgui.ACTION_MOVE_UP:
                         self.moveRule(True)
+            elif action == xbmcgui.ACTION_PAGE_DOWN or action == xbmcgui.ACTION_PAGE_UP:
+                if self.getFocusId() == self.SEARCH_PANEL_ID:
+                    self.checkSearchPanelSkip(action)
+            elif action == xbmcgui.ACTION_MOUSE_WHEEL_DOWN:
+                if self.getFocusId() == self.SEARCH_PANEL_ID and self.category == 'nowshowing':
+                    item = self.searchPanel.getSelectedItem()
+                    if self.lastNPScrollItem and item == self.lastNPScrollItem:
+                        pos = self.searchPanel.size()
+                        self.fillSearchPanel(next_section=True)
+                        self.searchPanel.selectItem(pos)
+                        self.lastNPScrollItem = None
+                    else:
+                        self.lastNPScrollItem = item
             elif action == xbmcgui.ACTION_SELECT_ITEM and self.getFocusId() == self.RULE_LIST_ID:
                 self.moveRule()
             elif action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
@@ -347,9 +364,9 @@ class DVRBase(util.CronReceiver):
             self.setMode('RULES')
         elif controlID == self.SEARCH_EDIT_BUTTON_ID:
             self.setSearch()
-        elif 204 < controlID < 208:
+        elif 204 < controlID < 209:
             idx = controlID - 205
-            self.setSearch(category=('series','movie','sport')[idx])
+            self.setSearch(category=('series','movie','sport', 'nowshowing')[idx])
 
     def onFocus(self,controlID):
         #print 'focus: {0}'.format(controlID)
@@ -377,6 +394,44 @@ class DVRBase(util.CronReceiver):
             self.setFocusId(200)
         elif mode == 'RULES':
             self.setFocusId(300)
+
+    def checkSearchPanelSkip(self, action, force=False):
+        if action == xbmcgui.ACTION_MOVE_DOWN or action == xbmcgui.ACTION_PAGE_DOWN:
+            offset = 3
+        elif action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_PAGE_UP:
+            offset = -3
+        elif action == xbmcgui.ACTION_MOVE_RIGHT:
+            offset = -1
+            item = self.searchPanel.getSelectedItem()
+            if item.getProperty('skip'):
+                pos = item.pos()
+                pos += 1
+                self.searchPanel.selectItem(pos)
+                self.setFocusId(self.RULE_LIST_ID)
+        else:
+            return
+
+        item = self.searchPanel.getSelectedItem()
+        for x in (1,2):
+            try:
+                if item.getProperty('skip'):
+                    pos = item.pos()
+                    pos += offset
+                    if not self.searchPanel.positionIsValid(pos):
+                        raise Exception()
+                    self.searchPanel.selectItem(pos)
+                    item = self.searchPanel.getListItem(pos)
+                    if item.getProperty('skip'):
+                        xbmc.sleep(200)
+                        pos = item.pos()
+                        pos += offset
+                        if not self.searchPanel.positionIsValid(pos):
+                            raise Exception()
+                        self.searchPanel.selectItem(pos)
+                    return
+            except:
+                self.fillSearchPanel(next_section=True)
+                continue
 
     def updateRecordings(self):
         util.DEBUG_LOG('DVR: Refreshing recordings')
@@ -431,13 +486,42 @@ class DVRBase(util.CronReceiver):
             self.showList.addItems(items)
 
     @util.busyDialog('LOADING GUIDE')
-    def fillSearchPanel(self, update=False):
+    def fillSearchPanel(self, update=False, next_section=False):
         self.lastSearchRefresh = time.time()
 
         items = []
 
         try:
-            searchResults = hdhr.guide.search(self.devices.apiAuthID(),category=self.category,terms=self.searchTerms) or []
+            if self.category == 'nowshowing':
+                if next_section:
+                    searchResults = hdhr.guide.nowShowing(self.devices.apiAuthID(), utcUnixtime=time.mktime(self.nowShowingOffset.timetuple()))
+                else:
+                    searchResults = hdhr.guide.nowShowing(self.devices.apiAuthID())
+                tail = len(searchResults)%3
+                xtras = (tail and 3 - tail or 0) + 3
+                for x in range(xtras):
+                    searchResults.append('')
+
+                self.nowShowingOffset += datetime.timedelta(seconds=1800)
+                searchResults[-1] = ' '
+                searchResults[-3] = ' '
+                now = datetime.datetime.now()
+                if now.day != self.nowShowingOffset.day:
+                    searchResults[-2] = self.nowShowingOffset.strftime('%A ') + self.nowShowingOffset.strftime('%I:%M %p').lstrip('0')
+                else:
+                    searchResults[-2] = self.nowShowingOffset.strftime('%I:%M %p').lstrip('0')
+
+                # searchResults += hdhr.guide.nowShowing(self.devices.apiAuthID(), utcUnixtime=time.mktime(nextSection.timetuple()))
+                # tail = len(searchResults)%3
+                # xtras = (tail and 3 - tail or 0) + 3
+                # for x in range(xtras):
+                #     searchResults.append('')
+                # nextSection = datetime.datetime.now() + datetime.timedelta(seconds=3600)
+                # nextSection -= datetime.timedelta(minutes=nextSection.minute%30,seconds=nextSection.second)
+                # searchResults[-2] = nextSection.strftime('%I:%M')
+                # searchResults += hdhr.guide.nowShowing(self.devices.apiAuthID(), utcUnixtime=time.mktime(nextSection.timetuple()))
+            else:
+                searchResults = hdhr.guide.search(self.devices.apiAuthID(),category=self.category,terms=self.searchTerms) or []
         except:
             e = util.ERROR()
             util.showNotification(e,header=T(32831))
@@ -445,7 +529,16 @@ class DVRBase(util.CronReceiver):
         util.setGlobalProperty('NO_RESULTS',not searchResults and T(32802) or '')
 
         for r in searchResults:
+            if isinstance(r, str):
+                item = kodigui.ManagedListItem('')
+                item.setProperty('skip', '1')
+                if r:
+                    item.setProperty('heading',r)
+                items.append(item)
+                continue
             item = kodigui.ManagedListItem(r.title,r.synopsis,thumbnailImage=r.icon,data_source=r)
+            if self.category == 'nowshowing' and not next_section:
+                item.setProperty('now.showing','1')
             item.setProperty('series.title',r.title)
             item.setProperty('channel.number',r.channelNumber)
             item.setProperty('channel.name',r.channelName)
@@ -453,11 +546,14 @@ class DVRBase(util.CronReceiver):
             item.setProperty('has.rule',r.hasRule and '1' or '')
             item.setProperty('hidden',r.hidden and '1' or '')
             items.append(item)
+
         if update:
             self.searchPanel.replaceItems(items)
         else:
-            self.searchPanel.reset()
-            self.searchPanel.addItems(items)
+            if not next_section:
+                self.searchPanel.reset()
+            for i in items:
+                self.searchPanel.addItem(i)
 
     @util.busyDialog('LOADING RULES')
     def fillRules(self,update=False):
@@ -524,7 +620,7 @@ class DVRBase(util.CronReceiver):
 
         util.withBusyDialog(self.storageServer.deleteRule,'DELETING',item.dataSource)
         for sitem in self.searchPanel:
-            if item.dataSource.seriesID == sitem.dataSource.ID:
+            if item.dataSource and item.dataSource.seriesID == sitem.dataSource.ID:
                 sitem.setProperty('has.rule','')
 
         self.fillRules(update=True)
@@ -563,8 +659,11 @@ class DVRBase(util.CronReceiver):
         if category:
             self.searchTerms = ''
             self.category = category
-            catDisplay = {'series':'Shows','movie':'Movies','sport':'Sports'}
+            catDisplay = {'series':'Shows','movie':'Movies','sport':'Sports','nowshowing':'Now Showing'}
             util.setGlobalProperty('search.terms',catDisplay[category])
+            if category == 'nowshowing':
+                now = datetime.datetime.now()
+                self.nowShowingOffset = now - datetime.timedelta(minutes=now.minute%30, seconds=now.second)
             self.fillSearchPanel()
         else:
             self.category = ''
@@ -579,7 +678,17 @@ class DVRBase(util.CronReceiver):
 
     def openRecordDialog(self):
         item = self.searchPanel.getSelectedItem()
-        if not item: return
+        if not item or item.getProperty('skip'):
+            self.checkSearchPanelSkip(xbmcgui.ACTION_MOVE_DOWN)
+            return
+        if item.getProperty('now.showing'):
+            util.setGlobalProperty('dvr.active','')
+            self.options = False
+            self.main.playChannelByNumber(item.dataSource.channelNumber)
+            self.main.showOverlay(False)
+            self.doClose()
+            return
+
         path = skin.getSkinPath()
         series = item.dataSource
         d = RecordDialog(
@@ -626,7 +735,7 @@ class DVRBase(util.CronReceiver):
             util.withBusyDialog(self.storageServer.hideSeries,'HIDING',series)
 
         for (i, mli) in enumerate(self.searchPanel):
-            if mli.dataSource.ID == series.ID:
+            if mli.dataSource and mli.dataSource.ID == series.ID:
                 if series.hidden:
                     self.searchPanel.removeItem(i)
                 else:
