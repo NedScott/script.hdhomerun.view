@@ -202,7 +202,7 @@
 
                     <!-- FOCUSED LAYOUT ####################################### -->
                     <focusedlayout height="205">
-                                                <control type="group">
+                        <control type="group">
                             <posx>0</posx>
                             <posy>0</posy>
                             <control type="image">
@@ -285,7 +285,7 @@
                 </control>
 
                 <control type="scrollbar" id="151">
-                    <visible>Container(101).Scrolling</visible>
+                    <visible>Container(101).OnScrollPrevious | Container(101).OnScrollNext</visible>
                     <animation effect="fade" start="100" end="0" time="200" delay="500">Hidden</animation>
                     <posx>1765</posx>
                     <posy>40</posy>
@@ -635,7 +635,7 @@
                 </control>
 
                 <control type="scrollbar" id="251">
-                    <visible>Container(201).Scrolling</visible>
+                    <visible>Container(201).OnScrollPrevious | Container(201).OnScrollNext</visible>
                     <animation effect="fade" start="100" end="0" time="200" delay="500">Hidden</animation>
                     <posx>1770</posx>
                     <posy>0</posy>
@@ -732,7 +732,7 @@
                     <control type="image">
                         <posx>0</posx>
                         <posy>0</posy>
-                        <width>535</width>
+                        <width>395</width>
                         <height>50</height>
                         <texture>script-hdhomerun-view-white_square.png</texture>
                         <colordiffuse>FF202020</colordiffuse>
@@ -741,9 +741,9 @@
                     <control type="button" id="205">
                         <posx>5</posx>
                         <posy>5</posy>
-                        <width>525</width>
+                        <width>385</width>
                         <height>40</height>
-                        <hitrect x="0" y="-50" w="725" h="90" />
+                        <hitrect x="-45" y="-50" w="445" h="90" />
                         <ondown>204</ondown>
                         <onleft>100</onleft>
                         <onright>206</onright>
@@ -757,12 +757,12 @@
                     </control>
                 </control>
                 <control type="group">
-                    <posx>595</posx>
+                    <posx>455</posx>
                     <posy>20</posy>
                     <control type="image">
                         <posx>0</posx>
                         <posy>0</posy>
-                        <width>535</width>
+                        <width>395</width>
                         <height>50</height>
                         <texture>script-hdhomerun-view-white_square.png</texture>
                         <colordiffuse>FF202020</colordiffuse>
@@ -771,9 +771,9 @@
                     <control type="button" id="206">
                         <posx>5</posx>
                         <posy>5</posy>
-                        <width>525</width>
+                        <width>385</width>
                         <height>40</height>
-                        <hitrect x="0" y="-50" w="725" h="90" />
+                        <hitrect x="-15" y="-50" w="415" h="90" />
                         <ondown>204</ondown>
                         <onleft>205</onleft>
                         <onright>207</onright>
@@ -787,12 +787,12 @@
                     </control>
                 </control>
                 <control type="group">
-                    <posx>1150</posx>
+                    <posx>870</posx>
                     <posy>20</posy>
                     <control type="image">
                         <posx>0</posx>
                         <posy>0</posy>
-                        <width>535</width>
+                        <width>395</width>
                         <height>50</height>
                         <texture>script-hdhomerun-view-white_square.png</texture>
                         <colordiffuse>FF202020</colordiffuse>
@@ -801,17 +801,47 @@
                     <control type="button" id="207">
                         <posx>5</posx>
                         <posy>5</posy>
-                        <width>525</width>
+                        <width>385</width>
                         <height>40</height>
-                        <hitrect x="0" y="-50" w="725" h="90" />
+                        <hitrect x="-15" y="-50" w="415" h="90" />
                         <ondown>204</ondown>
                         <onleft>206</onleft>
-                        <onright>300</onright>
+                        <onright>208</onright>
                         <font>font12</font>
                         <align>center</align>
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
                         <label>[B]SPORTS[/B]</label>
+                        <texturefocus colordiffuse="FF006000">script-hdhomerun-view-white_square.png</texturefocus>
+                        <texturenofocus colordiffuse="FF404040">script-hdhomerun-view-white_square.png</texturenofocus>
+                    </control>
+                </control>
+                <control type="group">
+                    <posx>1290</posx>
+                    <posy>20</posy>
+                    <control type="image">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>395</width>
+                        <height>50</height>
+                        <texture>script-hdhomerun-view-white_square.png</texture>
+                        <colordiffuse>FF202020</colordiffuse>
+                        <aspectratio>stretch</aspectratio>
+                    </control>
+                    <control type="button" id="208">
+                        <posx>5</posx>
+                        <posy>5</posy>
+                        <width>385</width>
+                        <height>40</height>
+                        <hitrect x="-20" y="-50" w="420" h="90" />
+                        <ondown>204</ondown>
+                        <onleft>207</onleft>
+                        <onright>300</onright>
+                        <font>font12</font>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <label>[B]NOW SHOWING[/B]</label>
                         <texturefocus colordiffuse="FF006000">script-hdhomerun-view-white_square.png</texturefocus>
                         <texturenofocus colordiffuse="FF404040">script-hdhomerun-view-white_square.png</texturenofocus>
                     </control>
@@ -835,7 +865,7 @@
                         <posy>5</posy>
                         <width>725</width>
                         <height>40</height>
-                        <hitrect x="0" y="-50" w="725" h="90" />
+                        <hitrect x="-500" y="-50" w="1725" h="90" />
                         <onup>206</onup>
                         <ondown>201</ondown>
                         <onleft>100</onleft>
@@ -1164,7 +1194,7 @@
                 </control>
 
                 <control type="scrollbar" id="351">
-                    <visible>Container(301).Scrolling</visible>
+                    <visible>Container(301).OnScrollPrevious | Container(301).OnScrollNext</visible>
                     <animation effect="fade" start="100" end="0" time="200" delay="500">Hidden</animation>
                     <posx>1767</posx>
                     <posy>90</posy>
