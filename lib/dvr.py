@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import time
+import time, datetime
 import xbmc, xbmcgui
 import kodigui
 import hdhr
@@ -195,6 +195,14 @@ class EpisodesDialog(kodigui.BaseDialog):
 class DVRBase(util.CronReceiver):
     SHOW_LIST_ID = 101
     SEARCH_PANEL_ID = 201
+
+    NOW_SHOWING_PANEL1_ID = 271
+    NOW_SHOWING_PANEL1_DOWN_BUTTON_ID = 281
+    NOW_SHOWING_PANEL1_UP_BUTTON_ID = 283
+    NOW_SHOWING_PANEL2_ID = 272
+    NOW_SHOWING_PANEL2_DOWN_BUTTON_ID = 282
+    NOW_SHOWING_PANEL2_UP_BUTTON_ID = 284
+
     SEARCH_EDIT_ID = 204
     SEARCH_EDIT_BUTTON_ID = 204
     RULE_LIST_ID = 301
@@ -242,8 +250,13 @@ class DVRBase(util.CronReceiver):
         self.lastRecordingsRefresh = 0
         self.lastSearchRefresh = 0
         self.lastRulesRefresh = 0
+        self.nowShowingHalfHour = None
+        self.nowShowingItems = []
+        self.nowShowingItemsPos = 0
+        self.nsPanel2 = False
         self.movingRule = None
         self.mode = 'WATCH'
+        util.setGlobalProperty('ns.scroll.up','')
         util.setGlobalProperty('NO_RESULTS',T(32802))
         util.setGlobalProperty('NO_RECORDINGS',T(32803))
         util.setGlobalProperty('NO_RULES',T(32804))
@@ -257,6 +270,9 @@ class DVRBase(util.CronReceiver):
 
         self.searchPanel = kodigui.ManagedControlList(self,self.SEARCH_PANEL_ID,6)
         self.fillSearchPanel()
+
+        self.nowShowingPanel1 = kodigui.ManagedControlList(self,self.NOW_SHOWING_PANEL1_ID,6)
+        self.nowShowingPanel2 = kodigui.ManagedControlList(self,self.NOW_SHOWING_PANEL2_ID,6)
 
         self.ruleList = kodigui.ManagedControlList(self,self.RULE_LIST_ID,10)
         self.fillRules()
@@ -291,7 +307,7 @@ class DVRBase(util.CronReceiver):
                 if self.mode == 'WATCH':
                     if self.getFocusId() != self.SHOW_LIST_ID: self.setFocusId(self.SHOW_LIST_ID)
                 elif self.mode == 'SEARCH':
-                    if not xbmc.getCondVisibility('ControlGroup(550).HasFocus(0)') and self.getFocusId() != self.SEARCH_PANEL_ID:
+                    if not xbmc.getCondVisibility('ControlGroup(550).HasFocus(0) | ControlGroup(551).HasFocus(0)'):
                         #self.searchEdit.setText('')
                         self.setFocusId(self.SEARCH_EDIT_ID)
                 elif self.mode == 'RULES':
@@ -359,6 +375,33 @@ class DVRBase(util.CronReceiver):
             self.mode = 'SEARCH'
         elif xbmc.getCondVisibility('ControlGroup(300).HasFocus(0)'):
             self.mode = 'RULES'
+
+        if controlID == self.NOW_SHOWING_PANEL2_DOWN_BUTTON_ID:
+            self.nsPanel2 = False
+            util.setGlobalProperty('ns.scroll.up','')
+            self.fillNowShowing(next_section=True)
+        elif controlID == self.NOW_SHOWING_PANEL1_DOWN_BUTTON_ID:
+            self.nsPanel2 = True
+            util.setGlobalProperty('ns.scroll.up','')
+            self.fillNowShowing(next_section=True)
+        elif controlID == self.NOW_SHOWING_PANEL2_UP_BUTTON_ID:
+            self.nowShowingItemsPos -= 1
+            if self.nowShowingItemsPos < 0:
+                self.nowShowingItemsPos = 0
+                self.setFocusId(self.NOW_SHOWING_PANEL2_ID)
+                return
+            self.nsPanel2 = False
+            util.setGlobalProperty('ns.scroll.up','1')
+            self.fillNowShowing(prev_section=True)
+        elif controlID == self.NOW_SHOWING_PANEL1_UP_BUTTON_ID:
+            self.nowShowingItemsPos -= 1
+            if self.nowShowingItemsPos < 0:
+                self.nowShowingItemsPos = 0
+                self.setFocusId(self.NOW_SHOWING_PANEL1_ID)
+                return
+            self.nsPanel2 = True
+            util.setGlobalProperty('ns.scroll.up','1')
+            self.fillNowShowing(prev_section=True)
 
     def tick(self):
         now = time.time()
@@ -460,8 +503,99 @@ class DVRBase(util.CronReceiver):
             self.searchPanel.addItems(items)
 
     @util.busyDialog('LOADING GUIDE')
-    def fillNowShowing(self):
-        pass
+    def fillNowShowing(self, next_section=False, prev_section=False):
+        now = datetime.datetime.now()
+
+        if next_section:
+            nextHalfHour = self.nowShowingHalfHour + datetime.timedelta(seconds=1800*len(self.nowShowingItems))
+            nextDisp = self.getTimeHeadingDisplay(nextHalfHour, now)
+            searchResults = hdhr.guide.nowShowing(self.devices.apiAuthID(), utcUnixtime=time.mktime(nextHalfHour.timetuple()))
+            self.nowShowingItemsPos = len(self.nowShowingItems)
+
+            if self.nsPanel2:
+                self.setProperty('ns.panel2.heading', nextDisp)
+                self.fillNSPanel2(searchResults)
+                self.setFocusId(self.NOW_SHOWING_PANEL2_ID)
+            else:
+                self.setProperty('ns.panel1.heading', nextDisp)
+                self.fillNSPanel1(searchResults)
+                self.setFocusId(self.NOW_SHOWING_PANEL1_ID)
+
+            self.nowShowingItems.append((searchResults, nextDisp))
+        elif prev_section:
+            searchResults, prevDisp = self.nowShowingItems[self.nowShowingItemsPos]
+            if self.nsPanel2:
+                self.setProperty('ns.panel2.heading', prevDisp)
+                self.fillNSPanel2(searchResults)
+                self.setFocusId(self.NOW_SHOWING_PANEL2_ID)
+            else:
+                self.setProperty('ns.panel1.heading', prevDisp)
+                self.fillNSPanel1(searchResults)
+                self.setFocusId(self.NOW_SHOWING_PANEL1_ID)
+        else:
+            util.setGlobalProperty('ns.scroll.up','')
+            self.nowShowingItemsPos = 0
+            self.nowShowingItems = []
+            searchResults = hdhr.guide.nowShowing(self.devices.apiAuthID())
+            self.setProperty('ns.panel1.heading', 'NOW SHOWING')
+            self.nsPanel2 = False
+
+            self.nowShowingHalfHour = now - datetime.timedelta(minutes=now.minute%30, seconds=now.second)
+            nextHalfHour = self.nowShowingHalfHour + datetime.timedelta(seconds=1800)
+
+            nextDisp = self.getTimeHeadingDisplay(nextHalfHour, now)
+
+            self.setProperty('ns.panel2.heading', nextDisp)
+            #self.setProperty('ns.footer', nextDisp)
+
+            #searchResults2 = hdhr.guide.nowShowing(self.devices.apiAuthID(), utcUnixtime=time.mktime(nextHalfHour.timetuple()))
+
+            self.nowShowingItems.append((searchResults,'NOW SHOWING'))
+            #self.nowShowingItems.append((searchResults2,nextDisp))
+
+            self.fillNSPanel1(searchResults)
+            #self.fillNSPanel2(searchResults2)
+
+        util.setGlobalProperty('NO_RESULTS',not searchResults and T(32802) or '')
+
+    def getTimeHeadingDisplay(self, dt, now=None):
+        now = now or datetime.datetime.now()
+        if now.day != dt.day:
+            return dt.strftime('%A ') + dt.strftime('%I:%M %p').lstrip('0')
+        else:
+            return dt.strftime('%I:%M %p').lstrip('0')
+
+    def fillNSPanel1(self, searchResults):
+        items = []
+        for r in searchResults:
+            item = kodigui.ManagedListItem(r.title,r.synopsis,thumbnailImage=r.icon,data_source=r)
+            item.setProperty('series.title',r.title)
+            item.setProperty('channel.number',r.channelNumber)
+            item.setProperty('channel.name',r.channelName)
+            item.setProperty('channel.icon',r.channelIcon)
+            item.setProperty('has.rule',r.hasRule and '1' or '')
+            item.setProperty('hidden',r.hidden and '1' or '')
+            items.append(item)
+
+        self.nowShowingPanel1.reset()
+        self.nowShowingPanel1.addItems(items)
+
+    def fillNSPanel2(self, searchResults):
+        print len(searchResults)
+        items = []
+        for r in searchResults:
+            item = kodigui.ManagedListItem(r.title,r.synopsis,thumbnailImage=r.icon,data_source=r)
+            item.setProperty('series.title',r.title)
+            item.setProperty('channel.number',r.channelNumber)
+            item.setProperty('channel.name',r.channelName)
+            item.setProperty('channel.icon',r.channelIcon)
+            item.setProperty('has.rule',r.hasRule and '1' or '')
+            item.setProperty('hidden',r.hidden and '1' or '')
+            items.append(item)
+
+        self.nowShowingPanel2.reset()
+        self.nowShowingPanel2.addItems(items)
+
 
     @util.busyDialog('LOADING RULES')
     def fillRules(self,update=False):
@@ -584,7 +718,10 @@ class DVRBase(util.CronReceiver):
         if util.getGlobalProperty('NO_RESULTS'):
             self.setFocusId(202)
         else:
-            self.setFocusId(201)
+            if category == 'nowshowing':
+                self.setFocusId(271)
+            else:
+                self.setFocusId(201)
 
     def openRecordDialog(self):
         item = self.searchPanel.getSelectedItem()
