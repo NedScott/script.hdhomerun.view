@@ -347,9 +347,9 @@ class DVRBase(util.CronReceiver):
             self.setMode('RULES')
         elif controlID == self.SEARCH_EDIT_BUTTON_ID:
             self.setSearch()
-        elif 204 < controlID < 208:
+        elif 204 < controlID < 209:
             idx = controlID - 205
-            self.setSearch(category=('series','movie','sport')[idx])
+            self.setSearch(category=('series','movie','sport', 'nowshowing')[idx])
 
     def onFocus(self,controlID):
         #print 'focus: {0}'.format(controlID)
@@ -459,6 +459,10 @@ class DVRBase(util.CronReceiver):
             self.searchPanel.reset()
             self.searchPanel.addItems(items)
 
+    @util.busyDialog('LOADING GUIDE')
+    def fillNowShowing(self):
+        pass
+
     @util.busyDialog('LOADING RULES')
     def fillRules(self,update=False):
         self.lastRulesRefresh = time.time()
@@ -563,9 +567,14 @@ class DVRBase(util.CronReceiver):
         if category:
             self.searchTerms = ''
             self.category = category
-            catDisplay = {'series':'Shows','movie':'Movies','sport':'Sports'}
+            catDisplay = {'series':'Shows','movie':'Movies','sport':'Sports','nowshowing':'Now Showing'}
             util.setGlobalProperty('search.terms',catDisplay[category])
-            self.fillSearchPanel()
+            if category == 'nowshowing':
+                util.setGlobalProperty('now.showing','1')
+                self.fillNowShowing()
+            else:
+                util.setGlobalProperty('now.showing','')
+                self.fillSearchPanel()
         else:
             self.category = ''
             self.searchTerms = xbmcgui.Dialog().input(T(32812),self.searchTerms)
