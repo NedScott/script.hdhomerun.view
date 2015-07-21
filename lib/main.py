@@ -855,11 +855,18 @@ class GuideOverlay(util.CronReceiver):
 
         if self.dvrWindow.play:
             self.showOverlay(False)
-            rec = self.dvrWindow.play
-            self.playRecording(rec)
-            self.dvrWindow.play = None
             util.setGlobalProperty('window.animations',util.getSetting('window.animations',True) and '1' or '')
-            util.setGlobalProperty('playing.dvr','1')
+
+            if isinstance(self.dvrWindow.play, hdhr.storageservers.Recording):
+                rec = self.dvrWindow.play
+                self.playRecording(rec)
+                util.setGlobalProperty('playing.dvr','1')
+            else:
+                self.playChannelByNumber(self.dvrWindow.play.channelNumber)
+
+            self.dvrWindow.play = None
+
+
             return True
 
         return False

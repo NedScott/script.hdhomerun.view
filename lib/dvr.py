@@ -256,7 +256,7 @@ class DVRBase(util.CronReceiver):
         self.nsPanel2 = False
         self.movingRule = None
         self.mode = 'WATCH'
-        util.setGlobalProperty('ns.scroll.up','')
+        util.setGlobalProperty('now.showing','')
         util.setGlobalProperty('NO_RESULTS',T(32802))
         util.setGlobalProperty('NO_RECORDINGS',T(32803))
         util.setGlobalProperty('NO_RULES',T(32804))
@@ -301,13 +301,13 @@ class DVRBase(util.CronReceiver):
             elif action == xbmcgui.ACTION_CONTEXT_MENU:
                 if self.getFocusId() == self.RULE_LIST_ID:
                     return self.doRuleContext()
-                elif self.getFocusId() == self.SEARCH_PANEL_ID:
+                elif xbmc.getCondVisibility('ControlGroup(551).HasFocus(0) | Control.HasFocus(201)'):
                     return self.setFocusId(self.SEARCH_EDIT_BUTTON_ID)
             elif action == xbmcgui.ACTION_MOVE_DOWN or action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_MOVE_LEFT:
                 if self.mode == 'WATCH':
                     if self.getFocusId() != self.SHOW_LIST_ID: self.setFocusId(self.SHOW_LIST_ID)
                 elif self.mode == 'SEARCH':
-                    if not xbmc.getCondVisibility('ControlGroup(550).HasFocus(0) | ControlGroup(551).HasFocus(0)'):
+                    if not xbmc.getCondVisibility('ControlGroup(550).HasFocus(0) | ControlGroup(551).HasFocus(0) | Control.HasFocus(201)'):
                         #self.searchEdit.setText('')
                         self.setFocusId(self.SEARCH_EDIT_ID)
                 elif self.mode == 'RULES':
@@ -335,7 +335,7 @@ class DVRBase(util.CronReceiver):
             elif action.getButtonCode() in (61575, 61486):
                 if self.getFocusId() == self.RULE_LIST_ID:
                     return self.deleteRule()
-                elif self.getFocusId() == self.SEARCH_PANEL_ID:
+                elif self.getFocusId() in (self.SEARCH_PANEL_ID, self.NOW_SHOWING_PANEL1_ID, self.NOW_SHOWING_PANEL2_ID):
                     return self.removeSeries()
 
         except:
@@ -351,6 +351,8 @@ class DVRBase(util.CronReceiver):
             self.openEpisodeDialog()
         elif controlID == self.SEARCH_PANEL_ID:
             self.openRecordDialog()
+        elif controlID == self.NOW_SHOWING_PANEL1_ID or controlID == self.NOW_SHOWING_PANEL2_ID:
+            self.nowShowingClicked(controlID)
         # elif controlID == self.RULE_LIST_ID:
         #     self.toggleRuleRecent()
         elif controlID == self.WATCH_BUTTON:
@@ -378,29 +380,30 @@ class DVRBase(util.CronReceiver):
 
         if controlID == self.NOW_SHOWING_PANEL2_DOWN_BUTTON_ID:
             self.nsPanel2 = False
-            util.setGlobalProperty('ns.scroll.up','')
             self.fillNowShowing(next_section=True)
+
         elif controlID == self.NOW_SHOWING_PANEL1_DOWN_BUTTON_ID:
             self.nsPanel2 = True
-            util.setGlobalProperty('ns.scroll.up','')
             self.fillNowShowing(next_section=True)
+
         elif controlID == self.NOW_SHOWING_PANEL2_UP_BUTTON_ID:
             self.nowShowingItemsPos -= 1
             if self.nowShowingItemsPos < 0:
                 self.nowShowingItemsPos = 0
-                self.setFocusId(self.NOW_SHOWING_PANEL2_ID)
+                self.setFocusId(self.NOW_SHOWING_PANEL2_ID) # Touch focus on the panel so that it's focus will be remembered in the 551 control group
+                self.setFocusId(self.SEARCH_EDIT_BUTTON_ID)
                 return
             self.nsPanel2 = False
-            util.setGlobalProperty('ns.scroll.up','1')
             self.fillNowShowing(prev_section=True)
+
         elif controlID == self.NOW_SHOWING_PANEL1_UP_BUTTON_ID:
             self.nowShowingItemsPos -= 1
             if self.nowShowingItemsPos < 0:
                 self.nowShowingItemsPos = 0
-                self.setFocusId(self.NOW_SHOWING_PANEL1_ID)
+                self.setFocusId(self.NOW_SHOWING_PANEL1_ID) # Touch focus on the panel so that it's focus will be remembered in the 551 control group
+                self.setFocusId(self.SEARCH_EDIT_BUTTON_ID)
                 return
             self.nsPanel2 = True
-            util.setGlobalProperty('ns.scroll.up','1')
             self.fillNowShowing(prev_section=True)
 
     def tick(self):
@@ -482,6 +485,7 @@ class DVRBase(util.CronReceiver):
         try:
             searchResults = hdhr.guide.search(self.devices.apiAuthID(),category=self.category,terms=self.searchTerms) or []
         except:
+            searchResults = []
             e = util.ERROR()
             util.showNotification(e,header=T(32831))
 
@@ -507,37 +511,78 @@ class DVRBase(util.CronReceiver):
         now = datetime.datetime.now()
 
         if next_section:
-            nextHalfHour = self.nowShowingHalfHour + datetime.timedelta(seconds=1800*len(self.nowShowingItems))
-            nextDisp = self.getTimeHeadingDisplay(nextHalfHour, now)
-            searchResults = hdhr.guide.nowShowing(self.devices.apiAuthID(), utcUnixtime=time.mktime(nextHalfHour.timetuple()))
-            self.nowShowingItemsPos = len(self.nowShowingItems)
+            self.nowShowingItemsPos  += 1
+            if self.nowShowingItemsPos >= len(self.nowShowingItems):
+                nextHalfHour = self.nowShowingHalfHour + datetime.timedelta(seconds=1800*len(self.nowShowingItems))
+                nextDisp = self.getTimeHeadingDisplay(nextHalfHour, now)
+                footerDisp = self.getTimeHeadingDisplay(nextHalfHour + datetime.timedelta(seconds=1800), now)
+                searchResults = hdhr.guide.nowShowing(self.devices.apiAuthID(), utcUnixtime=time.mktime(nextHalfHour.timetuple()))
+                self.nowShowingItems.append((searchResults, nextDisp, footerDisp))
+            else:
+                searchResults, nextDisp, footerDisp = self.nowShowingItems[self.nowShowingItemsPos]
+
 
             if self.nsPanel2:
-                self.setProperty('ns.panel2.heading', nextDisp)
+                util.setGlobalProperty('ns.panel2.heading', nextDisp)
+                util.setGlobalProperty('ns.panel2.footer', footerDisp)
                 self.fillNSPanel2(searchResults)
-                self.setFocusId(self.NOW_SHOWING_PANEL2_ID)
-            else:
-                self.setProperty('ns.panel1.heading', nextDisp)
-                self.fillNSPanel1(searchResults)
-                self.setFocusId(self.NOW_SHOWING_PANEL1_ID)
 
-            self.nowShowingItems.append((searchResults, nextDisp))
+                off1 = self.nowShowingPanel1.getSelectedPosition() % 3
+                if self.nowShowingPanel2.positionIsValid(off1):
+                    self.nowShowingPanel2.selectItem(off1)
+
+                self.setFocusId(self.NOW_SHOWING_PANEL2_ID)
+                self.slideNSUp()
+            else:
+                util.setGlobalProperty('ns.panel1.heading', nextDisp)
+                util.setGlobalProperty('ns.panel1.footer', footerDisp)
+                self.fillNSPanel1(searchResults)
+
+                off2 = self.nowShowingPanel2.getSelectedPosition() % 3
+                if self.nowShowingPanel1.positionIsValid(off2):
+                    self.nowShowingPanel1.selectItem(off2)
+
+                self.setFocusId(self.NOW_SHOWING_PANEL1_ID)
+                self.slideNSUp()
         elif prev_section:
-            searchResults, prevDisp = self.nowShowingItems[self.nowShowingItemsPos]
+            searchResults, prevDisp, footerDisp = self.nowShowingItems[self.nowShowingItemsPos]
             if self.nsPanel2:
-                self.setProperty('ns.panel2.heading', prevDisp)
+                util.setGlobalProperty('ns.panel2.heading', prevDisp)
+                util.setGlobalProperty('ns.panel2.footer', footerDisp)
                 self.fillNSPanel2(searchResults)
+
+                off1 = (self.nowShowingPanel1.getSelectedPosition() + 1) % 3
+                off2 = self.nowShowingPanel2.size() % 3
+                if off1 < off2:
+                    self.nowShowingPanel2.selectItem((self.nowShowingPanel2.size() - 1) - (off2 - off1))
+                elif off2 < off1:
+                    self.nowShowingPanel2.selectItem((self.nowShowingPanel2.size() - 4) + off1)
+                else:
+                    self.nowShowingPanel2.selectItem((self.nowShowingPanel2.size() - 1))
+
                 self.setFocusId(self.NOW_SHOWING_PANEL2_ID)
+                self.slideNSDown()
             else:
-                self.setProperty('ns.panel1.heading', prevDisp)
+                util.setGlobalProperty('ns.panel1.heading', prevDisp)
+                util.setGlobalProperty('ns.panel1.footer', footerDisp)
                 self.fillNSPanel1(searchResults)
+
+                off1 = self.nowShowingPanel1.size() % 3
+                off2 = (self.nowShowingPanel2.getSelectedPosition() + 1) % 3
+                if off2 < off1:
+                    self.nowShowingPanel1.selectItem((self.nowShowingPanel1.size() - 1) - (off1 - off2))
+                elif off1 < off2:
+                    self.nowShowingPanel1.selectItem((self.nowShowingPanel1.size() - 4) + off2)
+                else:
+                    self.nowShowingPanel1.selectItem((self.nowShowingPanel1.size() - 1))
+
                 self.setFocusId(self.NOW_SHOWING_PANEL1_ID)
+                self.slideNSDown()
         else:
-            util.setGlobalProperty('ns.scroll.up','')
             self.nowShowingItemsPos = 0
             self.nowShowingItems = []
             searchResults = hdhr.guide.nowShowing(self.devices.apiAuthID())
-            self.setProperty('ns.panel1.heading', 'NOW SHOWING')
+            util.setGlobalProperty('ns.panel1.heading', 'NOW SHOWING')
             self.nsPanel2 = False
 
             self.nowShowingHalfHour = now - datetime.timedelta(minutes=now.minute%30, seconds=now.second)
@@ -545,18 +590,33 @@ class DVRBase(util.CronReceiver):
 
             nextDisp = self.getTimeHeadingDisplay(nextHalfHour, now)
 
-            self.setProperty('ns.panel2.heading', nextDisp)
-            #self.setProperty('ns.footer', nextDisp)
+            util.setGlobalProperty('ns.panel2.heading', nextDisp)
+            util.setGlobalProperty('ns.panel1.footer', nextDisp)
 
-            #searchResults2 = hdhr.guide.nowShowing(self.devices.apiAuthID(), utcUnixtime=time.mktime(nextHalfHour.timetuple()))
-
-            self.nowShowingItems.append((searchResults,'NOW SHOWING'))
-            #self.nowShowingItems.append((searchResults2,nextDisp))
+            self.nowShowingItems.append((searchResults,'NOW SHOWING',nextDisp))
 
             self.fillNSPanel1(searchResults)
-            #self.fillNSPanel2(searchResults2)
+            self.slideNSUp(1)
 
         util.setGlobalProperty('NO_RESULTS',not searchResults and T(32802) or '')
+
+    def slideNSUp(self, duration=400):
+        self.getControl(self.nsPanel2 and 262 or 261).setAnimations([
+            ('conditional', 'effect=slide start=0,925 end=0,0 time={0} condition=true'.format(duration))
+        ])
+        self.getControl(self.nsPanel2 and 261 or 262).setAnimations([
+            ('conditional', 'effect=fade start=100 end=0 time={0} condition=true'.format(duration)),
+            ('conditional', 'effect=slide start=0,0 end=0,-925 time={0} condition=true'.format(duration))
+        ])
+
+    def slideNSDown(self, duration=400):
+        self.getControl(self.nsPanel2 and 262 or 261).setAnimations([
+            ('conditional', 'effect=slide start=0,-925 end=0,0 time={0} condition=true'.format(duration))
+        ])
+        self.getControl(self.nsPanel2 and 261 or 262).setAnimations([
+            ('conditional', 'effect=fade start=100 end=0 time={0} condition=true'.format(duration)),
+            ('conditional', 'effect=slide start=0,0 end=0,925 time={0} condition=true'.format(duration))
+        ])
 
     def getTimeHeadingDisplay(self, dt, now=None):
         now = now or datetime.datetime.now()
@@ -565,7 +625,8 @@ class DVRBase(util.CronReceiver):
         else:
             return dt.strftime('%I:%M %p').lstrip('0')
 
-    def fillNSPanel1(self, searchResults):
+    def fillNSPanel1(self, searchResults, now=False):
+        now = self.nowShowingItemsPos == 0 and '1' or ''
         items = []
         for r in searchResults:
             item = kodigui.ManagedListItem(r.title,r.synopsis,thumbnailImage=r.icon,data_source=r)
@@ -575,13 +636,13 @@ class DVRBase(util.CronReceiver):
             item.setProperty('channel.icon',r.channelIcon)
             item.setProperty('has.rule',r.hasRule and '1' or '')
             item.setProperty('hidden',r.hidden and '1' or '')
+            item.setProperty('on.now',now)
             items.append(item)
 
         self.nowShowingPanel1.reset()
         self.nowShowingPanel1.addItems(items)
 
     def fillNSPanel2(self, searchResults):
-        print len(searchResults)
         items = []
         for r in searchResults:
             item = kodigui.ManagedListItem(r.title,r.synopsis,thumbnailImage=r.icon,data_source=r)
@@ -710,6 +771,7 @@ class DVRBase(util.CronReceiver):
                 util.setGlobalProperty('now.showing','')
                 self.fillSearchPanel()
         else:
+            util.setGlobalProperty('now.showing','')
             self.category = ''
             self.searchTerms = xbmcgui.Dialog().input(T(32812),self.searchTerms)
             util.setGlobalProperty('search.terms',self.searchTerms)
@@ -723,8 +785,8 @@ class DVRBase(util.CronReceiver):
             else:
                 self.setFocusId(201)
 
-    def openRecordDialog(self):
-        item = self.searchPanel.getSelectedItem()
+    def openRecordDialog(self, item=None):
+        item = item or self.searchPanel.getSelectedItem()
         if not item: return
         path = skin.getSkinPath()
         series = item.dataSource
@@ -749,6 +811,18 @@ class DVRBase(util.CronReceiver):
 
         del d
 
+    def nowShowingClicked(self, controlID):
+        if controlID == self.NOW_SHOWING_PANEL1_ID:
+            item = self.nowShowingPanel1.getSelectedItem()
+        elif controlID == self.NOW_SHOWING_PANEL2_ID:
+            item = self.nowShowingPanel2.getSelectedItem()
+        if not item: return
+
+        if not item.getProperty('on.now'):
+            return self.openRecordDialog(item)
+
+        self.playShow(item.dataSource)
+
     def openEpisodeDialog(self):
         item = self.showList.getSelectedItem()
         if not item: return
@@ -764,21 +838,37 @@ class DVRBase(util.CronReceiver):
 
     def removeSeries(self, series=None):
         if not series:
-            mli = self.searchPanel.getSelectedItem()
+            if self.getFocusId() == self.SEARCH_PANEL_ID:
+                panel = self.searchPanel
+            elif self.getFocusId() == self.NOW_SHOWING_PANEL1_ID:
+                panel = self.nowShowingPanel1
+            elif self.getFocusId() == self.NOW_SHOWING_PANEL2_ID:
+                panel = self.nowShowingPanel2
+
+            mli = panel.getSelectedItem()
             if not mli: return
             series = mli.dataSource
             # if not xbmcgui.Dialog().yesno(T(32035),mli.dataSource.title,'',T(32839)):
             #     return
             util.withBusyDialog(self.storageServer.hideSeries,'HIDING',series)
 
-        for (i, mli) in enumerate(self.searchPanel):
+        for panel in (self.searchPanel, self.nowShowingPanel1, self.nowShowingPanel2):
+            self.removeSeriesFromPanel(panel, series)
+
+        #self.fillSearchPanel(update=True)
+
+    def removeSeriesFromPanel(self, panel, series):
+        for (i, mli) in enumerate(panel):
             if mli.dataSource.ID == series.ID:
                 if series.hidden:
-                    self.searchPanel.removeItem(i)
+                    panel.removeItem(i)
                 else:
                     mli.setProperty('hidden','')
                 break
-        #self.fillSearchPanel(update=True)
+
+    def playShow(self, series):
+        self.play = series
+        self.doClose()
 
 class DVRWindow(DVRBase,kodigui.BaseWindow):
     _BASE = kodigui.BaseWindow
