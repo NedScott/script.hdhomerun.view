@@ -254,6 +254,9 @@ class DVRBase(util.CronReceiver):
         self.nowShowingItems = []
         self.nowShowingItemsPos = 0
         self.nsPanel2 = False
+        self.nowShowingPanel1LastItem = None
+        self.nowShowingPanel2LastItem = None
+        self.wheelIgnore = False
         self.movingRule = None
         self.mode = 'WATCH'
         util.setGlobalProperty('now.showing','')
@@ -332,6 +335,23 @@ class DVRBase(util.CronReceiver):
             elif action == xbmcgui.ACTION_MOUSE_MOVE and self.getFocusId() == self.RULE_LIST_ID:
                 if self.movingRule:
                     self.moveRule(True)
+            # elif action in (xbmcgui.ACTION_MOUSE_WHEEL_DOWN, xbmcgui.ACTION_MOUSE_WHEEL_UP):
+            #     if self.checkMouseWheel(action):
+            #         return
+            elif action == xbmcgui.ACTION_PAGE_UP:
+                if self.getFocusId() == self.NOW_SHOWING_PANEL1_ID:
+                    self.onFocus(self.NOW_SHOWING_PANEL1_UP_BUTTON_ID)
+                    return
+                elif self.getFocusId() == self.NOW_SHOWING_PANEL2_ID:
+                    self.onFocus(self.NOW_SHOWING_PANEL2_UP_BUTTON_ID)
+                    return
+            elif action == xbmcgui.ACTION_PAGE_DOWN:
+                if self.getFocusId() == self.NOW_SHOWING_PANEL1_ID:
+                    self.onFocus(self.NOW_SHOWING_PANEL1_DOWN_BUTTON_ID)
+                    return
+                elif self.getFocusId() == self.NOW_SHOWING_PANEL2_ID:
+                    self.onFocus(self.NOW_SHOWING_PANEL2_DOWN_BUTTON_ID)
+                    return
             elif action.getButtonCode() in (61575, 61486):
                 if self.getFocusId() == self.RULE_LIST_ID:
                     return self.deleteRule()
@@ -340,7 +360,7 @@ class DVRBase(util.CronReceiver):
 
         except:
             self._BASE.onAction(self,action)
-            raise
+            util.ERROR()
             return
 
         self._BASE.onAction(self,action)
@@ -365,11 +385,13 @@ class DVRBase(util.CronReceiver):
             self.setMode('RULES')
         elif controlID == self.SEARCH_EDIT_BUTTON_ID:
             self.setSearch()
+        elif 290 < controlID < 295:
+            self.nowShowingTimeClicked(controlID)
         elif 204 < controlID < 209:
             idx = controlID - 205
             self.setSearch(category=('series','movie','sport', 'nowshowing')[idx])
 
-    def onFocus(self,controlID):
+    def onFocus(self,controlID, from_action=False):
         #print 'focus: {0}'.format(controlID)
         if xbmc.getCondVisibility('ControlGroup(100).HasFocus(0)'):
             self.mode = 'WATCH'
@@ -380,11 +402,11 @@ class DVRBase(util.CronReceiver):
 
         if controlID == self.NOW_SHOWING_PANEL2_DOWN_BUTTON_ID:
             self.nsPanel2 = False
-            self.fillNowShowing(next_section=True)
+            self.fillNowShowing(next_section=True, fix_selection=from_action)
 
         elif controlID == self.NOW_SHOWING_PANEL1_DOWN_BUTTON_ID:
             self.nsPanel2 = True
-            self.fillNowShowing(next_section=True)
+            self.fillNowShowing(next_section=True, fix_selection=from_action)
 
         elif controlID == self.NOW_SHOWING_PANEL2_UP_BUTTON_ID:
             self.nowShowingItemsPos -= 1
@@ -394,7 +416,7 @@ class DVRBase(util.CronReceiver):
                 self.setFocusId(self.SEARCH_EDIT_BUTTON_ID)
                 return
             self.nsPanel2 = False
-            self.fillNowShowing(prev_section=True)
+            self.fillNowShowing(prev_section=True, fix_selection=from_action)
 
         elif controlID == self.NOW_SHOWING_PANEL1_UP_BUTTON_ID:
             self.nowShowingItemsPos -= 1
@@ -404,7 +426,7 @@ class DVRBase(util.CronReceiver):
                 self.setFocusId(self.SEARCH_EDIT_BUTTON_ID)
                 return
             self.nsPanel2 = True
-            self.fillNowShowing(prev_section=True)
+            self.fillNowShowing(prev_section=True, fix_selection=from_action)
 
     def tick(self):
         now = time.time()
@@ -423,6 +445,49 @@ class DVRBase(util.CronReceiver):
             self.setFocusId(200)
         elif mode == 'RULES':
             self.setFocusId(300)
+
+    #NOT USED CURRENTLY AND WIP
+    def checkMouseWheel(self, action):
+        if self.wheelIgnore:
+            return True
+
+        self.wheelIgnore = True
+        try:
+            if action == xbmcgui.ACTION_MOUSE_WHEEL_DOWN:
+                if self.getFocusId() == self.NOW_SHOWING_PANEL1_ID:
+                    item = self.nowShowingPanel1.getSelectedItem()
+                    if item and item == self.nowShowingPanel1LastItem:
+                        self.onFocus(self.NOW_SHOWING_PANEL1_DOWN_BUTTON_ID, from_action=True)
+                    self.nowShowingPanel1LastItem = item
+                    xbmc.sleep(500)
+                    return True
+                elif self.getFocusId() == self.NOW_SHOWING_PANEL2_ID:
+                    item = self.nowShowingPanel2.getSelectedItem()
+                    if item and item == self.nowShowingPanel2LastItem:
+                        self.onFocus(self.NOW_SHOWING_PANEL2_DOWN_BUTTON_ID, from_action=True)
+                    self.nowShowingPanel2LastItem = item
+                    xbmc.sleep(500)
+                    return True
+
+            elif action == xbmcgui.ACTION_MOUSE_WHEEL_UP:
+                pass
+        except RuntimeError: # Get this (Index out of range) when the list has changed since being triggered
+            pass
+        finally:
+            self.wheelIgnore = False
+
+        return False
+
+    def nowShowingTimeClicked(self, controlID):
+        print controlID
+        if controlID == 291:
+            self.onFocus(self.NOW_SHOWING_PANEL1_UP_BUTTON_ID, from_action=True)
+        elif controlID == 293:
+            self.onFocus(self.NOW_SHOWING_PANEL1_DOWN_BUTTON_ID, from_action=True)
+        if controlID == 292:
+            self.onFocus(self.NOW_SHOWING_PANEL2_UP_BUTTON_ID, from_action=True)
+        elif controlID == 294:
+            self.onFocus(self.NOW_SHOWING_PANEL2_DOWN_BUTTON_ID, from_action=True)
 
     def updateRecordings(self):
         util.DEBUG_LOG('DVR: Refreshing recordings')
@@ -507,7 +572,7 @@ class DVRBase(util.CronReceiver):
             self.searchPanel.addItems(items)
 
     @util.busyDialog('LOADING GUIDE')
-    def fillNowShowing(self, next_section=False, prev_section=False):
+    def fillNowShowing(self, next_section=False, prev_section=False, fix_selection=True):
         now = datetime.datetime.now()
 
         if next_section:
@@ -527,9 +592,10 @@ class DVRBase(util.CronReceiver):
                 util.setGlobalProperty('ns.panel2.footer', footerDisp)
                 self.fillNSPanel2(searchResults)
 
-                off1 = self.nowShowingPanel1.getSelectedPosition() % 3
-                if self.nowShowingPanel2.positionIsValid(off1):
-                    self.nowShowingPanel2.selectItem(off1)
+                if fix_selection:
+                    off1 = self.nowShowingPanel1.getSelectedPosition() % 3
+                    if self.nowShowingPanel2.positionIsValid(off1):
+                        self.nowShowingPanel2.selectItem(off1)
 
                 self.setFocusId(self.NOW_SHOWING_PANEL2_ID)
                 self.slideNSUp()
@@ -538,9 +604,10 @@ class DVRBase(util.CronReceiver):
                 util.setGlobalProperty('ns.panel1.footer', footerDisp)
                 self.fillNSPanel1(searchResults)
 
-                off2 = self.nowShowingPanel2.getSelectedPosition() % 3
-                if self.nowShowingPanel1.positionIsValid(off2):
-                    self.nowShowingPanel1.selectItem(off2)
+                if fix_selection:
+                    off2 = self.nowShowingPanel2.getSelectedPosition() % 3
+                    if self.nowShowingPanel1.positionIsValid(off2):
+                        self.nowShowingPanel1.selectItem(off2)
 
                 self.setFocusId(self.NOW_SHOWING_PANEL1_ID)
                 self.slideNSUp()
@@ -551,14 +618,15 @@ class DVRBase(util.CronReceiver):
                 util.setGlobalProperty('ns.panel2.footer', footerDisp)
                 self.fillNSPanel2(searchResults)
 
-                off1 = (self.nowShowingPanel1.getSelectedPosition() + 1) % 3
-                off2 = self.nowShowingPanel2.size() % 3
-                if off1 < off2:
-                    self.nowShowingPanel2.selectItem((self.nowShowingPanel2.size() - 1) - (off2 - off1))
-                elif off2 < off1:
-                    self.nowShowingPanel2.selectItem((self.nowShowingPanel2.size() - 4) + off1)
-                else:
-                    self.nowShowingPanel2.selectItem((self.nowShowingPanel2.size() - 1))
+                if fix_selection:
+                    off1 = (self.nowShowingPanel1.getSelectedPosition() + 1) % 3
+                    off2 = self.nowShowingPanel2.size() % 3
+                    if off1 < off2:
+                        self.nowShowingPanel2.selectItem((self.nowShowingPanel2.size() - 1) - (off2 - off1))
+                    elif off2 < off1:
+                        self.nowShowingPanel2.selectItem((self.nowShowingPanel2.size() - 4) + off1)
+                    else:
+                        self.nowShowingPanel2.selectItem((self.nowShowingPanel2.size() - 1))
 
                 self.setFocusId(self.NOW_SHOWING_PANEL2_ID)
                 self.slideNSDown()
@@ -567,14 +635,15 @@ class DVRBase(util.CronReceiver):
                 util.setGlobalProperty('ns.panel1.footer', footerDisp)
                 self.fillNSPanel1(searchResults)
 
-                off1 = self.nowShowingPanel1.size() % 3
-                off2 = (self.nowShowingPanel2.getSelectedPosition() + 1) % 3
-                if off2 < off1:
-                    self.nowShowingPanel1.selectItem((self.nowShowingPanel1.size() - 1) - (off1 - off2))
-                elif off1 < off2:
-                    self.nowShowingPanel1.selectItem((self.nowShowingPanel1.size() - 4) + off2)
-                else:
-                    self.nowShowingPanel1.selectItem((self.nowShowingPanel1.size() - 1))
+                if fix_selection:
+                    off1 = self.nowShowingPanel1.size() % 3
+                    off2 = (self.nowShowingPanel2.getSelectedPosition() + 1) % 3
+                    if off2 < off1:
+                        self.nowShowingPanel1.selectItem((self.nowShowingPanel1.size() - 1) - (off1 - off2))
+                    elif off1 < off2:
+                        self.nowShowingPanel1.selectItem((self.nowShowingPanel1.size() - 4) + off2)
+                    else:
+                        self.nowShowingPanel1.selectItem((self.nowShowingPanel1.size() - 1))
 
                 self.setFocusId(self.NOW_SHOWING_PANEL1_ID)
                 self.slideNSDown()
@@ -602,20 +671,20 @@ class DVRBase(util.CronReceiver):
 
     def slideNSUp(self, duration=400):
         self.getControl(self.nsPanel2 and 262 or 261).setAnimations([
-            ('conditional', 'effect=slide start=0,925 end=0,0 time={0} condition=true'.format(duration))
+            ('conditional', 'effect=slide start=0,985 end=0,0 time={0} condition=true'.format(duration))
         ])
         self.getControl(self.nsPanel2 and 261 or 262).setAnimations([
             ('conditional', 'effect=fade start=100 end=0 time={0} condition=true'.format(duration)),
-            ('conditional', 'effect=slide start=0,0 end=0,-925 time={0} condition=true'.format(duration))
+            ('conditional', 'effect=slide start=0,0 end=0,-985 time={0} condition=true'.format(duration))
         ])
 
     def slideNSDown(self, duration=400):
         self.getControl(self.nsPanel2 and 262 or 261).setAnimations([
-            ('conditional', 'effect=slide start=0,-925 end=0,0 time={0} condition=true'.format(duration))
+            ('conditional', 'effect=slide start=0,-985 end=0,0 time={0} condition=true'.format(duration))
         ])
         self.getControl(self.nsPanel2 and 261 or 262).setAnimations([
             ('conditional', 'effect=fade start=100 end=0 time={0} condition=true'.format(duration)),
-            ('conditional', 'effect=slide start=0,0 end=0,925 time={0} condition=true'.format(duration))
+            ('conditional', 'effect=slide start=0,0 end=0,985 time={0} condition=true'.format(duration))
         ])
 
     def getTimeHeadingDisplay(self, dt, now=None):
