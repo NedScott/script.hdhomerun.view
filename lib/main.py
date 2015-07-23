@@ -570,7 +570,6 @@ class GuideOverlay(util.CronReceiver):
 
         if self.devices.isOld(): #1 hour
             if self.updateLineup(quiet=True):
-                if self.player: self.player.init(self,self.lineUp,self.touchMode)
                 newLinup = True
             else:
                 util.DEBUG_LOG('Discovery failed!')

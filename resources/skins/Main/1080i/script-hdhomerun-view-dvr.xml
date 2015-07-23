@@ -326,6 +326,23 @@
             <posx>1790</posx>
             <posy>0</posy>
 
+            <control type="spincontrol" id="202">
+                <posx>0</posx>
+                <posy>0</posy>
+                <width>1790</width>
+                <height>1080</height>
+                <label> </label>
+                <font>-</font>
+                <textureup>-</textureup>
+                <textureupfocus>-</textureupfocus>
+                <texturedown>-</texturedown>
+                <texturedownfocus>-</texturedownfocus>
+                <onright>300</onright>
+                <onleft>100</onleft>
+                <onup>204</onup>
+                <ondown>204</ondown>
+            </control>
+
             <control type="button" id="203">
                 <left>0</left>
                 <top>0</top>
@@ -405,20 +422,7 @@
                     </control>
                 </control>
 
-                <control type="button" id="202">
-                    <posx>65</posx>
-                    <posy>0</posy>
-                    <width>1725</width>
-                    <height>1080</height>
-                    <label> </label>
-                    <font>-</font>
-                    <texturefocus>-</texturefocus>
-                    <texturenofocus>-</texturenofocus>
-                    <onright>300</onright>
-                    <onleft>100</onleft>
-                    <onup>204</onup>
-                    <ondown>204</ondown>
-                </control>
+
 
                 <control type="panel" id="201">
                     <visible>IsEmpty(Window(10000).Property(script.hdhomerun.view.now.showing))</visible>
@@ -636,10 +640,7 @@
                     </focusedlayout>
                 </control>
 
-
-                <control type="group" id="551">
-                    <visible>!IsEmpty(Window(10000).Property(script.hdhomerun.view.now.showing))</visible>
-
+                <control type="group" id="552">
                     <control type="button" id="281">
                         <posx>-400</posx>
                         <posy>0</posy>
@@ -696,6 +697,11 @@
                         <onup>272</onup>
                         <ondown>272</ondown>
                     </control>
+                </control>
+
+
+                <control type="group" id="551">
+                    <visible>!IsEmpty(Window(10000).Property(script.hdhomerun.view.now.showing))</visible>
 
                     <control type="group" id="261">
                         <posx>0</posx>
@@ -749,6 +755,7 @@
                             <scrolltime tween="sine" easing="out">200</scrolltime>
                             <!-- <pagecontrol>251</pagecontrol> -->
                             <preloaditems>2</preloaditems>
+                            <hitrect x="65" y="145" w="1725" h="860" />
 
                             <itemlayout width="563" height="430">
                                 <control type="image">
@@ -1004,6 +1011,7 @@
                             <scrolltime tween="sine" easing="out">200</scrolltime>
                             <!-- <pagecontrol>251</pagecontrol> -->
                             <preloaditems>2</preloaditems>
+                            <hitrect x="65" y="145" w="1725" h="860" />
 
                             <itemlayout width="563" height="430">
                                 <control type="image">
@@ -1313,7 +1321,7 @@
                         <colordiffuse>FF202020</colordiffuse>
                         <aspectratio>stretch</aspectratio>
                     </control>
-                    <control type="button" id="205">
+                    <control type="button" id="208">
                         <posx>5</posx>
                         <posy>5</posy>
                         <width>385</width>
@@ -1321,6 +1329,36 @@
                         <hitrect x="-45" y="-50" w="445" h="90" />
                         <ondown>204</ondown>
                         <onleft>100</onleft>
+                        <onright>205</onright>
+                        <font>font12</font>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <label>[B]UP NEXT[/B]</label>
+                        <texturefocus colordiffuse="FF006000">script-hdhomerun-view-white_square.png</texturefocus>
+                        <texturenofocus colordiffuse="FF404040">script-hdhomerun-view-white_square.png</texturenofocus>
+                    </control>
+                </control>
+                <control type="group">
+                    <posx>455</posx>
+                    <posy>20</posy>
+                    <control type="image">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>395</width>
+                        <height>50</height>
+                        <texture>script-hdhomerun-view-white_square.png</texture>
+                        <colordiffuse>FF202020</colordiffuse>
+                        <aspectratio>stretch</aspectratio>
+                    </control>
+                    <control type="button" id="205">
+                        <posx>5</posx>
+                        <posy>5</posy>
+                        <width>385</width>
+                        <height>40</height>
+                        <hitrect x="-15" y="-50" w="415" h="90" />
+                        <ondown>204</ondown>
+                        <onleft>208</onleft>
                         <onright>206</onright>
                         <font>font12</font>
                         <align>center</align>
@@ -1332,7 +1370,7 @@
                     </control>
                 </control>
                 <control type="group">
-                    <posx>455</posx>
+                    <posx>870</posx>
                     <posy>20</posy>
                     <control type="image">
                         <posx>0</posx>
@@ -1362,7 +1400,7 @@
                     </control>
                 </control>
                 <control type="group">
-                    <posx>870</posx>
+                    <posx>1290</posx>
                     <posy>20</posy>
                     <control type="image">
                         <posx>0</posx>
@@ -1378,45 +1416,15 @@
                         <posy>5</posy>
                         <width>385</width>
                         <height>40</height>
-                        <hitrect x="-15" y="-50" w="415" h="90" />
-                        <ondown>204</ondown>
-                        <onleft>206</onleft>
-                        <onright>208</onright>
-                        <font>font12</font>
-                        <align>center</align>
-                        <aligny>center</aligny>
-                        <textcolor>FFFFFFFF</textcolor>
-                        <label>[B]SPORTS[/B]</label>
-                        <texturefocus colordiffuse="FF006000">script-hdhomerun-view-white_square.png</texturefocus>
-                        <texturenofocus colordiffuse="FF404040">script-hdhomerun-view-white_square.png</texturenofocus>
-                    </control>
-                </control>
-                <control type="group">
-                    <posx>1290</posx>
-                    <posy>20</posy>
-                    <control type="image">
-                        <posx>0</posx>
-                        <posy>0</posy>
-                        <width>395</width>
-                        <height>50</height>
-                        <texture>script-hdhomerun-view-white_square.png</texture>
-                        <colordiffuse>FF202020</colordiffuse>
-                        <aspectratio>stretch</aspectratio>
-                    </control>
-                    <control type="button" id="208">
-                        <posx>5</posx>
-                        <posy>5</posy>
-                        <width>385</width>
-                        <height>40</height>
                         <hitrect x="-20" y="-50" w="420" h="90" />
                         <ondown>204</ondown>
-                        <onleft>207</onleft>
+                        <onleft>206</onleft>
                         <onright>300</onright>
                         <font>font12</font>
                         <align>center</align>
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
-                        <label>[B]NOW SHOWING[/B]</label>
+                        <label>[B]SPORTS[/B]</label>
                         <texturefocus colordiffuse="FF006000">script-hdhomerun-view-white_square.png</texturefocus>
                         <texturenofocus colordiffuse="FF404040">script-hdhomerun-view-white_square.png</texturenofocus>
                     </control>
@@ -1441,7 +1449,7 @@
                         <width>725</width>
                         <height>40</height>
                         <hitrect x="-500" y="-50" w="1725" h="90" />
-                        <onup>206</onup>
+                        <onup>208</onup>
                         <ondown>201</ondown>
                         <onleft>100</onleft>
                         <onright>300</onright>
@@ -1461,6 +1469,23 @@
             <animation effect="slide" start="0,0" end="-1725,0" time="200" condition="StringCompare(Window(10000).Property(script.hdhomerun.view.DVR_MODE),RULES)">Conditional</animation>
             <posx>1855</posx>
             <posy>0</posy>
+
+            <control type="spincontrol" id="302">
+                <posx>0</posx>
+                <posy>0</posy>
+                <width>1790</width>
+                <height>1080</height>
+                <label> </label>
+                <font>-</font>
+                <textureup>-</textureup>
+                <textureupfocus>-</textureupfocus>
+                <texturedown>-</texturedown>
+                <texturedownfocus>-</texturedownfocus>
+                <onleft>200</onleft>
+                <onup>301</onup>
+                <ondown>301</ondown>
+            </control>
+
             <control type="button" id="303">
                 <left>0</left>
                 <top>0</top>
@@ -1536,19 +1561,6 @@
                         <angle>90</angle>
                         <label>[B]$ADDON[script.hdhomerun.view 32820][/B]</label>
                     </control>
-                </control>
-                <control type="button" id="302">
-                    <posx>65</posx>
-                    <posy>0</posy>
-                    <width>1725</width>
-                    <height>1080</height>
-                    <label> </label>
-                    <font>-</font>
-                    <texturefocus>-</texturefocus>
-                    <texturenofocus>-</texturenofocus>
-                    <onleft>200</onleft>
-                    <onup>301</onup>
-                    <ondown>301</ondown>
                 </control>
 
                 <control type="group">

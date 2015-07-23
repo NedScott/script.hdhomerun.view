@@ -234,10 +234,15 @@ class Episode(dict):
             return '%d:%02d' % (minutes, seconds)
 
 def search(deviceAuth,category='',terms=''):
+    url = None
     if terms:
         url = SEARCH_URL.format(deviceAuth=urllib.quote(deviceAuth,''),search=urllib.quote(terms.encode('utf-8'), ''))
     elif category:
         url = SUGGEST_URL.format(deviceAuth=urllib.quote(deviceAuth,''),category=category)
+
+    if not url:
+        util.DEBUG_LOG('Search: No category or terms')
+        return
 
     util.DEBUG_LOG('Search URL: {0}'.format(url))
 
@@ -254,7 +259,7 @@ def search(deviceAuth,category='',terms=''):
 
 def nowShowing(deviceAuth, utcUnixtime=None):
     if utcUnixtime:
-        url = UP_NEXT_URL.format(deviceAuth=urllib.quote(deviceAuth,''),utcUnixtime=utcUnixtime)
+        url = UP_NEXT_URL.format(deviceAuth=urllib.quote(deviceAuth,''),utcUnixtime=int(utcUnixtime))
     else:
         url = NOW_SHOWING_URL.format(deviceAuth=urllib.quote(deviceAuth,''))
 
