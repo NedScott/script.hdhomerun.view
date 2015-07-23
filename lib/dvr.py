@@ -321,12 +321,12 @@ class DVRBase(util.CronReceiver):
                 elif self.mode == 'SEARCH':
                     return self.setMode('RULES')
                 elif self.mode == 'WATCH':
-                    return self.setMode('SEARCH')
+                    return self.setMode('SEARCH', focus=self.SEARCH_EDIT_ID)
             elif action == xbmcgui.ACTION_GESTURE_SWIPE_RIGHT:
                 if self.mode == 'SEARCH':
                     return self.setMode('WATCH')
                 elif self.mode == 'RULES':
-                    return self.setMode('SEARCH')
+                    self.setMode('SEARCH', focus=self.SEARCH_EDIT_ID)
             elif action == xbmcgui.ACTION_CONTEXT_MENU:
                 if self.getFocusId() == self.RULE_LIST_ID:
                     return self.doRuleContext()
@@ -406,7 +406,8 @@ class DVRBase(util.CronReceiver):
         elif controlID == self.SEARCH_BUTTON:
             if self.mode == 'SEARCH':
                 self.setSearch()
-            self.setMode('SEARCH')
+            else:
+                return self.setMode('SEARCH', focus=self.SEARCH_EDIT_ID)
         elif controlID == self.RULES_BUTTON:
             self.setMode('RULES')
         elif controlID == self.SEARCH_EDIT_BUTTON_ID:
@@ -423,9 +424,7 @@ class DVRBase(util.CronReceiver):
             self.mode = 'WATCH'
         elif xbmc.getCondVisibility('ControlGroup(200).HasFocus(0)'):
             if self.mode != 'SEARCH':
-                self.setFocusId(self.SEARCH_EDIT_ID)
-                self.mode = 'SEARCH'
-                return
+                return self.setMode('SEARCH', focus=self.SEARCH_EDIT_ID)
             self.mode = 'SEARCH'
         elif xbmc.getCondVisibility('ControlGroup(300).HasFocus(0)'):
             self.mode = 'RULES'
@@ -473,14 +472,14 @@ class DVRBase(util.CronReceiver):
     def halfHour(self):
         self.updateNowShowing()
 
-    def setMode(self,mode):
+    def setMode(self,mode, focus=None):
         self.mode = mode
         if mode == 'WATCH':
-            self.setFocusId(100)
+            self.setFocusId(focus or 100)
         elif mode == 'SEARCH':
-            self.setFocusId(200)
+            self.setFocusId(focus or 200)
         elif mode == 'RULES':
-            self.setFocusId(300)
+            self.setFocusId(focus or 300)
 
 
     def checkMouseWheelInitial(self, action):
