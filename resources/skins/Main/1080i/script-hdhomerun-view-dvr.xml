@@ -1334,7 +1334,7 @@
                         <align>center</align>
                         <aligny>center</aligny>
                         <textcolor>FFFFFFFF</textcolor>
-                        <label>[B]UP NEXT[/B]</label>
+                        <label>[B]NOW SHOWING[/B]</label>
                         <texturefocus colordiffuse="FF006000">script-hdhomerun-view-white_square.png</texturefocus>
                         <texturenofocus colordiffuse="FF404040">script-hdhomerun-view-white_square.png</texturenofocus>
                     </control>
