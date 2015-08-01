@@ -1,6 +1,8 @@
-** 2015.7.22 **
+** 2015.8.1 **
 
-Add 'Up Next' to 'Guide Search'
+Add 'Now Showing' to 'Guide Search'
+Fix issue where clicking to bring up seek bar while watching recordings occasionally starts live TV
+Fix for busy spinner not displaying when UI has focus but video is playing
 
 ** 2015.7.14 **
 

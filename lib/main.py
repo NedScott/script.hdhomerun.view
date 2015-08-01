@@ -770,6 +770,7 @@ class GuideOverlay(util.CronReceiver):
                 self.showSeekBar() #Make sure the bar stays visible when we're interacting with it
             else:
                 self.showSeekBar(hide=self.seekBarVisible())
+            return True
         else:
             if not self.overlayVisible():
                 self.showOverlay()
