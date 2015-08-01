@@ -348,14 +348,16 @@ class DVRBase(util.CronReceiver):
                 self.moveRule()
             elif action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
                 util.setGlobalProperty('dvr.active','')
+                self.moveRule(None)
                 self.options = True
                 #self.main.showOptions(from_dvr=True)
                 self.doClose()
             elif action == xbmcgui.ACTION_MOUSE_LEFT_CLICK:
                 if self.getFocusId() == self.RULE_LIST_ID:
-                    if 1094 < action.getAmount1() < 1251:
+                    #print action.getAmount1()
+                    if 620 < action.getAmount1() < 710:
                         self.toggleRuleRecent()
-                    elif action.getAmount1() < 1095:
+                    elif action.getAmount1() < 619:
                         self.moveRule()
             elif action == xbmcgui.ACTION_MOUSE_MOVE and self.getFocusId() == self.RULE_LIST_ID:
                 if self.movingRule:
@@ -437,6 +439,9 @@ class DVRBase(util.CronReceiver):
             self.fillNowShowing(next_section=True, fix_selection=not from_action)
 
         elif controlID == self.NOW_SHOWING_PANEL2_UP_BUTTON_ID:
+            if not self.nowShowing:
+                return
+
             self.nowShowing.pos -= 1
             if self.nowShowing.pos < 0:
                 self.nowShowing.pos = 0
@@ -448,6 +453,9 @@ class DVRBase(util.CronReceiver):
             self.fillNowShowing(prev_section=True, fix_selection=not from_action)
 
         elif controlID == self.NOW_SHOWING_PANEL1_UP_BUTTON_ID:
+            if not self.nowShowing:
+                return
+
             self.nowShowing.pos -= 1
             if self.nowShowing.pos < 0:
                 self.nowShowing.pos = 0
@@ -860,7 +868,8 @@ class DVRBase(util.CronReceiver):
             if self.movingRule:
                 util.setGlobalProperty('moving.rule','')
                 self.movingRule = None
-                self.updateRulePriorities()
+                if move is not None:
+                    self.updateRulePriorities()
             elif move is not None:
                 item = self.ruleList.getSelectedItem()
                 if not item:
@@ -895,7 +904,8 @@ class DVRBase(util.CronReceiver):
                 util.setGlobalProperty('now.showing','1')
                 self.fillNowShowing()
             else:
-                self.nowShowing.pos = 0
+                if self.nowShowing:
+                    self.nowShowing.pos = 0
                 util.setGlobalProperty('now.showing','')
                 self.fillSearchPanel()
         else:
