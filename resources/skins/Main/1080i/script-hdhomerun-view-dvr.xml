@@ -30,11 +30,12 @@
                 <font>-</font>
                 <texturefocus>-</texturefocus>
                 <texturenofocus>-</texturenofocus>
+                <onright>200</onright>
             </control>
             <control type="group" id="100">
                 <posx>0</posx>
                 <posy>0</posy>
-                <defaultcontrol>101</defaultcontrol>
+                <defaultcontrol always="true">101</defaultcontrol>
                 <control type="image">
                     <posx>60</posx>
                     <posy>0</posy>
@@ -285,7 +286,7 @@
                 </control>
 
                 <control type="scrollbar" id="151">
-                    <visible>Container(101).OnScrollPrevious | Container(101).OnScrollNext</visible>
+                    <visible allowhiddenfocus="true">Container(101).OnScrollPrevious | Container(101).OnScrollNext | Control.HasFocus(151)</visible>
                     <animation effect="fade" start="100" end="0" time="200" delay="500">Hidden</animation>
                     <posx>1765</posx>
                     <posy>40</posy>
@@ -483,18 +484,17 @@
                             <texture>$INFO[ListItem.Property(channel.icon)]</texture>
                             <aspectratio>stretch</aspectratio>
                         </control>
-                        <control type="label">
+                        <control type="textbox">
                             <posx>110</posx>
-                            <posy>330</posy>
+                            <posy>328</posy>
                             <width>413</width>
-                            <height>40</height>
+                            <height>80</height>
                             <font>font13</font>
                             <align>left</align>
-                            <aligny>center</aligny>
                             <textcolor>FFFFFFFF</textcolor>
                             <label>[B]$INFO[ListItem.Property(series.title)][/B]</label>
                         </control>
-                        <control type="label">
+                        <!-- <control type="label">
                             <posx>110</posx>
                             <posy>365</posy>
                             <width>413</width>
@@ -503,8 +503,8 @@
                             <align>left</align>
                             <aligny>center</aligny>
                             <textcolor>FFFFFFFF</textcolor>
-                            <label>$INFO[ListItem.Label]</label>
-                        </control>
+                            <label>$INFO[ListItem.Label2]</label>
+                        </control> -->
                         <control type="image">
                             <visible>!IsEmpty(ListItem.Property(has.rule))</visible>
                             <posx>508</posx>
@@ -606,18 +606,17 @@
                             <texture>$INFO[ListItem.Property(channel.icon)]</texture>
                             <aspectratio>stretch</aspectratio>
                         </control>
-                        <control type="label">
+                        <control type="textbox">
                             <posx>110</posx>
-                            <posy>330</posy>
+                            <posy>328</posy>
                             <width>413</width>
-                            <height>40</height>
+                            <height>80</height>
                             <font>font13</font>
                             <align>left</align>
-                            <aligny>center</aligny>
                             <textcolor>FFFFFFFF</textcolor>
                             <label>[B]$INFO[ListItem.Property(series.title)][/B]</label>
                         </control>
-                        <control type="label">
+                        <!-- <control type="label">
                             <posx>110</posx>
                             <posy>365</posy>
                             <width>413</width>
@@ -626,8 +625,8 @@
                             <align>left</align>
                             <aligny>center</aligny>
                             <textcolor>FFFFFFFF</textcolor>
-                            <label>$INFO[ListItem.Label]</label>
-                        </control>
+                            <label>$INFO[ListItem.Label2]</label>
+                        </control> -->
                         <control type="image">
                             <visible>!IsEmpty(ListItem.Property(has.rule))</visible>
                             <posx>508</posx>
@@ -801,18 +800,17 @@
                                     <texture>$INFO[ListItem.Property(channel.icon)]</texture>
                                     <aspectratio>stretch</aspectratio>
                                 </control>
-                                <control type="label">
+                                <control type="textbox">
                                     <posx>110</posx>
-                                    <posy>330</posy>
+                                    <posy>328</posy>
                                     <width>413</width>
-                                    <height>40</height>
+                                    <height>80</height>
                                     <font>font13</font>
                                     <align>left</align>
-                                    <aligny>center</aligny>
                                     <textcolor>FFFFFFFF</textcolor>
                                     <label>[B]$INFO[ListItem.Property(series.title)][/B]</label>
                                 </control>
-                                <control type="label">
+                                <!-- <control type="label">
                                     <posx>110</posx>
                                     <posy>365</posy>
                                     <width>413</width>
@@ -821,8 +819,8 @@
                                     <align>left</align>
                                     <aligny>center</aligny>
                                     <textcolor>FFFFFFFF</textcolor>
-                                    <label>$INFO[ListItem.Label]</label>
-                                </control>
+                                    <label>$INFO[ListItem.Label2]</label>
+                                </control> -->
                                 <control type="image">
                                     <visible>!IsEmpty(ListItem.Property(has.rule))</visible>
                                     <posx>508</posx>
@@ -924,18 +922,17 @@
                                     <texture>$INFO[ListItem.Property(channel.icon)]</texture>
                                     <aspectratio>stretch</aspectratio>
                                 </control>
-                                <control type="label">
+                                <control type="textbox">
                                     <posx>110</posx>
-                                    <posy>330</posy>
+                                    <posy>328</posy>
                                     <width>413</width>
-                                    <height>40</height>
+                                    <height>80</height>
                                     <font>font13</font>
                                     <align>left</align>
-                                    <aligny>center</aligny>
                                     <textcolor>FFFFFFFF</textcolor>
                                     <label>[B]$INFO[ListItem.Property(series.title)][/B]</label>
                                 </control>
-                                <control type="label">
+                                <!-- <control type="label">
                                     <posx>110</posx>
                                     <posy>365</posy>
                                     <width>413</width>
@@ -944,8 +941,8 @@
                                     <align>left</align>
                                     <aligny>center</aligny>
                                     <textcolor>FFFFFFFF</textcolor>
-                                    <label>$INFO[ListItem.Label]</label>
-                                </control>
+                                    <label>$INFO[ListItem.Label2]</label>
+                                </control> -->
                                 <control type="image">
                                     <visible>!IsEmpty(ListItem.Property(has.rule))</visible>
                                     <posx>508</posx>
@@ -1057,18 +1054,17 @@
                                     <texture>$INFO[ListItem.Property(channel.icon)]</texture>
                                     <aspectratio>stretch</aspectratio>
                                 </control>
-                                <control type="label">
+                                <control type="textbox">
                                     <posx>110</posx>
-                                    <posy>330</posy>
+                                    <posy>328</posy>
                                     <width>413</width>
-                                    <height>40</height>
+                                    <height>80</height>
                                     <font>font13</font>
                                     <align>left</align>
-                                    <aligny>center</aligny>
                                     <textcolor>FFFFFFFF</textcolor>
                                     <label>[B]$INFO[ListItem.Property(series.title)][/B]</label>
                                 </control>
-                                <control type="label">
+                                <!-- <control type="label">
                                     <posx>110</posx>
                                     <posy>365</posy>
                                     <width>413</width>
@@ -1077,8 +1073,8 @@
                                     <align>left</align>
                                     <aligny>center</aligny>
                                     <textcolor>FFFFFFFF</textcolor>
-                                    <label>$INFO[ListItem.Label]</label>
-                                </control>
+                                    <label>$INFO[ListItem.Label2]</label>
+                                </control> -->
                                 <control type="image">
                                     <visible>!IsEmpty(ListItem.Property(has.rule))</visible>
                                     <posx>508</posx>
@@ -1180,18 +1176,17 @@
                                     <texture>$INFO[ListItem.Property(channel.icon)]</texture>
                                     <aspectratio>stretch</aspectratio>
                                 </control>
-                                <control type="label">
+                                <control type="textbox">
                                     <posx>110</posx>
-                                    <posy>330</posy>
+                                    <posy>328</posy>
                                     <width>413</width>
-                                    <height>40</height>
+                                    <height>80</height>
                                     <font>font13</font>
                                     <align>left</align>
-                                    <aligny>center</aligny>
                                     <textcolor>FFFFFFFF</textcolor>
                                     <label>[B]$INFO[ListItem.Property(series.title)][/B]</label>
                                 </control>
-                                <control type="label">
+                                <!-- <control type="label">
                                     <posx>110</posx>
                                     <posy>365</posy>
                                     <width>413</width>
@@ -1200,8 +1195,8 @@
                                     <align>left</align>
                                     <aligny>center</aligny>
                                     <textcolor>FFFFFFFF</textcolor>
-                                    <label>$INFO[ListItem.Label]</label>
-                                </control>
+                                    <label>$INFO[ListItem.Label2]</label>
+                                </control> -->
                                 <control type="image">
                                     <visible>!IsEmpty(ListItem.Property(has.rule))</visible>
                                     <posx>508</posx>
@@ -1495,6 +1490,7 @@
                 <font>-</font>
                 <texturefocus>-</texturefocus>
                 <texturenofocus>-</texturenofocus>
+                <onleft>200</onleft>
             </control>
             <control type="group" id="300">
                 <posx>0</posx>
@@ -1781,7 +1777,7 @@
                 </control>
 
                 <control type="scrollbar" id="351">
-                    <visible>Container(301).OnScrollPrevious | Container(301).OnScrollNext</visible>
+                    <visible allowhiddenfocus="true">Container(301).OnScrollPrevious | Container(301).OnScrollNext | Control.HasFocus(351)</visible>
                     <animation effect="fade" start="100" end="0" time="200" delay="500">Hidden</animation>
                     <posx>1767</posx>
                     <posy>90</posy>

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import time, datetime, threading
+import time, threading
 import xbmc, xbmcgui
 import kodigui
 import hdhr
@@ -333,7 +333,8 @@ class DVRBase(util.CronReceiver):
                     return self.setFocusId(self.SEARCH_EDIT_BUTTON_ID)
             elif action == xbmcgui.ACTION_MOVE_DOWN or action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_MOVE_LEFT:
                 if self.mode == 'WATCH':
-                    if self.getFocusId() != self.SHOW_LIST_ID: self.setFocusId(self.SHOW_LIST_ID)
+                    if self.getFocusId() != self.SHOW_LIST_ID and not util.getGlobalProperty('NO_RECORDINGS'):
+                        self.setFocusId(self.SHOW_LIST_ID)
                 elif self.mode == 'SEARCH':
                     if not xbmc.getCondVisibility('ControlGroup(550).HasFocus(0) | ControlGroup(551).HasFocus(0) | ControlGroup(552).HasFocus(0) | Control.HasFocus(201)'):
                         #self.searchEdit.setText('')
@@ -420,7 +421,7 @@ class DVRBase(util.CronReceiver):
             self.setSearch(category=('series','movie','sport', 'nowshowing')[idx])
 
     def onFocus(self,controlID, from_action=False, from_scroll=False):
-        #print 'focus: {0}'.format(controlID)
+        print 'focus: {0}'.format(controlID)
         if xbmc.getCondVisibility('ControlGroup(100).HasFocus(0)'):
             self.mode = 'WATCH'
         elif xbmc.getCondVisibility('ControlGroup(200).HasFocus(0)'):
@@ -581,8 +582,9 @@ class DVRBase(util.CronReceiver):
         else:
             util.setGlobalProperty('NO_RECORDINGS','')
 
-        allItem = kodigui.ManagedListItem('ALL RECORDINGS', thumbnailImage='script-hdhomerun-view-dvr_all.png')
-        items.insert(0,allItem)
+        if items:
+            allItem = kodigui.ManagedListItem('ALL RECORDINGS', thumbnailImage='script-hdhomerun-view-dvr_all.png')
+            items.insert(0,allItem)
 
         if update:
             self.showList.replaceItems(items)
