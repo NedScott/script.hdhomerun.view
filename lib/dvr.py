@@ -421,7 +421,7 @@ class DVRBase(util.CronReceiver):
             self.setSearch(category=('series','movie','sport', 'nowshowing')[idx])
 
     def onFocus(self,controlID, from_action=False, from_scroll=False):
-        print 'focus: {0}'.format(controlID)
+        #print 'focus: {0}'.format(controlID)
         if xbmc.getCondVisibility('ControlGroup(100).HasFocus(0)'):
             self.mode = 'WATCH'
         elif xbmc.getCondVisibility('ControlGroup(200).HasFocus(0)'):
