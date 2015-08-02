@@ -18,7 +18,7 @@ GUIDE_URL = 'http://my.hdhomerun.com/api/guide.php?DeviceAuth={0}'
 SEARCH_URL = 'http://my.hdhomerun.com/api/search?DeviceAuth={deviceAuth}&Search={search}'
 EPISODES_URL = 'http://my.hdhomerun.com/api/episodes?DeviceAuth={deviceAuth}&SeriesID={seriesID}'
 SUGGEST_URL = 'http://my.hdhomerun.com/api/suggest?DeviceAuth={deviceAuth}&Category={category}'
-NOW_SHOWING_URL = 'http://mytest.hdhomerun.com/api/up_next?DeviceAuth={deviceAuth}{start}'
+NOW_SHOWING_URL = 'http://my.hdhomerun.com/api/up_next?DeviceAuth={deviceAuth}{start}'
 NOW_SHOWING_START = '&Start={utcUnixtime}'
 
 
