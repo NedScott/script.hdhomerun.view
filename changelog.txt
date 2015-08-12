@@ -1,3 +1,8 @@
+** 2015.8.12 **
+
+Remove Isengard alpha workaround
+Select now pauses/unpauses recordings
+
 ** 2015.8.11 **
 
 Add 'Now Showing' to 'Guide Search'
