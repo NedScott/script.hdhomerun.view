@@ -15,6 +15,7 @@ class RecordDialog(kodigui.BaseDialog):
     RECENT_BUTTON = 205
     PRIORITY_BUTTON = 206
     DELETE_BUTTON = 207
+    WATCH_BUTTON = 208
 
     def __init__(self,*args,**kwargs):
         kodigui.BaseDialog.__init__(self,*args,**kwargs)
@@ -26,6 +27,7 @@ class RecordDialog(kodigui.BaseDialog):
         self.showHide = kwargs.get('show_hide') or self.series.hidden
         self.ruleAdded = False
         self.setPriority = False
+        self.onNow = None
 
     def onFirstInit(self):
         self.episodeList = kodigui.ManagedControlList(self,self.EPISODE_LIST,20)
@@ -38,6 +40,15 @@ class RecordDialog(kodigui.BaseDialog):
         self.setProperty('synopsis',self.series.synopsis)
         self.fillEpisodeList()
 
+        if self.onNow:
+            self.setProperty('show.watch', '1')
+            xbmc.sleep(100)
+            self.setFocusId(self.WATCH_BUTTON)
+        elif self.series.hasRule:
+            self.setFocusId(self.PRIORITY_BUTTON)
+        else:
+            self.setFocusId(self.RECORD_BUTTON)
+
     def onClick(self,controlID):
         if controlID == self.RECORD_BUTTON:
             self.add()
@@ -49,6 +60,8 @@ class RecordDialog(kodigui.BaseDialog):
             self.doSetPriority()
         elif controlID == self.DELETE_BUTTON:
             self.deleteRule()
+        elif controlID == self.WATCH_BUTTON:
+            self.watch()
 
     @util.busyDialog('GETTING INFO')
     def fillEpisodeList(self):
@@ -66,6 +79,7 @@ class RecordDialog(kodigui.BaseDialog):
             item.setProperty('original.date',r.displayDate(original=True))
             item.setProperty('original.time',r.displayTime(original=True))
             items.append(item)
+            self.onNow = self.onNow or r.onNow() and r or None
 
         self.episodeList.addItems(items)
 
@@ -114,6 +128,10 @@ class RecordDialog(kodigui.BaseDialog):
             return
         self.parent.deleteRule(self.rule)
         self.setProperty('show.hasRule', '')
+
+    def watch(self):
+        self.parent.playShow(self.onNow)
+        self.doClose()
 
 
 class EpisodesDialog(kodigui.BaseDialog):
@@ -446,7 +464,8 @@ class DVRBase(util.CronReceiver):
             else:
                 self.openRecordDialog('RULES')
         elif controlID == self.NOW_SHOWING_PANEL1_ID or controlID == self.NOW_SHOWING_PANEL2_ID:
-            self.nowShowingClicked(controlID)
+            self.openRecordDialog('NOWSHOWING')
+            # self.nowShowingClicked(controlID)
         # elif controlID == self.RULE_LIST_ID:
         #     self.toggleRuleRecent()
         elif controlID == self.WATCH_BUTTON:
@@ -908,10 +927,20 @@ class DVRBase(util.CronReceiver):
             return
 
         util.withBusyDialog(self.storageServer.deleteRule,'DELETING',rule)
-        for sitem in self.searchPanel:
+
+        def update(sitem):
             if rule.seriesID == sitem.dataSource.ID:
                 sitem.dataSource['RecordingRule'] = ''
                 sitem.setProperty('has.rule','')
+
+        for sItem in self.searchPanel:
+            update(sItem)
+
+        for sItem in self.nowShowingPanel1:
+            update(sItem)
+
+        for sItem in self.nowShowingPanel2:
+            update(sItem)
 
         self.fillRules(update=True)
 
@@ -987,6 +1016,13 @@ class DVRBase(util.CronReceiver):
         elif source == 'RULES':
             item = item or self.ruleList.getSelectedItem()
             rule = item.dataSource
+        elif source == 'NOWSHOWING':
+            panel = self.currentNowShowingPanel()
+            item = item or panel.getSelectedItem()
+            for ritem in self.ruleList:
+                if ritem.dataSource.ID == item.dataSource.ID:
+                    rule = ritem.dataSource
+                    break
 
         if not item: return
         path = skin.getSkinPath()
@@ -1015,25 +1051,13 @@ class DVRBase(util.CronReceiver):
                 self.ruleList.selectItem(item.pos())
                 self.moveRule()
             elif d.ruleAdded:
-                if source == 'SEARCH':
+                if source == 'SEARCH' or source == 'NOWSHOWING':
                     item.setProperty('has.rule','1')
 
             self.removeSeries(series)
 
         finally:
             del d
-
-    def nowShowingClicked(self, controlID):
-        if controlID == self.NOW_SHOWING_PANEL1_ID:
-            item = self.nowShowingPanel1.getSelectedItem()
-        elif controlID == self.NOW_SHOWING_PANEL2_ID:
-            item = self.nowShowingPanel2.getSelectedItem()
-        if not item: return
-
-        if not item.getProperty('on.now'):
-            return self.openRecordDialog('SEARCH', item)
-
-        self.playShow(item.dataSource)
 
     def openEpisodeDialog(self):
         item = self.showList.getSelectedItem()

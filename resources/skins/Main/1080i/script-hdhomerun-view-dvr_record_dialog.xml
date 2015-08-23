@@ -153,6 +153,36 @@
                 <itemgap>10</itemgap>
                 <ondown>200</ondown>
                 <orientation>horizontal</orientation>
+                <control type="button" id="208">
+                    <visible>!IsEmpty(Window.Property(show.watch))</visible>
+                    <width>300</width>
+                    <height>70</height>
+                    <label>[B]WATCH[/B]</label>
+                    <font>font13</font>
+                    <align>center</align>
+                    <texturefocus border="6">script-hdhomerun-view-flat_button.png</texturefocus>
+                    <texturenofocus border="6">script-hdhomerun-view-flat_button_nf.png</texturenofocus>
+                </control>
+                <control type="button" id="206">
+                    <visible>!IsEmpty(Window.Property(show.hasRule))</visible>
+                    <width>300</width>
+                    <height>70</height>
+                    <label>[B]PRIORITY[/B]</label>
+                    <font>font13</font>
+                    <align>center</align>
+                    <texturefocus border="6">script-hdhomerun-view-flat_button.png</texturefocus>
+                    <texturenofocus border="6">script-hdhomerun-view-flat_button_nf.png</texturenofocus>
+                </control>
+                <control type="button" id="205">
+                    <visible>!IsEmpty(Window.Property(show.hasRule))</visible>
+                    <width>300</width>
+                    <height>70</height>
+                    <label>[B]$INFO[Window.Property(record.always)][/B]</label>
+                    <font>font13</font>
+                    <align>center</align>
+                    <texturefocus border="6">script-hdhomerun-view-flat_button.png</texturefocus>
+                    <texturenofocus border="6">script-hdhomerun-view-flat_button_nf.png</texturenofocus>
+                </control>
                 <control type="button" id="203">
                     <visible>IsEmpty(Window.Property(show.hasRule))</visible>
                     <width>300</width>
@@ -178,26 +208,6 @@
                     <width>300</width>
                     <height>70</height>
                     <label>[B]$INFO[Window.Property(show.hide)][/B]</label>
-                    <font>font13</font>
-                    <align>center</align>
-                    <texturefocus border="6">script-hdhomerun-view-flat_button.png</texturefocus>
-                    <texturenofocus border="6">script-hdhomerun-view-flat_button_nf.png</texturenofocus>
-                </control>
-                <control type="button" id="205">
-                    <visible>!IsEmpty(Window.Property(show.hasRule))</visible>
-                    <width>300</width>
-                    <height>70</height>
-                    <label>[B]$INFO[Window.Property(record.always)][/B]</label>
-                    <font>font13</font>
-                    <align>center</align>
-                    <texturefocus border="6">script-hdhomerun-view-flat_button.png</texturefocus>
-                    <texturenofocus border="6">script-hdhomerun-view-flat_button_nf.png</texturenofocus>
-                </control>
-                <control type="button" id="206">
-                    <visible>!IsEmpty(Window.Property(show.hasRule))</visible>
-                    <width>300</width>
-                    <height>70</height>
-                    <label>[B]PRIORITY[/B]</label>
                     <font>font13</font>
                     <align>center</align>
                     <texturefocus border="6">script-hdhomerun-view-flat_button.png</texturefocus>

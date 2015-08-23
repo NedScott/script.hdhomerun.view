@@ -229,6 +229,9 @@ class Episode(dict):
     def originalTimestamp(self):
         return int(self.get('OriginalAirdate',0))
 
+    def onNow(self):
+        return self.startTimestamp < time.time() < self.endTimestamp
+
     def displayDate(self,original=False):
         return time.strftime('%b %d, %Y',time.localtime(original and self.originalTimestamp or self.startTimestamp))
 
