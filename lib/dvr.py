@@ -448,9 +448,9 @@ class DVRBase(util.CronReceiver):
         elif action == xbmcgui.ACTION_MOUSE_MOVE and self.getFocusId() == self.RULE_LIST_ID:
             if self.movingRule:
                 self.moveRule(True)
-        # elif action.getButtonCode() in (61575, 61486):
-        #     if self.getFocusId() == self.RULE_LIST_ID:
-        #         return self.deleteRule()
+        elif action.getButtonCode() in (61575, 61486):
+            if self.getFocusId() == self.RULE_LIST_ID:
+                return self.deleteRule()
 
     def onClick(self,controlID):
         #print 'click: {0}'.format(controlID)
@@ -870,14 +870,13 @@ class DVRBase(util.CronReceiver):
             item = kodigui.ManagedListItem(r.title,data_source=r)
             item.setProperty('rule.recent_only',r.recentOnly and T(32805) or T(32806))
             item.setProperty('seriesID', r.seriesID)
+            #print '{0} {1}'.format(r.ruleID, r.title)
             items.append(item)
 
         if not items:
             util.setGlobalProperty('NO_RULES',self.storageServer.getRulesFailed and '[COLOR 80FF0000]{0}[/COLOR]'.format(T(32830)) or T(32804))
         else:
             util.setGlobalProperty('NO_RULES','')
-
-        items.sort(key=lambda x: x.dataSource.priority, reverse=True)
 
         self.ruleList.reset()
         self.ruleList.addItems(items)
@@ -889,15 +888,6 @@ class DVRBase(util.CronReceiver):
         try:
             if idx == 0:
                 self.toggleRuleRecent()
-            # elif idx == 1:
-                # item = self.ruleList.getSelectedItem()
-                # priority = xbmcgui.Dialog().input(T(32811),str(item.dataSource.priority))
-                # try:
-                #     item.dataSource.priority = int(priority)
-                #     #item.setLabel2(str(item.dataSource.priority))
-                # except ValueError:
-                #     return
-                # self.fillRules(update=True)
             elif idx == 1:
                 self.deleteRule()
 
@@ -948,9 +938,9 @@ class DVRBase(util.CronReceiver):
         if not move:
             if self.movingRule:
                 util.setGlobalProperty('moving.rule','')
-                self.movingRule = None
                 if move is not None:
-                    self.updateRulePriorities()
+                    self.updateRulePriority()
+                self.movingRule = None
             elif move is not None:
                 item = self.ruleList.getSelectedItem()
                 if not item:
@@ -964,14 +954,15 @@ class DVRBase(util.CronReceiver):
             self.ruleList.moveItem(self.movingRule,pos)
 
     @util.busyDialog('UPDATING')
-    def updateRulePriorities(self):
-        for i, item in enumerate(reversed(self.ruleList)):
-            try:
-                item.dataSource.priority = i
-            except ValueError:
-                util.ERROR()
-                return
+    def updateRulePriority(self):
+        pos = self.movingRule.pos()
+        if pos == 0:
+            afterRuleID = 0
+        else:
+            pos -= 1
+            afterRuleID = self.ruleList.getListItem(pos).dataSource.ruleID
 
+        self.movingRule.dataSource.move(afterRuleID)
         self.fillRules(update=True)
 
     def setSearch(self,category=None):

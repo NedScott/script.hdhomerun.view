@@ -1,3 +1,7 @@
+** 2015.9.2 **
+
+Use new recording rules API
+
 ** 2015.8.23 **
 
 Now showing now opens record dialog instead of live tv
