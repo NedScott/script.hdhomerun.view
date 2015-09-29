@@ -24,15 +24,14 @@ class RecordDialog(kodigui.BaseDialog):
         self.rule = kwargs.get('rule')
         self.storageServer = kwargs.get('storage_server')
         self.results = kwargs.get('results')
-        self.showHide = kwargs.get('show_hide') or self.series.hidden
+        self.showHide = (kwargs.get('show_hide') or self.series.hidden) and not self.series.hasRule
         self.ruleAdded = False
         self.setPriority = False
         self.onNow = None
 
     def onFirstInit(self):
         self.episodeList = kodigui.ManagedControlList(self,self.EPISODE_LIST,20)
-        hideText = self.series.hidden and T(32841) or T(32840)
-        self.setProperty('show.hide',self.showHide and hideText or '')
+        self.showHideButton(self.showHide)
         self.setProperty('show.hasRule',self.series.hasRule and '1' or '')
         self.setProperty('record.always',(hasattr(self.series, 'recentOnly') and self.series.recentOnly) and 'RECENT' or 'ALWAYS')
         self.setProperty('series.title',self.series.title)
@@ -83,6 +82,14 @@ class RecordDialog(kodigui.BaseDialog):
 
         self.episodeList.addItems(items)
 
+    def showHideButton(self, show=True):
+        self.showHide = show
+        if show:
+            hideText = self.series.hidden and T(32841) or T(32840)
+            self.setProperty('show.hide',hideText)
+        else:
+            self.setProperty('show.hide','')
+
     def add(self):
         try:
             self.rule = self.storageServer.addRule(self.series)
@@ -97,6 +104,7 @@ class RecordDialog(kodigui.BaseDialog):
         xbmcgui.Dialog().ok(T(32800),T(32801),'',self.series.title)
 
         self.setProperty('show.hasRule', '1')
+        self.showHideButton(False)
 
     def hide(self):
         try:
@@ -128,6 +136,8 @@ class RecordDialog(kodigui.BaseDialog):
             return
         self.parent.deleteRule(self.rule)
         self.setProperty('show.hasRule', '')
+
+        self.showHideButton()
 
     def watch(self):
         self.parent.playShow(self.onNow)
