@@ -729,7 +729,7 @@ class DVRBase(util.CronReceiver):
                 self.fillNSPanel2(searchResults)
 
                 if fix_selection:
-                    off1 = self.nowShowingPanel1.getSelectedPosition() % 3
+                    off1 = self.nowShowingPanel1.getSelectedPosition() % 4
                     if self.nowShowingPanel2.positionIsValid(off1):
                         self.nowShowingPanel2.selectItem(off1)
 
@@ -741,7 +741,7 @@ class DVRBase(util.CronReceiver):
                 self.fillNSPanel1(searchResults)
 
                 if fix_selection:
-                    off2 = self.nowShowingPanel2.getSelectedPosition() % 3
+                    off2 = self.nowShowingPanel2.getSelectedPosition() % 4
                     if self.nowShowingPanel1.positionIsValid(off2):
                         self.nowShowingPanel1.selectItem(off2)
 
@@ -756,12 +756,12 @@ class DVRBase(util.CronReceiver):
                 self.fillNSPanel2(searchResults)
 
                 if fix_selection:
-                    off1 = (self.nowShowingPanel1.getSelectedPosition() + 1) % 3
-                    off2 = self.nowShowingPanel2.size() % 3
+                    off1 = (self.nowShowingPanel1.getSelectedPosition() + 1) % 4
+                    off2 = self.nowShowingPanel2.size() % 4
                     if off1 < off2:
                         self.nowShowingPanel2.selectItem((self.nowShowingPanel2.size() - 1) - (off2 - off1))
                     elif off2 < off1:
-                        self.nowShowingPanel2.selectItem((self.nowShowingPanel2.size() - 4) + off1)
+                        self.nowShowingPanel2.selectItem((self.nowShowingPanel2.size() - 5) + (off1 - off2))
                     else:
                         self.nowShowingPanel2.selectItem((self.nowShowingPanel2.size() - 1))
 
@@ -773,12 +773,12 @@ class DVRBase(util.CronReceiver):
                 self.fillNSPanel1(searchResults)
 
                 if fix_selection:
-                    off1 = self.nowShowingPanel1.size() % 3
-                    off2 = (self.nowShowingPanel2.getSelectedPosition() + 1) % 3
+                    off1 = self.nowShowingPanel1.size() % 4
+                    off2 = (self.nowShowingPanel2.getSelectedPosition() + 1) % 4
                     if off2 < off1:
                         self.nowShowingPanel1.selectItem((self.nowShowingPanel1.size() - 1) - (off1 - off2))
                     elif off1 < off2:
-                        self.nowShowingPanel1.selectItem((self.nowShowingPanel1.size() - 4) + off2)
+                        self.nowShowingPanel1.selectItem((self.nowShowingPanel1.size() - 5) + (off2 - off1))
                     else:
                         self.nowShowingPanel1.selectItem((self.nowShowingPanel1.size() - 1))
 
