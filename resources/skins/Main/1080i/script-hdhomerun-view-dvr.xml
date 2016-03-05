@@ -488,7 +488,7 @@
                             <posx>95</posx>
                             <posy>182</posy>
                             <width>188</width>
-                            <height>61</height>
+                            <height>50</height>
                             <font>font10</font>
                             <align>left</align>
                             <textcolor>FFFFFFFF</textcolor>
@@ -600,7 +600,7 @@
                             <posx>95</posx>
                             <posy>182</posy>
                             <width>188</width>
-                            <height>61</height>
+                            <height>50</height>
                             <font>font10</font>
                             <align>left</align>
                             <textcolor>FFFFFFFF</textcolor>
@@ -941,7 +941,7 @@
                                     <posx>95</posx>
                                     <posy>182</posy>
                                     <width>188</width>
-                                    <height>61</height>
+                                    <height>50</height>
                                     <font>font10</font>
                                     <align>left</align>
                                     <textcolor>FFFFFFFF</textcolor>
@@ -1053,7 +1053,7 @@
                                     <posx>95</posx>
                                     <posy>182</posy>
                                     <width>188</width>
-                                    <height>61</height>
+                                    <height>50</height>
                                     <font>font10</font>
                                     <align>left</align>
                                     <textcolor>FFFFFFFF</textcolor>
@@ -1174,7 +1174,7 @@
                                     <posx>95</posx>
                                     <posy>182</posy>
                                     <width>188</width>
-                                    <height>61</height>
+                                    <height>50</height>
                                     <font>font10</font>
                                     <align>left</align>
                                     <textcolor>FFFFFFFF</textcolor>
@@ -1286,7 +1286,7 @@
                                     <posx>95</posx>
                                     <posy>182</posy>
                                     <width>188</width>
-                                    <height>61</height>
+                                    <height>50</height>
                                     <font>font10</font>
                                     <align>left</align>
                                     <textcolor>FFFFFFFF</textcolor>
