@@ -238,7 +238,7 @@ msgid "Set Priority"
 msgstr ""
 
 msgctxt "#32809"
-msgid "Delete"
+msgid "Delete Task"
 msgstr ""
 
 msgctxt "#32810"

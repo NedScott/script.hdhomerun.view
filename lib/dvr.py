@@ -17,6 +17,11 @@ class RecordDialog(kodigui.BaseDialog):
     DELETE_BUTTON = 207
     WATCH_BUTTON = 208
 
+    START_BUTTON = 215
+    END_BUTTON = 216
+
+    PADDING_OPTIONS = (('30s', 30), ('1m', 60), ('5m', 300), ('15m', 900), ('30m', 1800), ('1h', 3600))
+
     def __init__(self,*args,**kwargs):
         kodigui.BaseDialog.__init__(self,*args,**kwargs)
         self.parent = kwargs.get('parent')
@@ -61,6 +66,10 @@ class RecordDialog(kodigui.BaseDialog):
             self.deleteRule()
         elif controlID == self.WATCH_BUTTON:
             self.watch()
+        elif controlID == self.START_BUTTON:
+            self.setStart()
+        elif controlID == self.END_BUTTON:
+            self.setEnd()
 
     @util.busyDialog('GETTING INFO')
     def fillEpisodeList(self):
@@ -143,6 +152,26 @@ class RecordDialog(kodigui.BaseDialog):
         self.parent.playShow(self.onNow)
         self.doClose()
 
+    def setStart(self):
+        choice = self.getPaddingOption()
+        if not choice:
+            return
+
+        self.getControl(self.START_BUTTON).setLabel(choice[0])
+
+    def setEnd(self):
+        choice = self.getPaddingOption()
+        if not choice:
+            return
+
+        self.getControl(self.END_BUTTON).setLabel(choice[0])
+
+    def getPaddingOption(self):
+        idx = xbmcgui.Dialog().select('Padding', [x[0] for x in self.PADDING_OPTIONS])
+        if idx < 0:
+            return None
+
+        return self.PADDING_OPTIONS[idx]
 
 class EpisodesDialog(kodigui.BaseDialog):
     RECORDING_LIST_ID = 101
@@ -288,6 +317,8 @@ class DVRBase(util.CronReceiver):
     SHOW_LIST_ID = 101
     SEARCH_PANEL_ID = 201
 
+    MOVIE_PANEL_ID = 211
+
     NOW_SHOWING_PANEL1_ID = 271
     NOW_SHOWING_PANEL1_DOWN_BUTTON_ID = 281
     NOW_SHOWING_PANEL1_UP_BUTTON_ID = 283
@@ -331,6 +362,7 @@ class DVRBase(util.CronReceiver):
         self.started = False
         self.showList = None
         self.searchPanel = None
+        self.moviePanel = None
         self.ruleList = None
         self.searchTerms = ''
         self.category = 'series'
@@ -352,6 +384,7 @@ class DVRBase(util.CronReceiver):
         self.movingRule = None
         self.mode = 'WATCH'
         util.setGlobalProperty('now.showing','')
+        util.setGlobalProperty('movie.posters','')
         util.setGlobalProperty('NO_RESULTS',T(32802))
         util.setGlobalProperty('NO_RECORDINGS',T(32803))
         util.setGlobalProperty('NO_RULES',T(32804))
@@ -365,6 +398,8 @@ class DVRBase(util.CronReceiver):
 
         self.searchPanel = kodigui.ManagedControlList(self,self.SEARCH_PANEL_ID,6)
         self.fillSearchPanel()
+
+        self.moviePanel = kodigui.ManagedControlList(self,self.MOVIE_PANEL_ID,6)
 
         self.nowShowingPanel1 = kodigui.ManagedControlList(self,self.NOW_SHOWING_PANEL1_ID,6)
         self.nowShowingPanel2 = kodigui.ManagedControlList(self,self.NOW_SHOWING_PANEL2_ID,6)
@@ -406,10 +441,10 @@ class DVRBase(util.CronReceiver):
         elif action == xbmcgui.ACTION_GESTURE_SWIPE_RIGHT:
             return self.setMode('WATCH')
         elif action == xbmcgui.ACTION_CONTEXT_MENU:
-            if xbmc.getCondVisibility('ControlGroup(551).HasFocus(0) | Control.HasFocus(201)'):
+            if xbmc.getCondVisibility('ControlGroup(551).HasFocus(0) | Control.HasFocus(201) | Control.HasFocus(211)'):
                 return self.setFocusId(self.SEARCH_EDIT_BUTTON_ID)
         elif action == xbmcgui.ACTION_MOVE_DOWN or action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_MOVE_LEFT:
-            if not xbmc.getCondVisibility('ControlGroup(550).HasFocus(0) | ControlGroup(551).HasFocus(0) | ControlGroup(552).HasFocus(0) | Control.HasFocus(201)'):
+            if not xbmc.getCondVisibility('ControlGroup(550).HasFocus(0) | ControlGroup(551).HasFocus(0) | ControlGroup(552).HasFocus(0) | Control.HasFocus(201) | Control.HasFocus(211)'):
                 return self.setFocusId(self.SEARCH_EDIT_ID)
         elif action in (xbmcgui.ACTION_MOUSE_WHEEL_DOWN, xbmcgui.ACTION_MOUSE_WHEEL_UP):
             return self.checkMouseWheelInitial(action)
@@ -466,7 +501,7 @@ class DVRBase(util.CronReceiver):
         #print 'click: {0}'.format(controlID)
         if controlID == self.SHOW_LIST_ID:
             self.openEpisodeDialog()
-        elif controlID == self.SEARCH_PANEL_ID:
+        elif controlID in (self.SEARCH_PANEL_ID, self.MOVIE_PANEL_ID):
             self.openRecordDialog('SEARCH')
         elif controlID == self.RULE_LIST_ID:
             if self.movingRule:
@@ -668,7 +703,7 @@ class DVRBase(util.CronReceiver):
             self.showList.addItems(items)
 
     @util.busyDialog('LOADING GUIDE')
-    def fillSearchPanel(self, update=False):
+    def fillSearchPanel(self, update=False, movies=False):
         self.lastSearchRefresh = time.time()
 
         items = []
@@ -692,10 +727,17 @@ class DVRBase(util.CronReceiver):
             item.setProperty('hidden',r.hidden and '1' or '')
             items.append(item)
         if update:
-            self.searchPanel.replaceItems(items)
+            if self.category == 'movie':
+                self.moviePanel.replaceItems(items)
+            else:
+                self.searchPanel.replaceItems(items)
         else:
-            self.searchPanel.reset()
-            self.searchPanel.addItems(items)
+            if self.category == 'movie':
+                self.moviePanel.reset()
+                self.moviePanel.addItems(items)
+            else:
+                self.searchPanel.reset()
+                self.searchPanel.addItems(items)
 
     @util.busyDialog('LOADING NOW SHOWING')
     def fillNowShowing(self, next_section=False, prev_section=False, fix_selection=True, current=False):
@@ -933,14 +975,10 @@ class DVRBase(util.CronReceiver):
                 sitem.dataSource['RecordingRule'] = ''
                 sitem.setProperty('has.rule','')
 
-        for sItem in self.searchPanel:
-            update(sItem)
+        for control in (self.searchPanel, self.moviePanel, self.nowShowingPanel1, self.nowShowingPanel2):
+            for sItem in control:
+                update(sItem)
 
-        for sItem in self.nowShowingPanel1:
-            update(sItem)
-
-        for sItem in self.nowShowingPanel2:
-            update(sItem)
 
         self.fillRules(update=True)
 
@@ -983,12 +1021,18 @@ class DVRBase(util.CronReceiver):
             catDisplay = {'series':'Shows','movie':'Movies','sport':'Sports','nowshowing':'Now Showing'}
             util.setGlobalProperty('search.terms',catDisplay[category])
             if category == 'nowshowing':
-                util.setGlobalProperty('now.showing','1')
                 self.fillNowShowing()
+                util.setGlobalProperty('movie.posters','')
+                util.setGlobalProperty('now.showing','1')
             else:
                 if self.nowShowing:
                     self.nowShowing.pos = 0
                 util.setGlobalProperty('now.showing','')
+                if category == 'movie':
+                    util.setGlobalProperty('movie.posters','1')
+                else:
+                    util.setGlobalProperty('movie.posters','')
+
                 self.fillSearchPanel()
         else:
             self.searchTerms = xbmcgui.Dialog().input(T(32812),self.searchTerms)
@@ -996,6 +1040,7 @@ class DVRBase(util.CronReceiver):
                 return
 
             util.setGlobalProperty('now.showing','')
+            util.setGlobalProperty('movie.posters','')
             self.category = ''
             util.setGlobalProperty('search.terms',self.searchTerms)
             self.fillSearchPanel()
@@ -1004,12 +1049,19 @@ class DVRBase(util.CronReceiver):
             self.setFocusId(202)
         else:
             if category != 'nowshowing':
-                self.setFocusId(201)
+                if category == 'movie':
+                    self.setFocusId(self.MOVIE_PANEL_ID)
+                else:
+                    self.setFocusId(self.SEARCH_PANEL_ID)
 
     def openRecordDialog(self, source, item=None):
         rule = None
         if source == 'SEARCH':
-            item = item or self.searchPanel.getSelectedItem()
+            if self.category == 'movie':
+                item = item or self.moviePanel.getSelectedItem()
+            else:
+                item = item or self.searchPanel.getSelectedItem()
+
             for ritem in self.ruleList:
                 if ritem.dataSource.ID == item.dataSource.ID:
                     rule = ritem.dataSource
@@ -1077,6 +1129,8 @@ class DVRBase(util.CronReceiver):
         if not series:
             if self.getFocusId() == self.SEARCH_PANEL_ID:
                 panel = self.searchPanel
+            elif self.getFocusId() == self.MOVIE_PANEL_ID:
+                panel = self.moviePanel
             elif self.getFocusId() == self.NOW_SHOWING_PANEL1_ID:
                 panel = self.nowShowingPanel1
             elif self.getFocusId() == self.NOW_SHOWING_PANEL2_ID:
@@ -1089,7 +1143,7 @@ class DVRBase(util.CronReceiver):
             #     return
             util.withBusyDialog(self.storageServer.hideSeries,'HIDING',series)
 
-        for panel in (self.searchPanel, self.nowShowingPanel1, self.nowShowingPanel2):
+        for panel in (self.searchPanel, self.moviePanel, self.nowShowingPanel1, self.nowShowingPanel2):
             self.removeSeriesFromPanel(panel, series)
 
         if not series.hidden and self.nowShowing:
