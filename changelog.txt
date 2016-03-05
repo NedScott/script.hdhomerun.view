@@ -6,7 +6,7 @@ Change 'WATCH RECORDINGS' to 'RECORDED'
 Change 'GUIDE SEARCH' to 'DISCOVER'
 Change 'RECORDING RULES' to 'TASKS'
 Change 'DELETE' to 'DELETE TASK' on recording dialog
-Added padding options to recording dialog (currently non-functional)
+Added start/end padding options to recording dialog
 
 ** 2015.11.09 **
 

@@ -33,6 +33,8 @@ class RecordDialog(kodigui.BaseDialog):
         self.ruleAdded = False
         self.setPriority = False
         self.onNow = None
+        self.startPadding = 30
+        self.endPadding = 30
 
     def onFirstInit(self):
         self.episodeList = kodigui.ManagedControlList(self,self.EPISODE_LIST,20)
@@ -42,6 +44,8 @@ class RecordDialog(kodigui.BaseDialog):
         self.setProperty('series.title',self.series.title)
         self.setProperty('synopsis.title','Synopsis')
         self.setProperty('synopsis',self.series.synopsis)
+        self.updatePadding()
+
         self.fillEpisodeList()
 
         if self.onNow:
@@ -99,9 +103,14 @@ class RecordDialog(kodigui.BaseDialog):
         else:
             self.setProperty('show.hide','')
 
+    def updatePadding(self):
+        if self.rule:
+            self.setStart(self.rule.startPadding)
+            self.setEnd(self.rule.endPadding)
+
     def add(self):
         try:
-            self.rule = self.storageServer.addRule(self.series)
+            self.rule = self.storageServer.addRule(self.series, StartPadding=self.startPadding, EndPadding=self.endPadding)
         except hdhr.errors.RuleModException, e:
             util.showNotification(e.message,header=T(32832))
             return
@@ -152,19 +161,34 @@ class RecordDialog(kodigui.BaseDialog):
         self.parent.playShow(self.onNow)
         self.doClose()
 
-    def setStart(self):
-        choice = self.getPaddingOption()
-        if not choice:
-            return
+    def setStart(self, value=None):
+        if value == None:
+            choice = self.getPaddingOption()
+            if not choice:
+                return
+            label = choice[0]
+            self.startPadding = choice[1]
+            self.rule.startPadding = choice[1]
+        else:
+            label = util.durationToShortText(value)
+            self.startPadding = value
 
-        self.getControl(self.START_BUTTON).setLabel(choice[0])
 
-    def setEnd(self):
-        choice = self.getPaddingOption()
-        if not choice:
-            return
+        self.getControl(self.START_BUTTON).setLabel(label)
 
-        self.getControl(self.END_BUTTON).setLabel(choice[0])
+    def setEnd(self, value=None):
+        if value == None:
+            choice = self.getPaddingOption()
+            if not choice:
+                return
+            label = choice[0]
+            self.endPadding = choice[1]
+            self.rule.endPadding = choice[1]
+        else:
+            label = util.durationToShortText(value)
+            self.endPadding = value
+
+        self.getControl(self.END_BUTTON).setLabel(label)
 
     def getPaddingOption(self):
         idx = xbmcgui.Dialog().select('Padding', [x[0] for x in self.PADDING_OPTIONS])
