@@ -30,6 +30,7 @@ class RecordDialog(kodigui.BaseDialog):
         self.storageServer = kwargs.get('storage_server')
         self.results = kwargs.get('results')
         self.showHide = (kwargs.get('show_hide') or self.series.hidden) and not self.series.hasRule
+        self.dialogSource = kwargs.get('source')
         self.ruleAdded = False
         self.setPriority = False
         self.onNow = None
@@ -156,6 +157,9 @@ class RecordDialog(kodigui.BaseDialog):
         self.setProperty('show.hasRule', '')
 
         self.showHideButton()
+
+        if self.dialogSource == 'RULES':
+            self.doClose()
 
     def watch(self):
         self.parent.playShow(self.onNow)
@@ -1114,7 +1118,8 @@ class DVRBase(util.CronReceiver):
                 series=series,
                 rule=rule,
                 storage_server=self.storageServer,
-                show_hide=not self.searchTerms and source != 'RULES'
+                show_hide=not self.searchTerms and source != 'RULES',
+                source=source
             )
 
             d.doModal()
