@@ -397,7 +397,7 @@ class ManagedControlList(object):
         return self.getSelectedPosition() == self.size() - 1
 
 class PropertyTimer():
-    def __init__(self,window_id,timeout,property_,value,addon_id=None):
+    def __init__(self,window_id,timeout,property_,value,addon_id=None, callback=None):
         self._winID = window_id
         self._timeout = timeout
         self._property = property_
@@ -407,12 +407,15 @@ class PropertyTimer():
         self._addonID = addon_id
         self._closeWin = None
         self._closed = False
+        self._callback = callback
 
     def _onTimeout(self):
         self._endTime = 0
         xbmcgui.Window(self._winID).setProperty(self._property,self._value)
         if self._addonID: xbmcgui.Window(10000).setProperty('{0}.{1}'.format(self._addonID,self._property),self._value)
         if self._closeWin: self._closeWin.doClose()
+        if self._callback:
+            self._callback(self._property)
 
     def _wait(self):
         while not xbmc.abortRequested and time.time() < self._endTime:
@@ -424,7 +427,12 @@ class PropertyTimer():
     def _stopped(self):
         return not self._thread or not self._thread.isAlive()
 
-    def _reset(self):
+    def _reset(self, start=None, value=None):
+        if start is not None:
+            xbmcgui.Window(self._winID).setProperty(self._property,start)
+            if self._addonID: xbmcgui.Window(10000).setProperty('{0}.{1}'.format(self._addonID,self._property),start)
+            self._value = value
+
         self._endTime = time.time() + self._timeout
 
     def _start(self):
@@ -440,11 +448,11 @@ class PropertyTimer():
         self._closed = True
         self.stop()
 
-    def reset(self,close_win=None):
+    def reset(self,close_win=None,start=None, value=None):
         if self._closed: return
         if not self._timeout: return
         self._closeWin = close_win
-        self._reset()
+        self._reset(start,value)
         if self._stopped:
             self._start()
 
