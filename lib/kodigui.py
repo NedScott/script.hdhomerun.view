@@ -404,6 +404,9 @@ class ManagedControlList(object):
     def bottomHasFocus(self):
         return self.getSelectedPosition() == self.size() - 1
 
+    def itemIsSelected(self, mli):
+        return self.getSelectedItem() == mli
+
 class PropertyTimer():
     def __init__(self,window_id,timeout,property_,value,addon_id=None, callback=None):
         self._winID = window_id

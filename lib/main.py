@@ -211,6 +211,7 @@ class GuideOverlay(util.CronReceiver):
         self.inLoop = False
         self.sliceTimestamp = 0
         self.lastItem = None
+        self.abort = False
 
         self.devices = None
 
@@ -283,14 +284,10 @@ class GuideOverlay(util.CronReceiver):
             elif action == xbmcgui.ACTION_CHANNEL_DOWN: #or action == xbmcgui.ACTION_PAGE_DOWN: #For testing
                 self.channelDown()
             elif action in (xbmcgui.ACTION_MOUSE_LEFT_CLICK, xbmcgui.ACTION_MOUSE_DOUBLE_CLICK): # To catch all clicks we need to catch both
-                print 'x'
                 if self.getFocusId() in (210, 217):
                     return self.handleMouseClick(action, mli)
                 elif self.getFocusId() == 201 or (self.getFocusId() == 215 and self.mouseXTrans(action.getAmount1()) < 1774):
-                    print 'y'
-                    print repr(mli.getProperty('slice.offset'))
                     if not mli.getProperty('slice.offset') or mli.getProperty('slice.offset') == '0':
-                        print 'z'
                         self.channelClicked()
                 elif xbmc.getCondVisibility('ControlGroup(216).HasFocus(0)'):
                     return self.sliceRight()
@@ -327,7 +324,7 @@ class GuideOverlay(util.CronReceiver):
         x = self.mouseXTrans(action.getAmount1())
         y = self.mouseXTrans(action.getAmount2())
         row = int(xbmc.getInfoLabel('Container(201).Position'))
-        print '{0} , {1} : {2}'.format(x, y, row)
+        #print '{0} , {1} : {2}'.format(x, y, row)
 
 
         if self.overlayVisible():
@@ -396,6 +393,24 @@ class GuideOverlay(util.CronReceiver):
     def adjustSlice(self, mli=None):
         mli = mli or self.channelList.getSelectedItem()
 
+        join = None
+        if mli.dataSource['thread'] and mli.dataSource['thread'].isAlive():
+            join = mli.dataSource['thread']
+
+        mli.dataSource['thread'] = threading.Thread(target=self._adjustSlice, args=(mli,join))
+        mli.dataSource['thread'].start()
+
+    def _adjustSlice(self, mli, join):
+        if join:
+            join.join()
+
+        if self.abort:
+            return
+
+        xbmc.sleep(250)
+        if not self.channelList.getSelectedItem() == mli:  # User has moved on, ignore
+            return
+
         ep = mli.dataSource['slice'] and mli.dataSource['slice'][mli.dataSource['sliceOffset']-1] or None
         if not ep or ep.startTimestamp < self.sliceTimestamp:
             self.addToSlice(mli, timestamp=self.sliceTimestamp)
@@ -442,7 +457,7 @@ class GuideOverlay(util.CronReceiver):
                     mli.setProperty('loading', '1')
                     mli.dataSource['slice'] = hdhr.guide.slice(self.devices.apiAuthID(), channel)[1:]
 
-                while mli.dataSource['slice'][-1].startTimestamp < timestamp:
+                while mli.dataSource['slice'][-1].startTimestamp < timestamp and not self.abort and self.channelList.itemIsSelected(mli):
                     mli.setProperty('loading', '1')
                     mli.dataSource['slice'] += hdhr.guide.slice(self.devices.apiAuthID(), channel, mli.dataSource['slice'][-1].endTimestamp)
             else:
@@ -461,10 +476,16 @@ class GuideOverlay(util.CronReceiver):
             mli.setProperty('loading', '')
 
     def sliceRight(self):
-        if not self.hasDVR():
+        mli = self.channelList.getSelectedItem()
+        if mli.dataSource['thread'] and mli.dataSource['thread'].isAlive():
             return
 
-        mli = self.channelList.getSelectedItem()
+        mli.dataSource['thread'] = threading.Thread(target=self._sliceRight, args=(mli,))
+        mli.dataSource['thread'].start()
+
+    def _sliceRight(self, mli):
+        if not self.hasDVR():
+            return
 
         mli.dataSource['sliceOffset'] += 1
 
@@ -540,6 +561,8 @@ class GuideOverlay(util.CronReceiver):
             return True
         elif action == xbmcgui.ACTION_GESTURE_SWIPE_DOWN:
             self.seekAction('PlayerControl(BigSkipBackward)')
+            return True
+        elif action == xbmcgui.ACTION_MOUSE_LEFT_CLICK:
             return True
         # elif self.getFocusId() == 251 and action == xbmcgui.ACTION_MOUSE_DRAG:
         #     return True
@@ -889,7 +912,7 @@ class GuideOverlay(util.CronReceiver):
         if not mli:
             title = channel.name
             if guideChan.icon: title = CHANNEL_DISPLAY.format(channel.number,title)
-            mli = kodigui.ManagedListItem(title,data_source={'channel': channel, 'slice': [], 'sliceOffset': 0})
+            mli = kodigui.ManagedListItem(title,data_source={'channel': channel, 'slice': [], 'sliceOffset': 0, 'thread': None})
             mli.setProperty('channel.icon',guideChan.icon)
             mli.setProperty('channel.number',channel.number)
 
@@ -1254,6 +1277,10 @@ class GuideOverlayWindow(GuideOverlay,kodigui.BaseWindow):
 class GuideOverlayDialog(GuideOverlay,kodigui.BaseDialog):
     _BASE = kodigui.BaseDialog
 
+class BackgroundWindow(kodigui.BaseWindow):
+    def onAction(self, action):
+        return
+
 def start():
     util.LOG('Version: {0}'.format(util.ADDON.getAddonInfo('version')))
     util.DEBUG_LOG('Current Kodi skin: {0}'.format(skin.currentKodiSkin()))
@@ -1265,6 +1292,10 @@ def start():
     util.setGlobalProperty('search.terms','')
 
     path = skin.getSkinPath()
+
+    back = BackgroundWindow('script-hdhomerun-view-background.xml',path,'Main','1080i')
+    back.show()
+
     if util.getSetting('touch.mode',False):
         util.setGlobalProperty('touch.mode','true')
         window = GuideOverlayWindow(skin.OVERLAY,path,'Main','1080i')
@@ -1277,5 +1308,19 @@ def start():
     with util.Cron(5) as window.cron:
         window.doModal()
         window.shutdown()
+        window.abort = True
         del window
+
+    threads = threading.enumerate()
+    while len(threads) > 1:
+        util.DEBUG_LOG('Waiting on {0} threads...'.format(len(threads) - 1))
+        threads = threading.enumerate()
+        for t in threads:
+            if t != threading.currentThread():
+                t.join()
+                break
+
+    back.doClose()
+    del back
+
     util.DEBUG_LOG('Finished')
