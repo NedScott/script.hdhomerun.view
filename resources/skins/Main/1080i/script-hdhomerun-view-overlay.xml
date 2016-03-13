@@ -124,6 +124,7 @@
         </control>
 
         <control type="group" id="200">
+            <visible>IsEmpty(Window(10000).Property(script.hdhomerun.view.playing.dvr))</visible>
             <animation effect="slide" start="0,0" end="-900,0" time="500" condition="!IsEmpty(Window.Property(show.overlay))">Conditional</animation>
             <posx>1920</posx>
             <posy>0</posy>
