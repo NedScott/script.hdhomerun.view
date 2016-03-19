@@ -1,3 +1,8 @@
+** 2016.03.19 **
+
+Added 'None' to padding options (0 seconds)
+Fix 'Delete Task' button not showing properly when too many buttons were visible
+
 ** 2016.03.18 **
 
 Add 'Channel Slice' to live TV
