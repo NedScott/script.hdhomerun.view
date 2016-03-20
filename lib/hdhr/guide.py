@@ -184,11 +184,26 @@ class Series(dict):
     def hidden(self):
         return self.get('SuggestHide') == 1
 
+    @property
+    def filter(self):
+        return self.get('Filter')
+
     def episodes(self,device_auth):
         return episodes(device_auth, self.ID)
 
 
 class Episode(dict):
+    def __eq__(self, other):
+        if not isinstance(other, Episode):
+            return False
+        #print '{0}={1} {2}={3} {4}={5}'.format(self.channelNumber , other.channelNumber , self.startTimestamp , other.startTimestamp)
+        return self.channelNumber == other.channelNumber and self.startTimestamp == other.startTimestamp
+
+    def updateChannel(self, channel):
+        self['ChannelNumber'] = channel.number
+        self['ChannelName'] = channel.name
+        return self
+
     @property
     def ID(self):
         return self.get('ProgramID')
@@ -212,6 +227,23 @@ class Episode(dict):
     @property
     def icon(self):
         return self.get('ImageURL','')
+
+    @property
+    def hasTeams(self):
+        return 'Team1' in self
+
+    @property
+    def teams(self):
+        i = 0
+        teams = []
+        while True:
+            i += 1
+            try:
+                teams.append(self['Team{0}'.format(i)])
+            except KeyError:
+                break
+
+        return teams
 
     @property
     def channelNumber(self):
@@ -251,6 +283,10 @@ class Episode(dict):
 
     def displayTime(self,original=False):
         return time.strftime('%I:%M:%S %p',time.localtime(original and self.originalTimestamp or self.startTimestamp))
+
+    @property
+    def hasRule(self):
+        return self.get('RecordingRule') == 1
 
     def durationString(self):
         s = self.duration
@@ -321,7 +357,7 @@ def slice(deviceAuth, channel, utcUnixtime=None):
     try:
         results = req.json()
         if not results: return []
-        return [Episode(r) for r in results[0]['Guide']]
+        return [Episode(r).updateChannel(channel) for r in results[0]['Guide']]
     except:
         util.ERROR()
 

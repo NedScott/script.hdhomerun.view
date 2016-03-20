@@ -8,6 +8,7 @@ import util
 import player
 import skin
 import dvr
+import record
 
 API_LEVEL = 2
 
@@ -633,17 +634,18 @@ class GuideOverlay(util.CronReceiver):
             return
 
         if self.dvrWindow:
-            return self.dvrWindow.openRecordDialog(None, series=hdhr.guide.Series(ep))
+            return self.dvrWindow.openRecordDialog(None, series=hdhr.guide.Series(ep), episode=ep)
 
         ss = hdhr.storageservers.StorageServers(self.devices)
         series = hdhr.guide.Series(ep)
-        d = dvr.RecordDialog(
+        d = record.RecordDialog(
             skin.DVR_RECORD_DIALOG,
             skin.getSkinPath(),
             'Main',
             '1080i',
             rule=ss.getSeriesRule(series.ID),
             series=series,
+            episode=ep,
             storage_server=ss,
             show_hide=False
         )

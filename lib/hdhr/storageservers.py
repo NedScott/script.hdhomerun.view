@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import requests
 import urllib
+import time
 import guide
 import errors
 from lib import util
@@ -13,9 +14,11 @@ SUGGEST_URL = 'http://%s.hdhomerun.com/api/suggest?DeviceAuth={deviceAuth}&Cmd={
 RULES_URL = 'http://%s.hdhomerun.com/api/recording_rules?DeviceAuth={deviceAuth}' % 'mytest'
 
 RULES_ADD_URL = RULES_URL + '&Cmd=add&SeriesID={seriesID}'
+RULES_ADD_TEAM_URL = RULES_URL + '&Cmd=add&TeamOnly={team}'
 RULES_CHANGE_RECENT_URL = RULES_URL + '&Cmd=change&RecordingRuleID={ruleID}&RecentOnly={recentOnly}'
 RULES_MOVE_URL = RULES_URL + '&Cmd=change&RecordingRuleID={ruleID}&AfterRecordingRuleID={afterRecordingRuleID}'
 RULES_DELETE_URL = RULES_URL + '&Cmd=delete&RecordingRuleID={ruleID}'
+RULES_DELETE_DATETIME_URL = RULES_URL + '&Cmd=delete&SeriesID={seriesID}&DateTimeOnly={timestamp}'
 RULES_CHANGE_URL = RULES_URL + '&Cmd=change&RecordingRuleID={ruleID}&'
 
 
@@ -31,6 +34,14 @@ class RecordingRule(dict):
     @property
     def seriesID(self):
         return self.get('SeriesID')
+
+    @property
+    def dateTimeOnly(self):
+        return self.get('DateTimeOnly')
+
+    @property
+    def teamOnly(self):
+        return self.get('TeamOnly')
 
     @property
     def title(self):
@@ -77,6 +88,10 @@ class RecordingRule(dict):
         return False
 
     @property
+    def filter(self): # Dummy to match guide.Series
+        return None
+
+    @property
     def recentOnly(self):
         return bool(self.get('RecentOnly'))
 
@@ -94,10 +109,17 @@ class RecordingRule(dict):
     def hasRule(self):
         return True
 
+    def displayDateDTO(self):
+        return time.strftime('%b %d, %Y',time.localtime(self.dateTimeOnly))
+
+    def displayTimeDTO(self):
+        return time.strftime('%I:%M %p',time.localtime(self.dateTimeOnly))
+
     def episodes(self,device_auth):
         return guide.episodes(device_auth, self.seriesID)
 
-    def modify(self, url, mtype):
+    @classmethod
+    def _modify(self, url, mtype):
         util.DEBUG_LOG('{0} rule: {1}'.format(mtype.title(), url))
         try:
             req = requests.get(url)
@@ -105,9 +127,15 @@ class RecordingRule(dict):
         except:
             e = util.ERROR()
             raise errors.RuleModException(e)
-        self['STORAGE_SERVER'].pingUpdateRules()
 
         return req.json()
+
+    def modify(self, url, mtype):
+        json = self._modify(url, mtype)
+
+        self['STORAGE_SERVER'].pingUpdateRules()
+
+        return json
 
     def add(self, **kwargs):
         url = RULES_ADD_URL.format(
@@ -297,14 +325,53 @@ class StorageServers(object):
     def updateRules(self):
         self._getRules()
 
-    def addRule(self, result, **kwargs):
+    def addRule(self, result=None, episode=None, team=None, **kwargs):
+        if episode:
+            kwargs['DateTimeOnly'] = episode.startTimestamp
+        elif team:
+            kwargs['TeamOnly'] = team
+
         rule = RecordingRule(result).init(self).add(**kwargs)
         self._rules.append(rule)
-        result['RecordingRule'] = 1
+
+        if episode:
+            episode['RecordingRule'] = 1
+        elif not team:
+            result['RecordingRule'] = 1
+
         self.pingUpdateRules()
         return rule
 
-    def deleteRule(self,rule):
+    def addTeamRule(self, team, **kwargs):
+        url = RULES_ADD_TEAM_URL.format(
+            deviceAuth=urllib.quote(self._devices.apiAuthID(), ''),
+            team=team
+        )
+
+        if kwargs:
+            url += '&' + urllib.urlencode(kwargs)
+
+        util.DEBUG_LOG('Team rule add URL: {0}'.format(url))
+
+        resp = RecordingRule._modify(url, 'add')
+
+        util.DEBUG_LOG('Team rule add response: {0}'.format(repr(resp)))
+
+    def deleteRule(self, rule, ep=None):
+        if ep:
+            url = RULES_DELETE_DATETIME_URL.format(deviceAuth=urllib.quote(self._devices.apiAuthID(), ''), seriesID=rule.ID, timestamp=ep.startTimestamp)
+            util.DEBUG_LOG('Delete episode rule URL: {0}'.format(url))
+            try:
+                req = requests.get(url)
+                if 'RecordingRule' in ep:
+                    del ep['RecordingRule']
+                util.DEBUG_LOG('Episode rule delete response: {0}'.format(repr(req.text)))
+            except:
+                e = util.ERROR()
+                raise errors.RuleDelException(e)
+            self.updateRules()
+            return
+
         if not rule in self._rules: return False
 
         self._rules.pop(self._rules.index(rule.delete()))

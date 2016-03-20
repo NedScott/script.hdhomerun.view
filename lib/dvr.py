@@ -4,214 +4,11 @@ import xbmc, xbmcgui
 import kodigui
 import hdhr
 import skin
+import record
 
 import util
 from util import T
 
-class RecordDialog(kodigui.BaseDialog):
-    EPISODE_LIST = 201
-    RECORD_BUTTON = 203
-    HIDE_BUTTON = 204
-    RECENT_BUTTON = 205
-    PRIORITY_BUTTON = 206
-    DELETE_BUTTON = 207
-    WATCH_BUTTON = 208
-
-    START_BUTTON = 215
-    END_BUTTON = 216
-
-    PADDING_OPTIONS = (('None', 0), ('30s', 30), ('1m', 60), ('5m', 300), ('15m', 900), ('30m', 1800), ('1h', 3600))
-
-    def __init__(self,*args,**kwargs):
-        kodigui.BaseDialog.__init__(self,*args,**kwargs)
-        self.parent = kwargs.get('parent')
-        self.series = kwargs.get('series')
-        self.rule = kwargs.get('rule')
-        self.storageServer = kwargs.get('storage_server')
-        self.results = kwargs.get('results')
-        self.showHide = (kwargs.get('show_hide') or self.series.hidden) and not self.series.hasRule
-        self.dialogSource = kwargs.get('source')
-        self.ruleAdded = False
-        self.setPriority = False
-        self.onNow = None
-        self.startPadding = 30
-        self.endPadding = 30
-
-    def onFirstInit(self):
-        self.episodeList = kodigui.ManagedControlList(self,self.EPISODE_LIST,20)
-        self.showHideButton(self.showHide)
-        self.setProperty('show.hasRule',self.series.hasRule and '1' or '')
-        self.setProperty('record.always',(hasattr(self.series, 'recentOnly') and self.series.recentOnly) and 'RECENT' or 'ALWAYS')
-        self.setProperty('series.title',self.series.title)
-        self.setProperty('synopsis.title','Synopsis')
-        self.setProperty('synopsis',self.series.synopsis)
-        self.updatePadding()
-
-        self.fillEpisodeList()
-
-        if self.onNow:
-            self.setProperty('show.watch', '1')
-            xbmc.sleep(100)
-            self.setFocusId(self.WATCH_BUTTON)
-        elif self.series.hasRule:
-            self.setFocusId(self.PRIORITY_BUTTON)
-        else:
-            self.setFocusId(self.RECORD_BUTTON)
-
-    def onClick(self,controlID):
-        if controlID == self.RECORD_BUTTON:
-            self.add()
-        elif controlID == self.HIDE_BUTTON:
-            self.hide()
-        elif controlID == self.RECENT_BUTTON:
-            self.toggleRuleRecent()
-        elif controlID == self.PRIORITY_BUTTON:
-            self.doSetPriority()
-        elif controlID == self.DELETE_BUTTON:
-            self.deleteRule()
-        elif controlID == self.WATCH_BUTTON:
-            self.watch()
-        elif controlID == self.START_BUTTON:
-            self.setStart()
-        elif controlID == self.END_BUTTON:
-            self.setEnd()
-
-    @util.busyDialog('GETTING INFO')
-    def fillEpisodeList(self):
-        items = []
-        for r in self.series.episodes(self.storageServer._devices.apiAuthID()):
-            item = kodigui.ManagedListItem(r.title,r.synopsis,thumbnailImage=r.icon,data_source=r)
-            item.setProperty('series.title',self.series.title)
-            item.setProperty('episode.title',r.title)
-            item.setProperty('episode.synopsis',r.synopsis)
-            item.setProperty('episode.number',r.number)
-            item.setProperty('channel.number',r.channelNumber)
-            item.setProperty('channel.name',r.channelName)
-            item.setProperty('air.date',r.displayDate())
-            item.setProperty('air.time',r.displayTime())
-            item.setProperty('original.date',r.displayDate(original=True))
-            item.setProperty('original.time',r.displayTime(original=True))
-            items.append(item)
-            self.onNow = self.onNow or r.onNow() and r or None
-
-        self.episodeList.addItems(items)
-
-    def showHideButton(self, show=True):
-        self.showHide = show
-        if show:
-            hideText = self.series.hidden and T(32841) or T(32840)
-            self.setProperty('show.hide',hideText)
-        else:
-            self.setProperty('show.hide','')
-
-    def updatePadding(self):
-        if self.rule:
-            self.setStart(self.rule.startPadding)
-            self.setEnd(self.rule.endPadding)
-
-    def add(self):
-        try:
-            self.rule = self.storageServer.addRule(self.series, StartPadding=self.startPadding, EndPadding=self.endPadding)
-        except hdhr.errors.RuleModException, e:
-            util.showNotification(e.message,header=T(32832))
-            return
-
-        self.ruleAdded = True
-        if self.parent:
-            self.parent.fillRules(update=True)
-            self.parent.delayedUpdateRecordings()
-        else:
-            self.series['RecordingRule'] = 1
-
-        xbmcgui.Dialog().ok(T(32800),T(32801),'',self.series.title)
-
-        self.setProperty('show.hasRule', '1')
-        self.showHideButton(False)
-
-    def hide(self):
-        try:
-            util.withBusyDialog(self.storageServer.hideSeries,'HIDING',self.series)
-        except hdhr.errors.SeriesHideException, e:
-            util.showNotification(e.message,header=T(32838))
-            return
-
-        self.doClose()
-
-    @util.busyDialog('UPDATING')
-    def toggleRuleRecent(self):
-        if not self.rule:
-            util.LOG('RecordDialog.toggleRuleRecent(): No rule to modify')
-
-        self.rule.recentOnly = not self.rule.recentOnly
-        self.setProperty('record.always',self.rule.recentOnly and 'RECENT' or 'ALWAYS')
-
-        if self.parent:
-            self.parent.fillRules(update=True)
-
-    def doSetPriority(self):
-        self.setPriority = True
-        self.doClose()
-
-    def deleteRule(self):
-        if not self.rule:
-            util.LOG('RecordDialog.deleteRule(): No rule to modify')
-            return
-
-        if self.parent:
-            self.parent.deleteRule(self.rule)
-        else:
-            self.storageServer.deleteRule(self.rule)
-            self.series['RecordingRule'] = 0
-
-        self.setProperty('show.hasRule', '')
-
-        self.showHideButton(self.showHide)
-
-        if self.dialogSource == 'RULES':
-            self.doClose()
-
-    def watch(self):
-        if not self.parent:
-            return
-
-        self.parent.playShow(self.onNow)
-        self.doClose()
-
-    def setStart(self, value=None):
-        if value == None:
-            choice = self.getPaddingOption()
-            if not choice:
-                return
-            label = choice[0]
-            self.startPadding = choice[1]
-            self.rule.startPadding = choice[1]
-        else:
-            label = value and util.durationToShortText(value) or self.PADDING_OPTIONS[0][0]
-            self.startPadding = value
-
-
-        self.getControl(self.START_BUTTON).setLabel(label)
-
-    def setEnd(self, value=None):
-        if value == None:
-            choice = self.getPaddingOption()
-            if not choice:
-                return
-            label = choice[0]
-            self.endPadding = choice[1]
-            self.rule.endPadding = choice[1]
-        else:
-            label = value and util.durationToShortText(value) or self.PADDING_OPTIONS[0][0]
-            self.endPadding = value
-
-        self.getControl(self.END_BUTTON).setLabel(label)
-
-    def getPaddingOption(self):
-        idx = xbmcgui.Dialog().select('Padding', [x[0] for x in self.PADDING_OPTIONS])
-        if idx < 0:
-            return None
-
-        return self.PADDING_OPTIONS[idx]
 
 class EpisodesDialog(kodigui.BaseDialog):
     RECORDING_LIST_ID = 101
@@ -960,7 +757,12 @@ class DVRBase(util.CronReceiver):
         items = []
         for r in self.storageServer.rules:
             item = kodigui.ManagedListItem(r.title,data_source=r)
-            item.setProperty('rule.recent_only',r.recentOnly and T(32805) or T(32806))
+            if r.dateTimeOnly:
+                item.setProperty('rule.recent_only','{0} at {1}'.format(r.displayDateDTO(), r.displayTimeDTO()))
+            elif r.teamOnly:
+                item.setProperty('rule.recent_only', '{0}: {1}'.format('TEAM', r.teamOnly))
+            else:
+                item.setProperty('rule.recent_only',r.recentOnly and T(32805) or T(32806))
             item.setProperty('seriesID', r.seriesID)
             #print '{0} {1}'.format(r.ruleID, r.title)
             items.append(item)
@@ -997,27 +799,30 @@ class DVRBase(util.CronReceiver):
         item.dataSource.recentOnly = not item.dataSource.recentOnly
         self.fillRules(update=True)
 
-    def deleteRule(self, rule=None):
-        if not rule:
-            item = self.ruleList.getSelectedItem()
-            if not item:
+    def deleteRule(self, rule=None, ep=None):
+        if ep:
+            self.storageServer.deleteRule(rule, ep)
+        else:
+            if not rule:
+                item = self.ruleList.getSelectedItem()
+                if not item:
+                    return
+                rule = item.dataSource
+
+            yes = xbmcgui.Dialog().yesno(T(32035),T(32037))
+            if not yes:
                 return
-            rule = item.dataSource
 
-        yes = xbmcgui.Dialog().yesno(T(32035),T(32037))
-        if not yes:
-            return
+            util.withBusyDialog(self.storageServer.deleteRule,'DELETING',rule)
 
-        util.withBusyDialog(self.storageServer.deleteRule,'DELETING',rule)
+            def update(sitem):
+                if rule.seriesID == sitem.dataSource.ID:
+                    sitem.dataSource['RecordingRule'] = ''
+                    sitem.setProperty('has.rule','')
 
-        def update(sitem):
-            if rule.seriesID == sitem.dataSource.ID:
-                sitem.dataSource['RecordingRule'] = ''
-                sitem.setProperty('has.rule','')
-
-        for control in (self.searchPanel, self.moviePanel, self.nowShowingPanel1, self.nowShowingPanel2):
-            for sItem in control:
-                update(sItem)
+            for control in (self.searchPanel, self.moviePanel, self.nowShowingPanel1, self.nowShowingPanel2):
+                for sItem in control:
+                    update(sItem)
 
 
         self.fillRules(update=True)
@@ -1094,7 +899,7 @@ class DVRBase(util.CronReceiver):
                 else:
                     self.setFocusId(self.SEARCH_PANEL_ID)
 
-    def openRecordDialog(self, source, item=None, series=None):
+    def openRecordDialog(self, source, item=None, series=None, episode=None):
         rule = None
         if not series:
             if source == 'SEARCH':
@@ -1120,17 +925,22 @@ class DVRBase(util.CronReceiver):
 
             if not item: return
 
+        if rule and (rule.dateTimeOnly or rule.teamOnly):
+            self.deleteRule(rule)
+            return
+
         path = skin.getSkinPath()
         series = series or item.dataSource
 
         try:
-            d = RecordDialog(
+            d = record.RecordDialog(
                 skin.DVR_RECORD_DIALOG,
                 path,
                 'Main',
                 '1080i',
                 parent=self,
                 series=series,
+                episode=episode,
                 rule=rule,
                 storage_server=self.storageServer,
                 show_hide=not self.searchTerms and source != 'RULES',
