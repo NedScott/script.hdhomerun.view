@@ -285,15 +285,24 @@ class GuideOverlay(util.CronReceiver):
             elif action == xbmcgui.ACTION_CHANNEL_DOWN: #or action == xbmcgui.ACTION_PAGE_DOWN: #For testing
                 self.channelDown()
             elif action in (xbmcgui.ACTION_MOUSE_LEFT_CLICK, xbmcgui.ACTION_MOUSE_DOUBLE_CLICK): # To catch all clicks we need to catch both
+                print self.getFocusId()
                 if self.getFocusId() in (210, 217):
                     return self.handleMouseClick(action, mli)
                 elif self.getFocusId() == 201 or (self.getFocusId() == 215 and self.mouseXTrans(action.getAmount1()) < 1774):
                     if not mli.getProperty('slice.offset') or mli.getProperty('slice.offset') == '0':
                         self.channelClicked()
+                    else:
+                        return self.handleMouseClick(action, mli)
                 elif xbmc.getCondVisibility('ControlGroup(216).HasFocus(0)'):
                     return self.sliceRight()
                 # elif self.getFocusId() == 217:
                 #     return self.sliceLeft()
+            elif action == xbmcgui.ACTION_MOUSE_WHEEL_DOWN and self.getFocusId() != 201:
+                self.setFocusId(201)
+                xbmc.executebuiltin('Action(ScrollDown)')
+            elif action == xbmcgui.ACTION_MOUSE_WHEEL_UP and self.getFocusId() != 201:
+                self.setFocusId(201)
+                xbmc.executebuiltin('Action(ScrollUp)')
             elif action.getButtonCode() == 61519:
                 xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "Input.ShowCodec", "id": 1}')
             elif action.getButtonCode() == 61524:
@@ -344,7 +353,10 @@ class GuideOverlay(util.CronReceiver):
     def rowClicked(self, action, mli, x, y):
         if not mli.getProperty('slice.offset') or mli.getProperty('slice.offset') == '0':
             if action == xbmcgui.ACTION_MOUSE_LEFT_CLICK:
-                self.clickShowOverlay(210)
+                if x > 1020:
+                    self.playChannel(mli.dataSource['channel'])
+                else:
+                    self.clickShowOverlay(210)
             return
 
         if x < 146:
@@ -368,16 +380,19 @@ class GuideOverlay(util.CronReceiver):
         elif x < 1440:
             pos = 5
         else:
-            return
+            pos = 5
 
         i = pos - (6 - mli.dataSource['sliceOffset'])
         if i < 0:
             if i < -2:
                 self.clickShowOverlay(210)
+            else:
+                self.playChannel(mli.dataSource['channel'])
             return
 
         ep = mli.dataSource['slice'][i]
-
+        if not ep.channelNumber:
+            ep['ChannelNumber'] = mli.dataSource['channel'].number
         self.openRecordDialog(ep)
 
     def timeDisplay(self, timestamp):
@@ -619,6 +634,8 @@ class GuideOverlay(util.CronReceiver):
 
         if mli.getProperty('slice.offset') and mli.getProperty('slice.offset') != '0':
             ep = mli.dataSource['slice'] and mli.dataSource['slice'][mli.dataSource['sliceOffset']-1] or None
+            if not ep.channelNumber:
+                ep['ChannelNumber'] = mli.dataSource['channel'].number
             self.openRecordDialog(ep)
         else:
             channel = mli.dataSource['channel']
@@ -958,6 +975,7 @@ class GuideOverlay(util.CronReceiver):
                 current = mli
 
             items.append(mli)
+
         if not items:
             return False
 

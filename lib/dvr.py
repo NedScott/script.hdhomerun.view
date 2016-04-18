@@ -909,25 +909,26 @@ class DVRBase(util.CronReceiver):
                     item = item or self.searchPanel.getSelectedItem()
 
                 for ritem in self.ruleList:
-                    if ritem.dataSource.ID == item.dataSource.ID:
+                    if ritem.dataSource.seriesID == item.dataSource.ID:
                         rule = ritem.dataSource
                         break
             elif source == 'RULES':
                 item = item or self.ruleList.getSelectedItem()
                 rule = item.dataSource
+
+                if rule and (rule.dateTimeOnly or rule.teamOnly):
+                    self.deleteRule(rule)
+                    return
+
             elif source == 'NOWSHOWING':
                 panel = self.currentNowShowingPanel()
                 item = item or panel.getSelectedItem()
                 for ritem in self.ruleList:
-                    if ritem.dataSource.ID == item.dataSource.ID:
+                    if ritem.dataSource.seriesID == item.dataSource.ID:
                         rule = ritem.dataSource
                         break
 
             if not item: return
-
-        if rule and (rule.dateTimeOnly or rule.teamOnly):
-            self.deleteRule(rule)
-            return
 
         path = skin.getSkinPath()
         series = series or item.dataSource

@@ -196,7 +196,7 @@ class Episode(dict):
     def __eq__(self, other):
         if not isinstance(other, Episode):
             return False
-        #print '{0}={1} {2}={3} {4}={5}'.format(self.channelNumber , other.channelNumber , self.startTimestamp , other.startTimestamp)
+        #print '{0}={1} {2}={3}'.format(self.channelNumber , other.channelNumber , self.startTimestamp , other.startTimestamp)
         return self.channelNumber == other.channelNumber and self.startTimestamp == other.startTimestamp
 
     def updateChannel(self, channel):

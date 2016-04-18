@@ -137,6 +137,18 @@ class RecordingRule(dict):
 
         return json
 
+    def modifyAndUpdate(self, url, mtype):
+        try:
+            new = self.modify(url, mtype)[0]
+        except:
+            new = None
+            util.ERROR()
+
+        if new:
+            self.update(new)
+
+        return self
+
     def add(self, **kwargs):
         url = RULES_ADD_URL.format(
             deviceAuth=urllib.quote(self['STORAGE_SERVER']._devices.apiAuthID(), ''),
@@ -146,9 +158,7 @@ class RecordingRule(dict):
         if kwargs:
             url += '&' + urllib.urlencode(kwargs)
 
-        self.modify(url, 'add')
-
-        return self
+        return self.modifyAndUpdate(url, 'add')
 
     def change(self, **kwargs):
         url = RULES_CHANGE_URL.format(
@@ -168,9 +178,8 @@ class RecordingRule(dict):
             ruleID=self.ruleID,
             recentOnly=self.get('RecentOnly') or 0
         )
-        self.modify(url, 'change')
 
-        return self
+        return self.modifyAndUpdate(url, 'change')
 
     def move(self, after_rule_id):
         url = RULES_MOVE_URL.format(
@@ -178,9 +187,8 @@ class RecordingRule(dict):
             ruleID=self.ruleID,
             afterRecordingRuleID=after_rule_id
         )
-        self.modify(url, 'move')
 
-        return self
+        return self.modifyAndUpdate(url, 'add')
 
     def delete(self):
         url = RULES_DELETE_URL.format(
@@ -372,9 +380,8 @@ class StorageServers(object):
             self.updateRules()
             return
 
-        if not rule in self._rules: return False
-
-        self._rules.pop(self._rules.index(rule.delete()))
+        self._removeRule(rule.ID)
+        rule.delete()
         return True
 
     def hideSeries(self,series):
@@ -395,6 +402,19 @@ class StorageServers(object):
 
     def deleteRecording(self,recording):
         util.LOG('delteRecording() - NOT IMPLEMENTED')
+
+    def getRuleById(self, ruleID):
+        for rule in self._rules:
+            if rule.ID == ruleID:
+                return rule
+        return None
+
+    def _removeRule(self, ruleID):
+        rule = self.getRuleById(ruleID)
+        if not rule:
+            util.DEBUG_LOG('StorageServers: Attemted to remove rule not in list')
+            return
+        self._rules.pop(self._rules.index(rule))
 
     def pingUpdateRules(self):
         for d in self._devices.storageServers:

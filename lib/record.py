@@ -1,3 +1,5 @@
+import re
+
 import xbmc
 import xbmcgui
 import kodigui
@@ -19,7 +21,7 @@ class RecordDialog(kodigui.BaseDialog):
     START_BUTTON = 215
     END_BUTTON = 216
 
-    PADDING_OPTIONS = (('None', 0), ('30s', 30), ('1m', 60), ('5m', 300), ('15m', 900), ('30m', 1800), ('1h', 3600))
+    PADDING_OPTIONS = (('None', 0), ('Custom',-1), ('30s', 30), ('1m', 60), ('5m', 300), ('15m', 900), ('30m', 1800), ('1h', 3600))
 
     def __init__(self,*args,**kwargs):
         kodigui.BaseDialog.__init__(self,*args,**kwargs)
@@ -42,7 +44,11 @@ class RecordDialog(kodigui.BaseDialog):
         self.episodeList = kodigui.ManagedControlList(self,self.EPISODE_LIST,20)
         self.showHideButton(self.showHide)
         self.setProperty('show.hasRule',self.series.hasRule and '1' or '')
-        self.setProperty('record.always',(hasattr(self.series, 'recentOnly') and self.series.recentOnly) and 'RECENT' or 'ALWAYS')
+        print self.series
+        if self.rule:
+            self.setProperty('record.always', self.rule.recentOnly and 'RECENT' or 'ALWAYS')
+        else:
+            self.setProperty('record.always',(hasattr(self.series, 'recentOnly') and self.series.recentOnly) and 'RECENT' or 'ALWAYS')
         self.setProperty('series.title',self.series.title)
         self.setProperty('synopsis.title','Synopsis')
         self.setProperty('synopsis',self.series.synopsis)
@@ -111,6 +117,7 @@ class RecordDialog(kodigui.BaseDialog):
             items.append(item)
             self.onNow = self.onNow or r.onNow() and r or None
 
+        self.episodeList.reset()
         self.episodeList.addItems(items)
 
         if teams:
@@ -139,6 +146,7 @@ class RecordDialog(kodigui.BaseDialog):
     def add(self, episode=None, team=None):
         try:
             self.rule = self.storageServer.addRule(self.series, episode=episode, team=team, StartPadding=self.startPadding, EndPadding=self.endPadding)
+            print self.rule
         except hdhr.errors.RuleModException, e:
             util.showNotification(e.message,header=T(32832))
             return
@@ -155,6 +163,7 @@ class RecordDialog(kodigui.BaseDialog):
         if not episode and not team:
             self.setProperty('show.hasRule', '1')
             self.showHideButton(False)
+            self.fillEpisodeList()
 
 
     def hide(self):
@@ -170,12 +179,15 @@ class RecordDialog(kodigui.BaseDialog):
     def toggleRuleRecent(self):
         if not self.rule:
             util.LOG('RecordDialog.toggleRuleRecent(): No rule to modify')
+            return
 
         self.rule.recentOnly = not self.rule.recentOnly
         self.setProperty('record.always',self.rule.recentOnly and 'RECENT' or 'ALWAYS')
 
         if self.parent:
             self.parent.fillRules(update=True)
+
+        self.fillEpisodeList()
 
     def doSetPriority(self):
         self.setPriority = True
@@ -201,8 +213,8 @@ class RecordDialog(kodigui.BaseDialog):
 
         if not ep:
             self.setProperty('show.hasRule', '')
-
             self.showHideButton(self.showHide)
+            self.fillEpisodeList()
 
         if self.dialogSource == 'RULES':
             self.doClose()
@@ -221,7 +233,8 @@ class RecordDialog(kodigui.BaseDialog):
                 return
             label = choice[0]
             self.startPadding = choice[1]
-            self.rule.startPadding = choice[1]
+            if self.rule:
+                self.rule.startPadding = choice[1]
         else:
             label = value and util.durationToShortText(value) or self.PADDING_OPTIONS[0][0]
             self.startPadding = value
@@ -236,7 +249,8 @@ class RecordDialog(kodigui.BaseDialog):
                 return
             label = choice[0]
             self.endPadding = choice[1]
-            self.rule.endPadding = choice[1]
+            if self.rule:
+                self.rule.endPadding = choice[1]
         else:
             label = value and util.durationToShortText(value) or self.PADDING_OPTIONS[0][0]
             self.endPadding = value
@@ -288,5 +302,43 @@ class RecordDialog(kodigui.BaseDialog):
         idx = xbmcgui.Dialog().select('Padding', [x[0] for x in self.PADDING_OPTIONS])
         if idx < 0:
             return None
+        result = self.PADDING_OPTIONS[idx]
+        if result[1] < 0:
+            return self.getCustomPadding()
+        else:
+            return result
 
-        return self.PADDING_OPTIONS[idx]
+    def getCustomPadding(self):
+        padString = xbmcgui.Dialog().input(
+            'Enter padding (ex: "4m5s", "4m", "35s")'
+        )
+        if not padString:
+            return None
+
+        match = re.search('(\d+)m\s*(\d+)s', padString) or re.search('(\d+)m()', padString) or re.search('()(\d+)s', padString)
+
+        if match:
+            try:
+                minutes = int(match.group(1)) * 60
+            except ValueError:
+                minutes = 0
+
+            try:
+                seconds = int(match.group(2))
+            except ValueError:
+                seconds = 0
+
+            seconds += minutes
+        else:
+            try:
+                seconds = int(padString)
+            except ValueError:
+                seconds = 0
+
+
+        if seconds:
+            return (util.durationToMinuteText(seconds), seconds)
+
+        return None
+
+
