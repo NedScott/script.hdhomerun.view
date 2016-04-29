@@ -299,6 +299,17 @@ class Episode(dict):
         else:
             return '%d:%02d' % (minutes, seconds)
 
+def createSeriesFromEpisode(storage_server, ep):
+    series = Series(ep.copy())
+    rule = storage_server.getSeriesRule(series.ID)
+    if rule:
+        series.update(rule)
+        series['RecordingRule'] = '1'
+    else:
+        series['RecordingRule'] = ''
+
+    return series
+
 def search(deviceAuth,category='',terms=''):
     url = None
     if terms:

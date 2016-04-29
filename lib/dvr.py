@@ -20,6 +20,7 @@ class EpisodesDialog(kodigui.BaseDialog):
         self.sortMode = util.getSetting('episodes.sort.mode','AIRDATE')
         self.sortASC = util.getSetting('episodes.sort.asc',True)
         self.play = None
+        self.count = 0
 
     def onFirstInit(self):
         self.setWindowProperties()
@@ -41,7 +42,7 @@ class EpisodesDialog(kodigui.BaseDialog):
 
     def onClick(self,controlID):
         if controlID == self.RECORDING_LIST_ID:
-            self.done()
+            self.showEpisodeOptions()
         elif controlID == 301:
             self.sort('NAME')
         elif controlID == 302:
@@ -101,6 +102,7 @@ class EpisodesDialog(kodigui.BaseDialog):
 
     def fillRecordings(self):
         items = []
+        self.count = 0
         for r in self.storageServer.recordings:
             if self.groupID and not r.displayGroupID == self.groupID: continue
             item = kodigui.ManagedListItem(r.episodeTitle,r.synopsis,thumbnailImage=r.icon,data_source=r)
@@ -117,10 +119,46 @@ class EpisodesDialog(kodigui.BaseDialog):
 
         self.recordingList.reset()
         self.recordingList.addItems(items)
+        self.count = self.recordingList.size()
         self.setFocusId(self.RECORDING_LIST_ID)
 
-    def done(self):
-        self.setProperty('staring.recording','1')
+    def showEpisodeOptions(self):
+        options = [('watch', 'Watch'), ('delete', 'Delete')]
+        idx = xbmcgui.Dialog().select('Options', [o[1] for o in options])
+        if idx < 0:
+            return
+
+        choice = options[idx][0]
+        if choice == 'watch':
+            return self.watch()
+
+        options = [('delete', 'Delete'), ('rerecord', 'Re-record'), (None, 'Cancel')]
+        idx = xbmcgui.Dialog().select('Options', [o[1] for o in options])
+        if idx < 0:
+            return
+
+        choice = options[idx][0]
+        if not choice:
+            return
+
+        if choice == 'delete':
+            self.delete()
+        elif choice == 'rerecord':
+            self.delete(rerecord=True)
+
+    def delete(self, rerecord=False):
+        item = self.recordingList.getSelectedItem()
+        if not item:
+            return
+
+        if self.storageServer.deleteRecording(item.dataSource, rerecord=rerecord):
+            self.recordingList.removeItem(item.pos())
+            self.count = self.recordingList.size()
+            if not self.count:
+                self.doClose()
+
+    def watch(self):
+        self.setProperty('starting.recording','1')
         item = self.recordingList.getSelectedItem()
         self.play = item.dataSource
         self.doClose()
@@ -899,7 +937,7 @@ class DVRBase(util.CronReceiver):
                 else:
                     self.setFocusId(self.SEARCH_PANEL_ID)
 
-    def openRecordDialog(self, source, item=None, series=None, episode=None):
+    def openRecordDialog(self, source, item=None, series=None, episode=None, return_dialog=False):
         rule = None
         if not series:
             if source == 'SEARCH':
@@ -908,10 +946,7 @@ class DVRBase(util.CronReceiver):
                 else:
                     item = item or self.searchPanel.getSelectedItem()
 
-                for ritem in self.ruleList:
-                    if ritem.dataSource.seriesID == item.dataSource.ID:
-                        rule = ritem.dataSource
-                        break
+                rule = self.storageServer.getSeriesRule(item.dataSource.ID)
             elif source == 'RULES':
                 item = item or self.ruleList.getSelectedItem()
                 rule = item.dataSource
@@ -923,12 +958,12 @@ class DVRBase(util.CronReceiver):
             elif source == 'NOWSHOWING':
                 panel = self.currentNowShowingPanel()
                 item = item or panel.getSelectedItem()
-                for ritem in self.ruleList:
-                    if ritem.dataSource.seriesID == item.dataSource.ID:
-                        rule = ritem.dataSource
-                        break
+                rule = self.storageServer.getSeriesRule(item.dataSource.ID)
 
             if not item: return
+        else:
+            if not rule:
+                rule = self.storageServer.getSeriesRule(series.ID)
 
         path = skin.getSkinPath()
         series = series or item.dataSource
@@ -959,14 +994,17 @@ class DVRBase(util.CronReceiver):
                         return
                     self.ruleList.selectItem(item.pos())
                     self.moveRule()
-                elif d.ruleAdded:
+                else:
                     if source == 'SEARCH' or source == 'NOWSHOWING':
-                        item.setProperty('has.rule','1')
+                        item.setProperty('has.rule', series.hasRule and '1' or '')
 
                 self.removeSeries(series)
 
         finally:
-            del d
+            if return_dialog:
+                return d
+            else:
+                del d
 
     def openEpisodeDialog(self):
         item = self.showList.getSelectedItem()
@@ -976,10 +1014,17 @@ class DVRBase(util.CronReceiver):
         d = EpisodesDialog(skin.DVR_EPISODES_DIALOG,path,'Main','1080i',group_id=groupID,storage_server=self.storageServer)
         d.doModal()
         self.play = d.play
+        count = d.count
         del d
         if self.play:
             util.setGlobalProperty('window.animations','')
             self.doClose()
+        else:
+            if not count:
+                if item.dataSource:  # i.e. Not the all eps item
+                    self.showList.removeItem(item.pos())
+            else:
+                item.setProperty('show.count', str(count))
 
     def removeSeries(self, series=None):
         if not series:

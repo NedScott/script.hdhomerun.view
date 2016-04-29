@@ -789,6 +789,15 @@
                                     <texture fallback="script-hdhomerun-view-default_image.png">$INFO[ListItem.Property(slice0.thumb)]</texture>
                                     <aspectratio aligny="top">scale</aspectratio>
                                 </control>
+                                <control type="image">
+                                    <visible>!IsEmpty(ListItem.Property(slice0.hasrule))</visible>
+                                    <posx>214</posx>
+                                    <posy>190</posy>
+                                    <width>16</width>
+                                    <height>16</height>
+                                    <texture>script-hdhomerun-view-rule_indicator.png</texture>
+                                    <aspectratio>stretch</aspectratio>
+                                </control>
                                 <control type="textbox">
                                     <posx>10</posx>
                                     <posy>193</posy>
@@ -838,6 +847,15 @@
                                     <height>180</height>
                                     <texture fallback="script-hdhomerun-view-default_image.png">$INFO[ListItem.Property(slice1.thumb)]</texture>
                                     <aspectratio aligny="top">scale</aspectratio>
+                                </control>
+                                <control type="image">
+                                    <visible>!IsEmpty(ListItem.Property(slice1.hasrule))</visible>
+                                    <posx>214</posx>
+                                    <posy>190</posy>
+                                    <width>16</width>
+                                    <height>16</height>
+                                    <texture>script-hdhomerun-view-rule_indicator.png</texture>
+                                    <aspectratio>stretch</aspectratio>
                                 </control>
                                 <control type="textbox">
                                     <posx>10</posx>
@@ -889,6 +907,15 @@
                                     <texture fallback="script-hdhomerun-view-default_image.png">$INFO[ListItem.Property(slice2.thumb)]</texture>
                                     <aspectratio aligny="top">scale</aspectratio>
                                 </control>
+                                <control type="image">
+                                    <visible>!IsEmpty(ListItem.Property(slice2.hasrule))</visible>
+                                    <posx>214</posx>
+                                    <posy>190</posy>
+                                    <width>16</width>
+                                    <height>16</height>
+                                    <texture>script-hdhomerun-view-rule_indicator.png</texture>
+                                    <aspectratio>stretch</aspectratio>
+                                </control>
                                 <control type="textbox">
                                     <posx>10</posx>
                                     <posy>193</posy>
@@ -938,6 +965,15 @@
                                     <height>180</height>
                                     <texture fallback="script-hdhomerun-view-default_image.png">$INFO[ListItem.Property(slice3.thumb)]</texture>
                                     <aspectratio aligny="top">scale</aspectratio>
+                                </control>
+                                <control type="image">
+                                    <visible>!IsEmpty(ListItem.Property(slice3.hasrule))</visible>
+                                    <posx>214</posx>
+                                    <posy>190</posy>
+                                    <width>16</width>
+                                    <height>16</height>
+                                    <texture>script-hdhomerun-view-rule_indicator.png</texture>
+                                    <aspectratio>stretch</aspectratio>
                                 </control>
                                 <control type="textbox">
                                     <posx>10</posx>
@@ -989,6 +1025,15 @@
                                     <texture fallback="script-hdhomerun-view-default_image.png">$INFO[ListItem.Property(slice4.thumb)]</texture>
                                     <aspectratio aligny="top">scale</aspectratio>
                                 </control>
+                                <control type="image">
+                                    <visible>!IsEmpty(ListItem.Property(slice4.hasrule))</visible>
+                                    <posx>214</posx>
+                                    <posy>190</posy>
+                                    <width>16</width>
+                                    <height>16</height>
+                                    <texture>script-hdhomerun-view-rule_indicator.png</texture>
+                                    <aspectratio>stretch</aspectratio>
+                                </control>
                                 <control type="textbox">
                                     <posx>10</posx>
                                     <posy>193</posy>
@@ -1038,6 +1083,15 @@
                                     <height>180</height>
                                     <texture fallback="script-hdhomerun-view-default_image.png">$INFO[ListItem.Property(slice5.thumb)]</texture>
                                     <aspectratio aligny="top">scale</aspectratio>
+                                </control>
+                                <control type="image">
+                                    <visible>!IsEmpty(ListItem.Property(slice5.hasrule))</visible>
+                                    <posx>214</posx>
+                                    <posy>190</posy>
+                                    <width>16</width>
+                                    <height>16</height>
+                                    <texture>script-hdhomerun-view-rule_indicator.png</texture>
+                                    <aspectratio>stretch</aspectratio>
                                 </control>
                                 <control type="textbox">
                                     <posx>10</posx>
@@ -1448,6 +1502,15 @@
                                     <texture fallback="script-hdhomerun-view-default_image.png">$INFO[ListItem.Property(slice0.thumb)]</texture>
                                     <aspectratio aligny="top">scale</aspectratio>
                                 </control>
+                                <control type="image">
+                                    <visible>!IsEmpty(ListItem.Property(slice0.hasrule))</visible>
+                                    <posx>214</posx>
+                                    <posy>190</posy>
+                                    <width>16</width>
+                                    <height>16</height>
+                                    <texture>script-hdhomerun-view-rule_indicator.png</texture>
+                                    <aspectratio>stretch</aspectratio>
+                                </control>
                                 <control type="textbox">
                                     <posx>10</posx>
                                     <posy>193</posy>
@@ -1497,6 +1560,15 @@
                                     <height>180</height>
                                     <texture fallback="script-hdhomerun-view-default_image.png">$INFO[ListItem.Property(slice1.thumb)]</texture>
                                     <aspectratio aligny="top">scale</aspectratio>
+                                </control>
+                                <control type="image">
+                                    <visible>!IsEmpty(ListItem.Property(slice1.hasrule))</visible>
+                                    <posx>214</posx>
+                                    <posy>190</posy>
+                                    <width>16</width>
+                                    <height>16</height>
+                                    <texture>script-hdhomerun-view-rule_indicator.png</texture>
+                                    <aspectratio>stretch</aspectratio>
                                 </control>
                                 <control type="textbox">
                                     <posx>10</posx>
@@ -1548,6 +1620,15 @@
                                     <texture fallback="script-hdhomerun-view-default_image.png">$INFO[ListItem.Property(slice2.thumb)]</texture>
                                     <aspectratio aligny="top">scale</aspectratio>
                                 </control>
+                                <control type="image">
+                                    <visible>!IsEmpty(ListItem.Property(slice2.hasrule))</visible>
+                                    <posx>214</posx>
+                                    <posy>190</posy>
+                                    <width>16</width>
+                                    <height>16</height>
+                                    <texture>script-hdhomerun-view-rule_indicator.png</texture>
+                                    <aspectratio>stretch</aspectratio>
+                                </control>
                                 <control type="textbox">
                                     <posx>10</posx>
                                     <posy>193</posy>
@@ -1597,6 +1678,15 @@
                                     <height>180</height>
                                     <texture fallback="script-hdhomerun-view-default_image.png">$INFO[ListItem.Property(slice3.thumb)]</texture>
                                     <aspectratio aligny="top">scale</aspectratio>
+                                </control>
+                                <control type="image">
+                                    <visible>!IsEmpty(ListItem.Property(slice3.hasrule))</visible>
+                                    <posx>214</posx>
+                                    <posy>190</posy>
+                                    <width>16</width>
+                                    <height>16</height>
+                                    <texture>script-hdhomerun-view-rule_indicator.png</texture>
+                                    <aspectratio>stretch</aspectratio>
                                 </control>
                                 <control type="textbox">
                                     <posx>10</posx>
@@ -1648,6 +1738,15 @@
                                     <texture fallback="script-hdhomerun-view-default_image.png">$INFO[ListItem.Property(slice4.thumb)]</texture>
                                     <aspectratio aligny="top">scale</aspectratio>
                                 </control>
+                                <control type="image">
+                                    <visible>!IsEmpty(ListItem.Property(slice4.hasrule))</visible>
+                                    <posx>214</posx>
+                                    <posy>190</posy>
+                                    <width>16</width>
+                                    <height>16</height>
+                                    <texture>script-hdhomerun-view-rule_indicator.png</texture>
+                                    <aspectratio>stretch</aspectratio>
+                                </control>
                                 <control type="textbox">
                                     <posx>10</posx>
                                     <posy>193</posy>
@@ -1697,6 +1796,15 @@
                                     <height>180</height>
                                     <texture fallback="script-hdhomerun-view-default_image.png">$INFO[ListItem.Property(slice5.thumb)]</texture>
                                     <aspectratio aligny="top">scale</aspectratio>
+                                </control>
+                                <control type="image">
+                                    <visible>!IsEmpty(ListItem.Property(slice5.hasrule))</visible>
+                                    <posx>214</posx>
+                                    <posy>190</posy>
+                                    <width>16</width>
+                                    <height>16</height>
+                                    <texture>script-hdhomerun-view-rule_indicator.png</texture>
+                                    <aspectratio>stretch</aspectratio>
                                 </control>
                                 <control type="textbox">
                                     <posx>10</posx>

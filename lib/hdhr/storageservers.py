@@ -139,7 +139,7 @@ class RecordingRule(dict):
 
     def modifyAndUpdate(self, url, mtype):
         try:
-            new = self.modify(url, mtype)[0]
+            new = self.modify(url, mtype)[-1]
         except:
             new = None
             util.ERROR()
@@ -158,7 +158,8 @@ class RecordingRule(dict):
         if kwargs:
             url += '&' + urllib.urlencode(kwargs)
 
-        return self.modifyAndUpdate(url, 'add')
+        self.modifyAndUpdate(url, 'add')
+        return None
 
     def change(self, **kwargs):
         url = RULES_CHANGE_URL.format(
@@ -261,6 +262,11 @@ class Recording(guide.Episode):
     def groupIsSeries(self):
         return self.get('DisplayGroupID') == self.get('SeriesID')
 
+    @property
+    def cmdURL(self):
+        return self.get('CmdURL', '')
+
+
     def progress(self,sofar):
         duration = self.duration
         if not duration: return 0
@@ -314,6 +320,46 @@ class StorageServers(object):
         self._rules = [RecordingRule(r).init(self) for r in data]
         self.getRulesFailed = False
 
+    def getSeriesRule(self, series_id):
+        url = RULES_URL.format(deviceAuth=urllib.quote(self._devices.apiAuthID(), '')) + '&SeriesID={0}'.format(series_id)
+        util.DEBUG_LOG('Get series rule URL: {0}'.format(url))
+        req = requests.get(url)
+        util.DEBUG_LOG('Get series rule response: {0}'.format(repr(req.text)))
+        data = req.json()
+        if not data:
+            return None
+
+        for r in data:
+            if not 'DateTimeOnly' in r and not 'TeamOnly' in r:
+                return RecordingRule(r).init(self)
+
+        return None
+
+    def getEpisodeDateTimeRule(self, ep, series):
+        for rule in self._rules:
+            if not rule.dateTimeOnly:
+                continue
+
+            if series.ID == rule.seriesID and ep.startTimestamp == rule.dateTimeOnly:
+                return rule
+
+        return None
+
+    def getEpisodeTeamRules(self, ep, series):
+        rules = []
+
+        if not ep.hasTeams:
+            return []
+
+        for rule in self._rules:
+            if not rule.teamOnly:
+                continue
+
+            if series.ID == rule.seriesID and rule.teamOnly in ep.teams:
+                rules.append(rule)
+
+        return rules
+
     @property
     def recordings(self):
         return self._recordings
@@ -339,16 +385,17 @@ class StorageServers(object):
         elif team:
             kwargs['TeamOnly'] = team
 
-        rule = RecordingRule(result).init(self).add(**kwargs)
-        self._rules.append(rule)
+        RecordingRule(result).init(self).add(**kwargs)
+        self.updateRules()
 
-        if episode:
-            episode['RecordingRule'] = 1
-        elif not team:
-            result['RecordingRule'] = 1
+        try:
+            if episode:
+                episode['RecordingRule'] = 1
+            elif not team:
+                result['RecordingRule'] = 1
+        finally:
+            self.pingUpdateRules()
 
-        self.pingUpdateRules()
-        return rule
 
     def addTeamRule(self, team, **kwargs):
         url = RULES_ADD_TEAM_URL.format(
@@ -400,8 +447,16 @@ class StorageServers(object):
             e = util.ERROR()
             raise errors.SeriesHideException(e)
 
-    def deleteRecording(self,recording):
-        util.LOG('delteRecording() - NOT IMPLEMENTED')
+    def deleteRecording(self, recording, rerecord=False):
+        try:
+            url = recording.cmdURL + '&cmd=delete' + (rerecord and '&rerecord=1' or '')
+            util.DEBUG_LOG('Delete recording URL: {0}'.format(url))
+            req = requests.get(url)
+            util.DEBUG_LOG('Delete recording response: {0}'.format(repr(req.text)))
+            return True
+        except:
+            e = util.ERROR()
+            raise errors.RecordingDelException(e)
 
     def getRuleById(self, ruleID):
         for rule in self._rules:
@@ -422,10 +477,3 @@ class StorageServers(object):
                 d.syncRules()
             except:
                 util.ERROR()
-
-    def getSeriesRule(self, ID):
-        for rule in self.rules:
-            if rule.ID == ID:
-                return rule
-
-        return None

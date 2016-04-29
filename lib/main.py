@@ -212,6 +212,7 @@ class GuideOverlay(util.CronReceiver):
         self.inLoop = False
         self.sliceTimestamp = 0
         self.lastItem = None
+        self.recordDialog = None
         self.abort = False
 
         self.devices = None
@@ -285,7 +286,6 @@ class GuideOverlay(util.CronReceiver):
             elif action == xbmcgui.ACTION_CHANNEL_DOWN: #or action == xbmcgui.ACTION_PAGE_DOWN: #For testing
                 self.channelDown()
             elif action in (xbmcgui.ACTION_MOUSE_LEFT_CLICK, xbmcgui.ACTION_MOUSE_DOUBLE_CLICK): # To catch all clicks we need to catch both
-                print self.getFocusId()
                 if self.getFocusId() in (210, 217):
                     return self.handleMouseClick(action, mli)
                 elif self.getFocusId() == 201 or (self.getFocusId() == 215 and self.mouseXTrans(action.getAmount1()) < 1774):
@@ -391,9 +391,7 @@ class GuideOverlay(util.CronReceiver):
             return
 
         ep = mli.dataSource['slice'][i]
-        if not ep.channelNumber:
-            ep['ChannelNumber'] = mli.dataSource['channel'].number
-        self.openRecordDialog(ep)
+        self.openRecordDialog(ep, item=mli)
 
     def timeDisplay(self, timestamp):
         nowDay = time.localtime().tm_yday
@@ -440,6 +438,15 @@ class GuideOverlay(util.CronReceiver):
 
         self.updateSlice(mli)
 
+    def updateSliceRules(self, mli, eps):
+        for i in range(len(mli.dataSource['slice'])):
+            sliceEp = mli.dataSource['slice'][i]
+            sliceEp['ChannelNumber'] = sliceEp.channelNumber or mli.dataSource['channel'].number
+            if sliceEp in eps:
+                mli.dataSource['slice'][i]['RecordingRule'] = eps[eps.index(sliceEp)].get('RecordingRule')
+
+        self.updateSlice(mli)
+
     def updateSlice(self, mli=None):
         mli = mli or self.channelList.getSelectedItem()
 
@@ -455,10 +462,13 @@ class GuideOverlay(util.CronReceiver):
             for i, ep in enumerate(mli.dataSource['slice'][mli.dataSource['sliceOffset']-6:mli.dataSource['sliceOffset']]):
                 mli.setProperty('slice{0}.thumb'.format(i), ep.icon)
                 mli.setProperty('slice{0}.time'.format(i), ep.startTimestamp and self.timeDisplay(ep.startTimestamp) or '')
+                mli.setProperty('slice{0}.hasrule'.format(i), ep.hasRule and '1' or '')
+
         else:
             for i, ep in enumerate(mli.dataSource['slice'][0:6]):
                 mli.setProperty('slice{0}.thumb'.format(i), ep.icon)
                 mli.setProperty('slice{0}.time'.format(i), ep.startTimestamp and self.timeDisplay(ep.startTimestamp) or '')
+                mli.setProperty('slice{0}.hasrule'.format(i), ep.hasRule and '1' or '')
 
         mli.setProperty('slice.offset', str(mli.dataSource['sliceOffset']))
 
@@ -621,6 +631,7 @@ class GuideOverlay(util.CronReceiver):
 
     def onSelect(self,controlID):
         if controlID in (215, 217, 210): #Mouse/touch: handle with onAction()
+            self.channelClicked()
             #self.sliceRight()
             return
 
@@ -634,43 +645,50 @@ class GuideOverlay(util.CronReceiver):
 
         if mli.getProperty('slice.offset') and mli.getProperty('slice.offset') != '0':
             ep = mli.dataSource['slice'] and mli.dataSource['slice'][mli.dataSource['sliceOffset']-1] or None
-            if not ep.channelNumber:
-                ep['ChannelNumber'] = mli.dataSource['channel'].number
-            self.openRecordDialog(ep)
+            self.openRecordDialog(ep, item=mli)
         else:
             channel = mli.dataSource['channel']
             self.playChannel(channel)
             self.showOverlay(False)
 
     @util.busyDialog('BUSY')
-    def openRecordDialog(self, ep):
+    def openRecordDialog(self, ep, item=None):
         if not self.hasDVR():
             return
 
         if not ep:
             return
 
-        if self.dvrWindow:
-            return self.dvrWindow.openRecordDialog(None, series=hdhr.guide.Series(ep), episode=ep)
+        if item and not ep.channelNumber:
+            ep['ChannelNumber'] = item.dataSource['channel'].number
 
-        ss = hdhr.storageservers.StorageServers(self.devices)
-        series = hdhr.guide.Series(ep)
-        d = record.RecordDialog(
-            skin.DVR_RECORD_DIALOG,
-            skin.getSkinPath(),
-            'Main',
-            '1080i',
-            rule=ss.getSeriesRule(series.ID),
-            series=series,
-            episode=ep,
-            storage_server=ss,
-            show_hide=False
-        )
+        try:
+            if self.dvrWindow:
+                series = hdhr.guide.createSeriesFromEpisode(self.dvrWindow.storageServer, ep)
+                self.recordDialog = self.dvrWindow.openRecordDialog(None, series=series, episode=ep, return_dialog=True)
+            else:
+                ss = hdhr.storageservers.StorageServers(self.devices)
+                series = hdhr.guide.createSeriesFromEpisode(ss, ep)
+                self.recordDialog = record.RecordDialog(
+                    skin.DVR_RECORD_DIALOG,
+                    skin.getSkinPath(),
+                    'Main',
+                    '1080i',
+                    rule=ss.getSeriesRule(series.ID),
+                    series=series,
+                    episode=ep,
+                    storage_server=ss,
+                    show_hide=False
+                )
 
-        d.doModal()
-        del d
+                self.recordDialog.doModal()
 
-        ep['RecordingRule'] = series.get('RecordingRule')
+            eps = self.recordDialog.episodes
+
+            if item:
+                self.updateSliceRules(item, eps)
+        finally:
+            del self.recordDialog
 
     def onPlayBackStarted(self):
         util.DEBUG_LOG('ON PLAYBACK STARTED')
@@ -678,6 +696,12 @@ class GuideOverlay(util.CronReceiver):
         self.showProgress()
 
     def onPlayBackStopped(self):
+        try:
+            if self.recordDialog:
+                return
+        except AttributeError:
+            pass
+
         util.setGlobalProperty('playing.dvr','')
         self.setCurrent()
         util.DEBUG_LOG('ON PLAYBACK STOPPED')

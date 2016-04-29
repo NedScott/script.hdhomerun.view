@@ -194,7 +194,7 @@
                     <texturefocus border="6">script-hdhomerun-view-flat_button.png</texturefocus>
                     <texturenofocus border="6">script-hdhomerun-view-flat_button_nf.png</texturenofocus>
                 </control>
-                <control type="button" id="209">
+                <!-- <control type="button" id="209">
                     <visible>!IsEmpty(Window.Property(has.teams))</visible>
                     <width>200</width>
                     <height>70</height>
@@ -203,7 +203,7 @@
                     <align>center</align>
                     <texturefocus border="6">script-hdhomerun-view-flat_button.png</texturefocus>
                     <texturenofocus border="6">script-hdhomerun-view-flat_button_nf.png</texturenofocus>
-                </control>
+                </control> -->
                 <control type="button" id="207">
                     <visible>!IsEmpty(Window.Property(show.hasRule))</visible>
                     <width>280</width>
