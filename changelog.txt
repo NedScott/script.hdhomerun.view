@@ -1,4 +1,4 @@
-** 2016.04.29a1 **
+** 2016.04.29 **
 
 Add record dots to slice
 Change team recording to Win 10 method
