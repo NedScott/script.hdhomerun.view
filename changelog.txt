@@ -1,3 +1,8 @@
+** 2016.05.08 **
+
+Now starts on recordings page when DVR is detected
+Added setting 'Start with live TV even when DVR is detected' (default=disabled)
+
 ** 2016.04.30 **
 
 Refresh cached recordings after delete
