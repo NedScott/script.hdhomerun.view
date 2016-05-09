@@ -1034,7 +1034,7 @@ class GuideOverlay(util.CronReceiver):
 
         self.player = player.HDHRPlayer().init(self,self.devices,self.touchMode)
 
-        if self.hasDVR() and not util.getSetting('dvr.start.livetv', False):
+        if self.hasDVR() and util.getSetting('dvr.skip.livetv', False):
             return self.windowLoop()
 
         channel = self.getStartChannel()
