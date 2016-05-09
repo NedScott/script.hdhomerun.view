@@ -1,6 +1,6 @@
 ** 2016.05.09 **
 
-Added setting 'Skip live TV on startup if DVR is detected' (default=disabled)
+Added setting 'Load recording at startup if DVR is detected' (default=disabled)
 
 ** 2016.04.30 **
 
