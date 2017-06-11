@@ -59,6 +59,9 @@ class HDHRPlayer(xbmc.Player):
 
     def onPlayBackStarted(self):
         self.status('STARTED')
+        if False and self.status.channel:
+            util.DEBUG_LOG('Saving successful channel number as last: {0}'.format(self.status.channel.number))
+            util.setSetting('last.channel', self.status.channel.number)
         self.owner.onPlayBackStarted()
 
     def onPlayBackStopped(self):
@@ -103,7 +106,7 @@ class HDHRPlayer(xbmc.Player):
                 'Studio': channel.guide.affiliate
         }
         item.setInfo('video', info)
-        util.setSetting('last.channel',channel.number)
+        util.setSetting('last.channel', channel.number)
         self.status('NOT_STARTED',channel,item)
         args = self.getArgs()
         self.play(url + args,item,self.touchMode,0)
