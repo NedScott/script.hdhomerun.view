@@ -1,3 +1,7 @@
+** 2017.7.31 **
+
+Update API endpoints
+
 ** 2017.1.2 **
 
 Fix channel icon scaling
