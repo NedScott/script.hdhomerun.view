@@ -83,6 +83,7 @@ class HDHRPlayer(xbmc.Player):
             self.play(source.url,self.status.item,self.touchMode,0)
             return True
         else:
+            util.setSetting('last.channel', '')
             self.status.reset()
             self.owner.onPlayBackFailed()
             return True
