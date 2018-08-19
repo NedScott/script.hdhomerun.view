@@ -1,10 +1,7 @@
-** 2018.0.00 **
+** 2018.8.19 **
 
-Fixes for issues on Kodi 18
+Fixes for Kodi 18 compatibility
 Improved handling for startup channel failure
-
-** 2017.7.31 **
-
 Update API endpoints
 
 ** 2017.1.2 **
