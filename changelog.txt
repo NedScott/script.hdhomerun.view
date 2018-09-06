@@ -1,4 +1,4 @@
-** 2018.8.19 **
+** 2018.9.6 **
 
 Fixes for Kodi 18 compatibility
 Improved handling for startup channel failure
