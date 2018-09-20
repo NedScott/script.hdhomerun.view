@@ -142,10 +142,12 @@ def getSkinPath():
         try:
             setupDynamicSkin()
 
+            util.DEBUG_LOG('Using custom fonts for: {0}'.format(skin))
+
             for xml in SKINS_XMLS:
+                util.DEBUG_LOG('- Updating XML for: {0}'.format(xml))
                 customizeSkinXML(skin, xml)
 
-            util.DEBUG_LOG('Using custom fonts for: {0}'.format(skin))
             with open(VERSION_FILE, 'w') as f:
                 f.write('{0}:{1}:{2}'.format(skin, VERSION, OLD_API and ':old' or ''))
             with open(KODI_VERSION_FILE, 'w') as f:

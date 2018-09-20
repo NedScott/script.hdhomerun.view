@@ -1,3 +1,7 @@
+** 2018.9.19 **
+
+Fixes Kodi 18 compatibility when updating
+
 ** 2018.9.6 **
 
 Fixes for Kodi 18 compatibility
