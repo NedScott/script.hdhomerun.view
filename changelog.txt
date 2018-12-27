@@ -1,6 +1,7 @@
-** 2018.9.19 **
+** 2018.12.27 **
 
-Fixes Kodi 18 compatibility when updating
+More fixes for Kodi 18 compatibility
+Fixes for skin compatibility when updating
 
 ** 2018.9.6 **
 

@@ -111,6 +111,7 @@ def customizeSkinXML(skin,xml):
         util.DEBUG_LOG('Updating skins for old InfoLabels')
         data = data.replace('String.IsEmpty', 'IsEmpty')
         data = data.replace('String.IsEqual', 'StringCompare')
+        data = data.replace('Integer.IsGreater', 'IntegerGreaterThan')
 
     with open(target,'w') as t:
         t.write(data)

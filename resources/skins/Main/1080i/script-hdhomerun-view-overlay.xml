@@ -448,7 +448,7 @@
                         </control>
 
                         <control type="group">
-                            <visible>IntegerGreaterThan(ListItem.Property(slice.offset),0)</visible>
+                            <visible>Integer.IsGreater(ListItem.Property(slice.offset),0)</visible>
                             <control type="label">
                                 <posx>350</posx>
                                 <posy>10</posy>
@@ -471,7 +471,7 @@
                             </control>
                         </control>
                         <control type="group">
-                            <visible>!IntegerGreaterThan(ListItem.Property(slice.offset),0)</visible>
+                            <visible>!Integer.IsGreater(ListItem.Property(slice.offset),0)</visible>
                             <control type="label">
                                 <posx>350</posx>
                                 <posy>10</posy>
@@ -644,12 +644,12 @@
                         </control>
 
                         <control type="group">
-                            <animation effect="slide" start="0,0" end="-240,0" condition="IntegerGreaterThan(ListItem.Property(slice.offset),0)">Conditional</animation>
-                            <animation effect="slide" start="0,0" end="-240,0" condition="IntegerGreaterThan(ListItem.Property(slice.offset),1)">Conditional</animation>
-                            <animation effect="slide" start="0,0" end="-240,0" condition="IntegerGreaterThan(ListItem.Property(slice.offset),2)">Conditional</animation>
-                            <animation effect="slide" start="0,0" end="-240,0" condition="IntegerGreaterThan(ListItem.Property(slice.offset),3)">Conditional</animation>
-                            <animation effect="slide" start="0,0" end="-240,0" condition="IntegerGreaterThan(ListItem.Property(slice.offset),4)">Conditional</animation>
-                            <animation effect="slide" start="0,0" end="-240,0" condition="IntegerGreaterThan(ListItem.Property(slice.offset),5)">Conditional</animation>
+                            <animation effect="slide" start="0,0" end="-240,0" condition="Integer.IsGreater(ListItem.Property(slice.offset),0)">Conditional</animation>
+                            <animation effect="slide" start="0,0" end="-240,0" condition="Integer.IsGreater(ListItem.Property(slice.offset),1)">Conditional</animation>
+                            <animation effect="slide" start="0,0" end="-240,0" condition="Integer.IsGreater(ListItem.Property(slice.offset),2)">Conditional</animation>
+                            <animation effect="slide" start="0,0" end="-240,0" condition="Integer.IsGreater(ListItem.Property(slice.offset),3)">Conditional</animation>
+                            <animation effect="slide" start="0,0" end="-240,0" condition="Integer.IsGreater(ListItem.Property(slice.offset),4)">Conditional</animation>
+                            <animation effect="slide" start="0,0" end="-240,0" condition="Integer.IsGreater(ListItem.Property(slice.offset),5)">Conditional</animation>
                             <posx>-80</posx>
                             <posy>0</posy>
                             <control type="image">
@@ -761,7 +761,7 @@
                                 </control>
                             </control>
                             <control type="group">
-                                <visible>IntegerGreaterThan(ListItem.Property(slice.offset),0)</visible>
+                                <visible>Integer.IsGreater(ListItem.Property(slice.offset),0)</visible>
                                 <posx>420</posx>
                                 <posy>0</posy>
                                 <control type="image">
@@ -820,7 +820,7 @@
                                 </control>
                             </control>
                             <control type="group">
-                                <visible>IntegerGreaterThan(ListItem.Property(slice.offset),1)</visible>
+                                <visible>Integer.IsGreater(ListItem.Property(slice.offset),1)</visible>
                                 <posx>660</posx>
                                 <posy>0</posy>
                                 <control type="image">
@@ -879,7 +879,7 @@
                                 </control>
                             </control>
                             <control type="group">
-                                <visible>IntegerGreaterThan(ListItem.Property(slice.offset),2)</visible>
+                                <visible>Integer.IsGreater(ListItem.Property(slice.offset),2)</visible>
                                 <posx>900</posx>
                                 <posy>0</posy>
                                 <control type="image">
@@ -938,7 +938,7 @@
                                 </control>
                             </control>
                             <control type="group">
-                                <visible>IntegerGreaterThan(ListItem.Property(slice.offset),3)</visible>
+                                <visible>Integer.IsGreater(ListItem.Property(slice.offset),3)</visible>
                                 <posx>1140</posx>
                                 <posy>0</posy>
                                 <control type="image">
@@ -997,7 +997,7 @@
                                 </control>
                             </control>
                             <control type="group">
-                                <visible>IntegerGreaterThan(ListItem.Property(slice.offset),4)</visible>
+                                <visible>Integer.IsGreater(ListItem.Property(slice.offset),4)</visible>
                                 <posx>1380</posx>
                                 <posy>0</posy>
                                 <control type="image">
@@ -1056,7 +1056,7 @@
                                 </control>
                             </control>
                             <control type="group">
-                                <visible>IntegerGreaterThan(ListItem.Property(slice.offset),5)</visible>
+                                <visible>Integer.IsGreater(ListItem.Property(slice.offset),5)</visible>
                                 <posx>1620</posx>
                                 <posy>0</posy>
                                 <control type="image">
@@ -1161,7 +1161,7 @@
                         </control>
 
                         <control type="group">
-                            <visible>IntegerGreaterThan(ListItem.Property(slice.offset),0)</visible>
+                            <visible>Integer.IsGreater(ListItem.Property(slice.offset),0)</visible>
                             <control type="label">
                                 <posx>350</posx>
                                 <posy>10</posy>
@@ -1184,7 +1184,7 @@
                             </control>
                         </control>
                         <control type="group">
-                            <visible>!IntegerGreaterThan(ListItem.Property(slice.offset),0)</visible>
+                            <visible>!Integer.IsGreater(ListItem.Property(slice.offset),0)</visible>
                             <control type="label">
                                 <posx>350</posx>
                                 <posy>10</posy>
@@ -1357,12 +1357,12 @@
                         </control>
 
                         <control type="group">
-                            <animation effect="slide" start="0,0" end="-240,0" condition="IntegerGreaterThan(ListItem.Property(slice.offset),0)">Conditional</animation>
-                            <animation effect="slide" start="0,0" end="-240,0" condition="IntegerGreaterThan(ListItem.Property(slice.offset),1)">Conditional</animation>
-                            <animation effect="slide" start="0,0" end="-240,0" condition="IntegerGreaterThan(ListItem.Property(slice.offset),2)">Conditional</animation>
-                            <animation effect="slide" start="0,0" end="-240,0" condition="IntegerGreaterThan(ListItem.Property(slice.offset),3)">Conditional</animation>
-                            <animation effect="slide" start="0,0" end="-240,0" condition="IntegerGreaterThan(ListItem.Property(slice.offset),4)">Conditional</animation>
-                            <animation effect="slide" start="0,0" end="-240,0" condition="IntegerGreaterThan(ListItem.Property(slice.offset),5)">Conditional</animation>
+                            <animation effect="slide" start="0,0" end="-240,0" condition="Integer.IsGreater(ListItem.Property(slice.offset),0)">Conditional</animation>
+                            <animation effect="slide" start="0,0" end="-240,0" condition="Integer.IsGreater(ListItem.Property(slice.offset),1)">Conditional</animation>
+                            <animation effect="slide" start="0,0" end="-240,0" condition="Integer.IsGreater(ListItem.Property(slice.offset),2)">Conditional</animation>
+                            <animation effect="slide" start="0,0" end="-240,0" condition="Integer.IsGreater(ListItem.Property(slice.offset),3)">Conditional</animation>
+                            <animation effect="slide" start="0,0" end="-240,0" condition="Integer.IsGreater(ListItem.Property(slice.offset),4)">Conditional</animation>
+                            <animation effect="slide" start="0,0" end="-240,0" condition="Integer.IsGreater(ListItem.Property(slice.offset),5)">Conditional</animation>
                             <posx>-80</posx>
                             <posy>0</posy>
                             <control type="image">
@@ -1474,7 +1474,7 @@
                                 </control>
                             </control>
                             <control type="group">
-                                <visible>IntegerGreaterThan(ListItem.Property(slice.offset),0)</visible>
+                                <visible>Integer.IsGreater(ListItem.Property(slice.offset),0)</visible>
                                 <posx>420</posx>
                                 <posy>0</posy>
                                 <control type="image">
@@ -1533,7 +1533,7 @@
                                 </control>
                             </control>
                             <control type="group">
-                                <visible>IntegerGreaterThan(ListItem.Property(slice.offset),1)</visible>
+                                <visible>Integer.IsGreater(ListItem.Property(slice.offset),1)</visible>
                                 <posx>660</posx>
                                 <posy>0</posy>
                                 <control type="image">
@@ -1592,7 +1592,7 @@
                                 </control>
                             </control>
                             <control type="group">
-                                <visible>IntegerGreaterThan(ListItem.Property(slice.offset),2)</visible>
+                                <visible>Integer.IsGreater(ListItem.Property(slice.offset),2)</visible>
                                 <posx>900</posx>
                                 <posy>0</posy>
                                 <control type="image">
@@ -1651,7 +1651,7 @@
                                 </control>
                             </control>
                             <control type="group">
-                                <visible>IntegerGreaterThan(ListItem.Property(slice.offset),3)</visible>
+                                <visible>Integer.IsGreater(ListItem.Property(slice.offset),3)</visible>
                                 <posx>1140</posx>
                                 <posy>0</posy>
                                 <control type="image">
@@ -1710,7 +1710,7 @@
                                 </control>
                             </control>
                             <control type="group">
-                                <visible>IntegerGreaterThan(ListItem.Property(slice.offset),4)</visible>
+                                <visible>Integer.IsGreater(ListItem.Property(slice.offset),4)</visible>
                                 <posx>1380</posx>
                                 <posy>0</posy>
                                 <control type="image">
@@ -1769,7 +1769,7 @@
                                 </control>
                             </control>
                             <control type="group">
-                                <visible>IntegerGreaterThan(ListItem.Property(slice.offset),5)</visible>
+                                <visible>Integer.IsGreater(ListItem.Property(slice.offset),5)</visible>
                                 <posx>1620</posx>
                                 <posy>0</posy>
                                 <control type="image">
@@ -1854,9 +1854,9 @@
 
             <control type="group">
                 <visible>!String.IsEmpty(Window.Property(show.overlay))</visible>
-                <animation effect="slide" start="0,0" end="0,270" condition="IntegerGreaterThan(Container(201).Position,0)">Conditional</animation>
-                <animation effect="slide" start="0,0" end="0,270" condition="IntegerGreaterThan(Container(201).Position,1)">Conditional</animation>
-                <animation effect="slide" start="0,0" end="0,270" condition="IntegerGreaterThan(Container(201).Position,2)">Conditional</animation>
+                <animation effect="slide" start="0,0" end="0,270" condition="Integer.IsGreater(Container(201).Position,0)">Conditional</animation>
+                <animation effect="slide" start="0,0" end="0,270" condition="Integer.IsGreater(Container(201).Position,1)">Conditional</animation>
+                <animation effect="slide" start="0,0" end="0,270" condition="Integer.IsGreater(Container(201).Position,2)">Conditional</animation>
                 <posx>0</posx>
                 <posy>0</posy>
                 <control type="group" id="216">
@@ -1879,7 +1879,7 @@
                 </control>
 
                 <control type="group" id="218">
-                    <visible>IntegerGreaterThan(Container(201).ListItem.Property(slice.offset),0)</visible>
+                    <visible>Integer.IsGreater(Container(201).ListItem.Property(slice.offset),0)</visible>
                     <control type="button" id="217">
                         <left>-1020</left>
                         <top>0</top>
