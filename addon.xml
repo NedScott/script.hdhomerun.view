@@ -17,7 +17,7 @@
         <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
         <forum>https://www.silicondust.com/forum/viewforum.php?f=87</forum>
         <website>https://www.hdhomerun.com</website>
-        <source></source>
+        <source>https://github.com/Silicondust/script.hdhomerun.view</source>
         <platform>all</platform>
     </extension>
 </addon>
