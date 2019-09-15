@@ -2,6 +2,7 @@
 import time, random, threading
 import xbmc, xbmcgui
 
+import actionconstants
 import hdhr
 import kodigui
 import util
@@ -32,7 +33,7 @@ class KodiChannelEntry(kodigui.BaseDialog):
 
     def onAction(self,action):
         try:
-            if action.getId() >= xbmcgui.REMOTE_0 and action.getId() <= xbmcgui.REMOTE_9:
+            if action.getId() >= actionconstants.REMOTE_0 and action.getId() <= actionconstants.REMOTE_9:
                 digit = str(action.getId() - 58)
                 self.digits += digit
                 if '.' in self.digits:
@@ -46,11 +47,11 @@ class KodiChannelEntry(kodigui.BaseDialog):
 
                 self.digits = self.digits[:-1]
 
-            elif action == xbmcgui.ACTION_NAV_BACK:
+            elif action == actionconstants.ACTION_NAV_BACK:
                 return self.backspace()
-            elif action == xbmcgui.ACTION_MOVE_DOWN:
+            elif action == actionconstants.ACTION_MOVE_DOWN:
                 return self.addDecimal()
-            elif action == xbmcgui.ACTION_SELECT_ITEM:
+            elif action == actionconstants.ACTION_SELECT_ITEM:
                 return self.submit()
         except:
             util.ERROR()
@@ -103,9 +104,9 @@ class OptionsDialog(kodigui.BaseDialog):
 
     def onAction(self,action):
         try:
-            if action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
+            if action == actionconstants.ACTION_PREVIOUS_MENU or action == actionconstants.ACTION_NAV_BACK:
                 return self.doClose()
-            elif action == xbmcgui.ACTION_MOVE_DOWN or action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_MOVE_LEFT:
+            elif action == actionconstants.ACTION_MOVE_DOWN or action == actionconstants.ACTION_MOVE_UP or action == actionconstants.ACTION_MOVE_RIGHT or action == actionconstants.ACTION_MOVE_LEFT:
                 if not self.getFocusId():
                     self.setFocusId(241)
 
@@ -145,7 +146,7 @@ class SeekActionHandler(object):
         self.action = action
         self.event.set()
         if self.timer: self.timer.cancel()
-        if action != xbmcgui.ACTION_PLAY:
+        if action != actionconstants.ACTION_PLAY:
             self.initiallyPaused = xbmc.getCondVisibility('Player.Paused')
             if not self.initiallyPaused:
                 xbmc.executebuiltin('PlayerControl(play)')
@@ -157,8 +158,8 @@ class SeekActionHandler(object):
         action = self.action
         try:
             if self.callback(action):
-                if action != xbmcgui.ACTION_PLAY and not self.initiallyPaused:
-                    self.startTimer(xbmcgui.ACTION_PLAY)
+                if action != actionconstants.ACTION_PLAY and not self.initiallyPaused:
+                    self.startTimer(actionconstants.ACTION_PLAY)
                     return
 
                 self.initiallyPaused = False
@@ -248,7 +249,7 @@ class GuideOverlay(util.CronReceiver):
             if self.overlayVisible(): self.propertyTimer.reset()
 
 
-            if action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
+            if action == actionconstants.ACTION_PREVIOUS_MENU or action == actionconstants.ACTION_NAV_BACK:
                 if self.closeHandler(): return
 
             mli = self.channelList.getSelectedItem()
@@ -261,31 +262,31 @@ class GuideOverlay(util.CronReceiver):
                 self.showSeekBar()
                 return
 
-            if action == xbmcgui.ACTION_MOVE_RIGHT or action == xbmcgui.ACTION_GESTURE_SWIPE_LEFT:
+            if action == actionconstants.ACTION_MOVE_RIGHT or action == actionconstants.ACTION_GESTURE_SWIPE_LEFT:
                 if self.overlayVisible():
                     return self.sliceRight()
                 else:
                     return self.showOverlay()
-            elif action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_DOWN:
+            elif action == actionconstants.ACTION_MOVE_UP or action == actionconstants.ACTION_MOVE_DOWN:
                 return self.showOverlay()
-            elif action == xbmcgui.ACTION_CONTEXT_MENU:
+            elif action == actionconstants.ACTION_CONTEXT_MENU:
                 return self.showOptions()
-            elif action == xbmcgui.ACTION_MOVE_LEFT or action == xbmcgui.ACTION_GESTURE_SWIPE_RIGHT:
+            elif action == actionconstants.ACTION_MOVE_LEFT or action == actionconstants.ACTION_GESTURE_SWIPE_RIGHT:
                 if mli.getProperty('slice.offset') and mli.getProperty('slice.offset') != '0':
                     return self.sliceLeft()
                 else:
                     return self.showOverlay(False)
-            elif action == xbmcgui.ACTION_SELECT_ITEM:
+            elif action == actionconstants.ACTION_SELECT_ITEM:
                 return self.onSelect(self.getFocusId())
-            elif action == xbmcgui.ACTION_BUILT_IN_FUNCTION:
+            elif action == actionconstants.ACTION_BUILT_IN_FUNCTION:
                 if self.clickShowOverlay(): return
             elif self.checkChannelEntry(action):
                 return
-            elif action == xbmcgui.ACTION_CHANNEL_UP: #or action == xbmcgui.ACTION_PAGE_UP: #For testing
+            elif action == actionconstants.ACTION_CHANNEL_UP: #or action == actionconstants.ACTION_PAGE_UP: #For testing
                 self.channelUp()
-            elif action == xbmcgui.ACTION_CHANNEL_DOWN: #or action == xbmcgui.ACTION_PAGE_DOWN: #For testing
+            elif action == actionconstants.ACTION_CHANNEL_DOWN: #or action == actionconstants.ACTION_PAGE_DOWN: #For testing
                 self.channelDown()
-            elif action in (xbmcgui.ACTION_MOUSE_LEFT_CLICK, xbmcgui.ACTION_MOUSE_DOUBLE_CLICK): # To catch all clicks we need to catch both
+            elif action in (actionconstants.ACTION_MOUSE_LEFT_CLICK, actionconstants.ACTION_MOUSE_DOUBLE_CLICK): # To catch all clicks we need to catch both
                 if self.getFocusId() in (210, 217):
                     return self.handleMouseClick(action, mli)
                 elif self.getFocusId() == 201 or (self.getFocusId() == 215 and self.mouseXTrans(action.getAmount1()) < 1774):
@@ -297,10 +298,10 @@ class GuideOverlay(util.CronReceiver):
                     return self.sliceRight()
                 # elif self.getFocusId() == 217:
                 #     return self.sliceLeft()
-            elif action == xbmcgui.ACTION_MOUSE_WHEEL_DOWN and self.getFocusId() != 201:
+            elif action == actionconstants.ACTION_MOUSE_WHEEL_DOWN and self.getFocusId() != 201:
                 self.setFocusId(201)
                 xbmc.executebuiltin('Action(ScrollDown)')
-            elif action == xbmcgui.ACTION_MOUSE_WHEEL_UP and self.getFocusId() != 201:
+            elif action == actionconstants.ACTION_MOUSE_WHEEL_UP and self.getFocusId() != 201:
                 self.setFocusId(201)
                 xbmc.executebuiltin('Action(ScrollUp)')
             elif action.getButtonCode() == 61519:
@@ -344,15 +345,15 @@ class GuideOverlay(util.CronReceiver):
             elif y < 270 and row == 0:
                 self.rowClicked(action, mli, x, y)
             else:
-                if action == xbmcgui.ACTION_MOUSE_LEFT_CLICK:
+                if action == actionconstants.ACTION_MOUSE_LEFT_CLICK:
                     self.clickShowOverlay(210)
         else:
-            if action == xbmcgui.ACTION_MOUSE_LEFT_CLICK:
+            if action == actionconstants.ACTION_MOUSE_LEFT_CLICK:
                 self.clickShowOverlay(210)
 
     def rowClicked(self, action, mli, x, y):
         if not mli.getProperty('slice.offset') or mli.getProperty('slice.offset') == '0':
-            if action == xbmcgui.ACTION_MOUSE_LEFT_CLICK:
+            if action == actionconstants.ACTION_MOUSE_LEFT_CLICK:
                 if x > 1020:
                     self.playChannel(mli.dataSource['channel'])
                 else:
@@ -363,7 +364,7 @@ class GuideOverlay(util.CronReceiver):
             self.sliceLeft()
             return
 
-        if action.getId() != xbmcgui.ACTION_MOUSE_LEFT_CLICK:
+        if action.getId() != actionconstants.ACTION_MOUSE_LEFT_CLICK:
             return
 
         pos = -1
@@ -543,49 +544,50 @@ class GuideOverlay(util.CronReceiver):
 
         # PlayerControl(command): Play, Stop, Forward, Rewind, Next, Previous, BigSkipForward, BigSkipBackward, SmallSkipForward, SmallSkipBackward,
 
-        if action in [xbmcgui.ACTION_MOVE_LEFT, xbmcgui.ACTION_MOVE_RIGHT, xbmcgui.ACTION_MOVE_UP, xbmcgui.ACTION_MOVE_DOWN]:
+        if action in [actionconstants.ACTION_MOVE_LEFT, actionconstants.ACTION_MOVE_RIGHT, actionconstants.ACTION_MOVE_UP, actionconstants.ACTION_MOVE_DOWN]:
+            util.LOG(str(action.getId()))
             self.seekHandler.onAction(action.getId())
             return True
 
-        if action == xbmcgui.ACTION_PAGE_UP:
+        if action == actionconstants.ACTION_PAGE_UP:
             self.seekAction('PlayerControl(Next)')
             return True
-        elif action == xbmcgui.ACTION_PAGE_DOWN:
+        elif action == actionconstants.ACTION_PAGE_DOWN:
             self.seekAction('PlayerControl(Previous)')
             return True
-        elif action == xbmcgui.ACTION_NEXT_ITEM:
+        elif action == actionconstants.ACTION_NEXT_ITEM:
             self.seekBackSmall()
             return True
-        elif action == xbmcgui.ACTION_PREV_ITEM:
+        elif action == actionconstants.ACTION_PREV_ITEM:
             self.seekBackSmall()
             return True
-        elif action == xbmcgui.ACTION_MOVE_LEFT:
+        elif action == actionconstants.ACTION_MOVE_LEFT:
             self.seekBackSmall()
             return True
-        elif action == xbmcgui.ACTION_MOVE_RIGHT:
+        elif action == actionconstants.ACTION_MOVE_RIGHT:
             self.seekForwardSmall()
             return True
-        elif action == xbmcgui.ACTION_MOVE_UP:
+        elif action == actionconstants.ACTION_MOVE_UP:
             self.seekAction('PlayerControl(BigSkipForward)')
             return True
-        elif action == xbmcgui.ACTION_MOVE_DOWN:
+        elif action == actionconstants.ACTION_MOVE_DOWN:
             self.seekAction('PlayerControl(BigSkipBackward)')
             return True
-        elif action == xbmcgui.ACTION_GESTURE_SWIPE_RIGHT:
+        elif action == actionconstants.ACTION_GESTURE_SWIPE_RIGHT:
             self.seekForwardSmall()
             return True
-        elif action == xbmcgui.ACTION_GESTURE_SWIPE_LEFT:
+        elif action == actionconstants.ACTION_GESTURE_SWIPE_LEFT:
             self.seekBackSmall()
             return True
-        elif action == xbmcgui.ACTION_GESTURE_SWIPE_UP:
+        elif action == actionconstants.ACTION_GESTURE_SWIPE_UP:
             self.seekAction('PlayerControl(BigSkipForward)')
             return True
-        elif action == xbmcgui.ACTION_GESTURE_SWIPE_DOWN:
+        elif action == actionconstants.ACTION_GESTURE_SWIPE_DOWN:
             self.seekAction('PlayerControl(BigSkipBackward)')
             return True
-        elif action == xbmcgui.ACTION_MOUSE_LEFT_CLICK:
+        elif action == actionconstants.ACTION_MOUSE_LEFT_CLICK:
             return True
-        # elif self.getFocusId() == 251 and action == xbmcgui.ACTION_MOUSE_DRAG:
+        # elif self.getFocusId() == 251 and action == actionconstants.ACTION_MOUSE_DRAG:
         #     return True
 
         return False
@@ -594,15 +596,15 @@ class GuideOverlay(util.CronReceiver):
         if xbmc.getCondVisibility('Player.Seeking') or xbmc.getCondVisibility('Player.Caching'):
            return False
 
-        if action == xbmcgui.ACTION_MOVE_LEFT:
+        if action == actionconstants.ACTION_MOVE_LEFT:
             self.seekBackSmall()
-        elif action == xbmcgui.ACTION_MOVE_RIGHT:
+        elif action == actionconstants.ACTION_MOVE_RIGHT:
             self.seekForwardSmall()
-        elif action == xbmcgui.ACTION_MOVE_UP:
+        elif action == actionconstants.ACTION_MOVE_UP:
             self.seekAction('PlayerControl(BigSkipForward)')
-        elif action == xbmcgui.ACTION_MOVE_DOWN:
+        elif action == actionconstants.ACTION_MOVE_DOWN:
             self.seekAction('PlayerControl(BigSkipBackward)')
-        elif action == xbmcgui.ACTION_PLAY:
+        elif action == actionconstants.ACTION_PLAY:
             if xbmc.getCondVisibility('Player.Paused'):
                 self.player.pause()
                 ct = 0
@@ -1239,7 +1241,7 @@ class GuideOverlay(util.CronReceiver):
         return self.current and isinstance(self.current,hdhr.storageservers.Recording)
 
     def checkChannelEntry(self,action):
-        if action.getId() >= xbmcgui.REMOTE_0 and action.getId() <= xbmcgui.REMOTE_9:
+        if action.getId() >= actionconstants.REMOTE_0 and action.getId() <= actionconstants.REMOTE_9:
             self.doChannelEntry(str(action.getId() - 58))
             return True
         return False
